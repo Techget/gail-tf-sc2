@@ -141,6 +141,10 @@ def learn(env, policy_func, *,
     # ----------------------------------------
     ob_space = env.observation_space
     ac_space = env.action_space
+
+    # ob_space = (5*60*60, 9*60*60 , 11 , 523) # minimap, screen, info, available_actions
+    # ac_space = (523, 2) # actions argument
+    
     pi = policy_func("pi", ob_space, ac_space)
     oldpi = policy_func("oldpi", ob_space, ac_space)
     atarg = tf.placeholder(dtype=tf.float32, shape=[None]) # Target advantage function (if applicable)

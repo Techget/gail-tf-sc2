@@ -91,7 +91,7 @@ def add_vtarg_and_adv(seg, gamma, lam):
         gaelam[t] = lastgaelam = delta + gamma * lam * nonterminal * lastgaelam
     seg["tdlamret"] = seg["adv"] + seg["vpred"]
 
-def learn(env, policy_func, discriminator, expert_dataset,
+def learn(policy_func, discriminator, expert_dataset,
         pretrained, pretrained_weight, *,
         g_step, d_step,
         timesteps_per_batch, # what to train on
@@ -111,14 +111,15 @@ def learn(env, policy_func, discriminator, expert_dataset,
     np.set_printoptions(precision=3)    
     # Setup losses and stuff
     # ----------------------------------------
-    ob_space = env.observation_space
-    ac_space = env.action_space
+    ob_space = (5*60*60 + 9*60*60 + 11 + 523,) # env.observation_space
+    ac_space = (1,) #env.action_space
     pi = policy_func("pi", ob_space, ac_space, reuse=(pretrained_weight!=None))
     oldpi = policy_func("oldpi", ob_space, ac_space)
     atarg = tf.placeholder(dtype=tf.float32, shape=[None]) # Target advantage function (if applicable)
     ret = tf.placeholder(dtype=tf.float32, shape=[None]) # Empirical return
 
-    ob = U.get_placeholder_cached(name="ob")
+    # ob = U.get_placeholder_cached(name="ob")
+    ob = U.get_placeholder(name="ob", dtype=tf.float32, shape=(None, ob_space[0]))
     ac = pi.pdtype.sample_placeholder([None])
 
     kloldnew = oldpi.pd.kl(pi.pd)

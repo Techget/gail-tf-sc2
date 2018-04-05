@@ -6,17 +6,39 @@ import numpy as np
 import ipdb
 
 class TransitionClassifier(object):
-  def __init__(self, env, hidden_size, entcoeff=0.001, lr_rate=1e-3, scope="adversary"):
+  def __init__(self, hidden_size, entcoeff=0.001, lr_rate=1e-3, scope="adversary"):
     self.scope = scope
-    self.observation_shape = env.observation_space.shape
-    self.actions_shape = env.action_space.shape
+    # self.observation_shape = env.observation_space.shape
+    # self.actions_shape = env.action_space.shape
+
+    # print('~~~~~~~~~~', self.observation_shape, self.actions_space)
+    self.msize = 60 # change to 64 later
+    self.ssize = 60 
+    self.isize = 11
+    self.available_action_size = 523
+    self.observation_shape = (5*self.msize*self.msize + 9*self.ssize*self.ssize + self.isize + self.available_action_size,) # minimap, screen, info, available_actions
+    self.actions_shape = (1,) # actions argument, one value, range in (0, 523)
+
     self.input_shape = tuple([o+a for o,a in zip(self.observation_shape, self.actions_shape)])
-    self.num_actions = env.action_space.shape[0]
+    # self.input_shape = tuple(list(self.observation_shape).extend(self.action_space))
+
+    # self.num_actions = env.action_space.shape[0]
     self.hidden_size = hidden_size
+
     self.build_ph()
+
+    
+    # self.minimap = tf.placeholder(tf.float32, [None, 5, self.msize, self.msize], name='minimap')
+    # self.screen = tf.placeholder(tf.float32, [None, 9, self.ssize, self.ssize], name='screen')
+    # self.info = tf.placeholder(tf.float32, [None, self.isize], name='info')
+    # self.available_action = tf.placeholder(tf.float32, [None, self.available_action_size], name='available_action')
+
+    # self.minimap = 
+
+
     # Build grpah
     generator_logits = self.build_graph(self.generator_obs_ph, self.generator_acs_ph, reuse=False)
-    expert_logits = self.build_graph(self.expert_obs_ph, self.expert_acs_ph, reuse=True)
+    expert_logits = self.build_graph(self.expert_obs_ph, self.expert_acs_ph, reuse=False)
     # Build accuracy
     generator_acc = tf.reduce_mean(tf.to_float(tf.nn.sigmoid(generator_logits) < 0.5))
     expert_acc = tf.reduce_mean(tf.to_float(tf.nn.sigmoid(expert_logits) > 0.5))
@@ -49,13 +71,75 @@ class TransitionClassifier(object):
 
   def build_graph(self, obs_ph, acs_ph, reuse=False):
     with tf.variable_scope(self.scope):
-      if reuse:
-        tf.get_variable_scope().reuse_variables()
+      # if reuse:
+      #   tf.get_variable_scope().reuse_variables()
 
-      with tf.variable_scope("obfilter"):
-          self.obs_rms = RunningMeanStd(shape=self.observation_shape)
-      obs = (obs_ph - self.obs_rms.mean) / self.obs_rms.std
-      _input = tf.concat([obs, acs_ph], axis=1) # concatenate the two input -> form a transition
+      # with tf.variable_scope("obfilter"):
+      #     self.obs_rms = RunningMeanStd(shape=self.observation_shape)
+      # obs = (obs_ph - self.obs_rms.mean) / self.obs_rms.std
+
+      minimap = obs_ph[:, 0:5*self.msize*self.msize]
+      screen = obs_ph[:, 5*self.msize*self.msize:9*self.ssize*self.ssize]
+      info = obs_ph[:, (5*self.msize*self.msize+9*self.ssize*self.ssize):(5*self.msize*self.msize+9*self.ssize*self.ssize+self.isize)]
+      available_action = obs_ph[:, (5*self.msize*self.msize+9*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+9*self.ssize*self.ssize+self.isize+self.available_action_size)]
+
+      mconv1 = layers.conv2d(tf.transpose(minimap, [0,self.msize,self.msize,5]),
+                   num_outputs=16,
+                   kernel_size=5,
+                   stride=1,
+                   scope='mconv1')
+      mconv2 = layers.conv2d(mconv1,
+                   num_outputs=32,
+                   kernel_size=3,
+                   stride=1,
+                   scope='mconv2')
+      sconv1 = layers.conv2d(tf.transpose(screen, [0,self.ssize, self.ssize,9]),
+                   num_outputs=16,
+                   kernel_size=5,
+                   stride=1,
+                   scope='sconv1')
+      sconv2 = layers.conv2d(sconv1,
+                   num_outputs=32,
+                   kernel_size=3,
+                   stride=1,
+                   scope='sconv2')
+      info_fc = layers.fully_connected(layers.flatten(info),
+                   num_outputs=256,
+                   activation_fn=tf.tanh,
+                   scope='info_fc')
+
+      aa_fc = layers.fully_connected(layers.flatten(available_action),
+                   num_outputs=256,
+                   activation_fn=tf.tanh,
+                   scope='aa_fc')
+
+      # feat_conv = tf.concat([mconv2, sconv2], axis=3)
+      # spatial_action = layers.conv2d(feat_conv,
+      #                                 num_outputs=1,
+      #                                 kernel_size=1,
+      #                                 stride=1,
+      #                                 activation_fn=None,
+      #                                 scope='spatial_action')
+      # self.spatial_action = tf.nn.softmax(layers.flatten(spatial_action))
+
+      # # Compute non spatial actions and value
+      # feat_fc = tf.concat([layers.flatten(mconv2), layers.flatten(sconv2), info_fc, aa_fc], axis=1)
+      # feat_fc = layers.fully_connected(feat_fc,
+      #                                  num_outputs=256,
+      #                                  activation_fn=tf.nn.relu,
+      #                                  scope='feat_fc')
+      # self.non_spatial_action = layers.fully_connected(feat_fc,
+      #                                             num_outputs=num_action,
+      #                                             activation_fn=tf.nn.softmax,
+      #                                             scope='non_spatial_action')
+      # self.value = tf.reshape(layers.fully_connected(feat_fc,
+      #                                           num_outputs=1,
+      #                                           activation_fn=None,
+      #                                           scope='value'), [-1])
+
+
+      # _input = tf.concat([obs, acs_ph], axis=1) # concatenate the two input -> form a transition
+      _input = tf.concat([layers.flatten(mconv2), layers.flatten(sconv2), info_fc, aa_fc, acs_ph], axis=1)
       p_h1 = tf.contrib.layers.fully_connected(_input, self.hidden_size, activation_fn=tf.nn.tanh)
       p_h2 = tf.contrib.layers.fully_connected(p_h1, self.hidden_size, activation_fn=tf.nn.tanh)
       logits = tf.contrib.layers.fully_connected(p_h2, 1, activation_fn=tf.identity)
