@@ -30,6 +30,20 @@ def extract_observation(time_step):
         time_step.observation["minimap"][6]                         # selected
     ]
 
+    unit_type = time_step.observation["screen"][6]
+    unit_type_compressed = np.zeros(unit_type.shape, dtype=np.float)
+    for y in range(len(unit_type)):
+        for x in range(len(unit_type[y])):
+            if unit_type[y][x] > 0 and unit_type[y][x] in static_data.UNIT_TYPES:
+                unit_type_compressed[y][x] = static_data.UNIT_TYPES.index(unit_type[y][x]) / len(static_data.UNIT_TYPES)
+
+    hit_points = time_step.observation["screen"][8]
+    hit_points_logged = np.zeros(hit_points.shape, dtype=np.float)
+    for y in range(len(hit_points)):
+        for x in range(len(hit_points[y])):
+            if hit_points[y][x] > 0:
+                hit_points_logged[y][x] = math.log(hit_points[y][x]) / 4
+
     state["screen"] = [
         time_step.observation["screen"][0] / 255,               # height_map
         time_step.observation["screen"][1] / 2,                 # visibility
@@ -87,6 +101,7 @@ def traj_segment_generator(pi, discriminator, horizon, stochastic):
     rew = 0.0
     true_rew = 0.0
     timestep = env.reset()
+    # print(timestep)
     ob = extract_observation(timestep)
 
     cur_ep_ret = 0
