@@ -21,11 +21,12 @@ class TransitionClassifier(object):
     self.ob_space = spaces.Box(low=-1000, high=10000, shape=(5*60*60 + 10*60*60 + 11 + 524,))
     self.ac_space = spaces.Discrete(524) 
     self.observation_shape = self.ob_space.shape
-    self.actions_shape = (1,)
+    self.actions_shape = self.ac_space.shape
+    # self.actions_shape = (1,)
     # self.observation_shape = np.array([5*self.msize*self.msize + 9*self.ssize*self.ssize + self.isize + self.available_action_size,]) # minimap, screen, info, available_actions
     # self.actions_shape = np.array([1,]) # actions argument, one value, range in (0, 524)
 
-    self.input_shape = tuple([o+a for o,a in zip(self.observation_shape, self.actions_shape)])
+    # self.input_shape = tuple([o+a for o,a in zip(self.observation_shape, self.actions_shape)])
     # self.input_shape = tuple(list(self.observation_shape).extend(self.action_space))
 
     # self.num_actions = env.action_space.shape[0]
