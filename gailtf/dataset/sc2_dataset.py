@@ -64,8 +64,8 @@ class SC2Dataset(object):
 
             self.replay_files_index += 1
             self.loaded_replay_pointer = 0
-            self.win_player_id = loaded_replay_info_json['player_info'][0]['playerResult']['result'] == 'Victory' ? \
-                int(loaded_replay_info_json['player_info'][1]['playerResult']['playerId']):\
+            self.win_player_id = int(loaded_replay_info_json['player_info'][1]['playerResult']['playerId']) if\
+                loaded_replay_info_json['player_info'][0]['playerResult']['result'] == 'Victory' else \
                 int(loaded_replay_info_json['player_info'][0]['playerResult']['playerId'])
 
         obs = []
