@@ -75,9 +75,9 @@ def traj_segment_generator(pi, discriminator, horizon, stochastic):
 
     env = sc2_env.SC2Env(
         map_name='Odyssey LE',
-        agent_race="Terran",
-        bot_race="Terran",
-        difficulty=sc2_env.difficulties.keys(),
+        agent_race="T", #Terran
+        bot_race="T",
+        difficulty=1,
         step_mul=8,
         screen_size_px=(60,60), # will change to (64,64)
         minimap_size_px=(60,60),
