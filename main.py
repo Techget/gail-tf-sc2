@@ -9,6 +9,11 @@ from gailtf.dataset.sc2_dataset import SC2Dataset
 import numpy as np
 import ipdb
 
+from absl import flags
+import sys
+FLAGS = flags.FLAGS
+FLAGS(sys.argv)
+
 def argsparser():
     parser = argparse.ArgumentParser("Tensorflow Implementation of GAIL")
     parser.add_argument('--env_id', help='environment ID', default='sc2')
