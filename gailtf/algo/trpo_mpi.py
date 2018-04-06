@@ -121,8 +121,8 @@ def learn(policy_func, discriminator, expert_dataset,
     atarg = tf.placeholder(dtype=tf.float32, shape=[None]) # Target advantage function (if applicable)
     ret = tf.placeholder(dtype=tf.float32, shape=[None]) # Empirical return
 
-    # ob = U.get_placeholder_cached(name="ob")
-    ob = U.get_placeholder(name="ob", dtype=tf.float32, shape=(None, ob_space[0]))
+    ob = U.get_placeholder_cached(name="ob")
+    # ob = U.get_placeholder(name="ob", dtype=tf.float32, shape=(None, ob_space[0]))
     ac = pi.pdtype.sample_placeholder([None])
 
     kloldnew = oldpi.pd.kl(pi.pd)
