@@ -87,7 +87,8 @@ def traj_segment_generator(pi, discriminator, horizon, stochastic):
     rew = 0.0
     true_rew = 0.0
     timestep = env.reset()
-    ob = extract_observation(timestep)
+    #print('~~~~~~~~~',timestep)
+    ob = extract_observation(timestep[0])
 
     cur_ep_ret = 0
     cur_ep_len = 0
@@ -130,9 +131,9 @@ def traj_segment_generator(pi, discriminator, horizon, stochastic):
 
         rew = discriminator.get_reward(ob, ac)
         timestep = env.step(ac)
-        ob = extract_observation(timestep)
-        true_rew = timestep.reward
-        new = timestep.last() # check is Done.
+        ob = extract_observation(timestep[0])
+        true_rew = timestep[0].reward
+        new = timestep[0].last() # check is Done.
         # ob, true_rew, new, _ = 
         rews[i] = rew
         true_rews[i] = true_rew
