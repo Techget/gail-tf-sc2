@@ -39,7 +39,7 @@ class TransitionClassifier(object):
 
     # Build grpah
     generator_logits = self.build_graph(self.generator_obs_ph, self.generator_acs_ph, reuse=False)
-    expert_logits = self.build_graph(self.expert_obs_ph, self.expert_acs_ph, reuse=False)
+    expert_logits = self.build_graph(self.expert_obs_ph, self.expert_acs_ph, reuse=True)
     # Build accuracy
     generator_acc = tf.reduce_mean(tf.to_float(tf.nn.sigmoid(generator_logits) < 0.5))
     expert_acc = tf.reduce_mean(tf.to_float(tf.nn.sigmoid(expert_logits) > 0.5))
@@ -72,8 +72,8 @@ class TransitionClassifier(object):
 
   def build_graph(self, obs_ph, acs_ph, reuse=False):
     with tf.variable_scope(self.scope):
-      # if reuse:
-      #   tf.get_variable_scope().reuse_variables()
+      if reuse:
+        tf.get_variable_scope().reuse_variables()
 
       # with tf.variable_scope("obfilter"):
       #     self.obs_rms = RunningMeanStd(shape=self.observation_shape)
