@@ -11,15 +11,83 @@ from gailtf.baselines.common.cg import cg
 from contextlib import contextmanager
 from gailtf.common.statistics import stats
 import ipdb
+from pysc2 import maps
+from pysc2.env import available_actions_printer
+from pysc2.env import sc2_env
+from pysc2.lib import stopwatch
 
-def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
+def extract_observation(timestep):
+    state = {}
+
+    state["minimap"] = [
+        time_step.observation["minimap"][0] / 255,                  # height_map
+        time_step.observation["minimap"][1] / 2,                    # visibility
+        time_step.observation["minimap"][2],                        # creep
+        time_step.observation["minimap"][3],                        # camera
+        # (time_step.observation["minimap"][5] == 1).astype(int),     # own_units
+        # (time_step.observation["minimap"][5] == 3).astype(int),     # neutral_units
+        # (time_step.observation["minimap"][5] == 4).astype(int),     # enemy_units
+        time_step.observation["minimap"][6]                         # selected
+    ]
+
+    state["screen"] = [
+        time_step.observation["screen"][0] / 255,               # height_map
+        time_step.observation["screen"][1] / 2,                 # visibility
+        time_step.observation["screen"][2],                     # creep
+        time_step.observation["screen"][3],                     # power
+        # (time_step.observation["screen"][5] == 1).astype(int),  # own_units
+        # (time_step.observation["screen"][5] == 3).astype(int),  # neutral_units
+        # (time_step.observation["screen"][5] == 4).astype(int),  # enemy_units
+        unit_type_compressed,                                   # unit_type
+        time_step.observation["screen"][7],                     # selected
+        hit_points_logged,                                      # hit_points
+        time_step.observation["screen"][9] / 255,               # energy
+        time_step.observation["screen"][10] / 255,              # shields
+        time_step.observation["screen"][11]                     # unit_density
+    ]
+
+    state["player"] = time_step.observation["player"]
+        
+    state["available_actions"] = np.zeros(len(sc_action.FUNCTIONS))
+    for i in time_step.observation["available_actions"]:
+        state["available_actions"][i] = 1.0
+
+    output_ob = []
+    for x in state["minimap"]:
+        output_ob.extend(list(x.flatten()))
+    for x in state["screen"]:
+        output_ob.extend(list(x.flatten()))
+    output_ob.extend(list(state['player']))
+    output_ob.extend(list(state['available_actions']))
+
+    return output_ob
+
+
+
+def traj_segment_generator(pi, discriminator, horizon, stochastic):
     # Initialize state variables
     t = 0
-    ac = env.action_space.sample()
+    # ac = env.action_space.sample()
+    from gym import spaces
+    ob_space = spaces.Box(low=-1000, high=10000, shape=(5*60*60 + 9*60*60 + 11 + 524,))
+    ac_space = spaces.Discrete(524)
+    ac = ac_space.sample()
+
+    env = sc2_env.SC2Env(
+        map_name='Odyssey LE',
+        agent_race="Terran",
+        bot_race="Terran",
+        difficulty=sc2_env.difficulties.keys(),
+        step_mul=8,
+        screen_size_px=(60,60), # will change to (64,64)
+        minimap_size_px=(60,60),
+        visualize=False) 
+
     new = True
     rew = 0.0
     true_rew = 0.0
-    ob = env.reset()
+    timestep = env.reset()
+    ob = extract_observation
 
     cur_ep_ret = 0
     cur_ep_len = 0
@@ -61,7 +129,11 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
         prevacs[i] = prevac
 
         rew = discriminator.get_reward(ob, ac)
-        ob, true_rew, new, _ = env.step(ac)
+        timestep = env.step(ac)
+        ob = extract_observation(timestep)
+        true_rew = timestep.reward
+        new = timestep.last() # check is Done.
+        # ob, true_rew, new, _ = 
         rews[i] = rew
         true_rews[i] = true_rew
 
@@ -197,7 +269,7 @@ def learn(policy_func, discriminator, expert_dataset,
 
     # Prepare for rollouts
     # ----------------------------------------
-    seg_gen = traj_segment_generator(pi, env, discriminator, timesteps_per_batch, stochastic=True)
+    seg_gen = traj_segment_generator(pi, discriminator, timesteps_per_batch, stochastic=True)
 
     episodes_so_far = 0
     timesteps_so_far = 0
