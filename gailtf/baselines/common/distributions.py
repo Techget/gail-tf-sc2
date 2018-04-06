@@ -240,6 +240,7 @@ def make_pdtype(ac_space):
         return BernoulliPdType(ac_space.n)
     else:
         raise NotImplementedError
+    # return CategoricalPdType(ac_space[0])
 
 def shape_el(v, i):
     maybe = v.get_shape()[i]

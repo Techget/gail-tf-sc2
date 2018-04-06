@@ -16,9 +16,9 @@ class TransitionClassifier(object):
     self.msize = 60 # change to 64 later
     self.ssize = 60 
     self.isize = 11
-    self.available_action_size = 523
+    self.available_action_size = 524
     self.observation_shape = (5*self.msize*self.msize + 9*self.ssize*self.ssize + self.isize + self.available_action_size,) # minimap, screen, info, available_actions
-    self.actions_shape = (1,) # actions argument, one value, range in (0, 523)
+    self.actions_shape = (1,) # actions argument, one value, range in (0, 524)
 
     self.input_shape = tuple([o+a for o,a in zip(self.observation_shape, self.actions_shape)])
     # self.input_shape = tuple(list(self.observation_shape).extend(self.action_space))
@@ -101,11 +101,11 @@ class TransitionClassifier(object):
                    kernel_size=3,
                    stride=1)
       info_fc = layers.fully_connected(layers.flatten(info),
-                   num_outputs=256,
+                   num_outputs=32,
                    activation_fn=tf.tanh)
 
       aa_fc = layers.fully_connected(layers.flatten(available_action),
-                   num_outputs=256,
+                   num_outputs=32,
                    activation_fn=tf.tanh)
 
       # feat_conv = tf.concat([mconv2, sconv2], axis=3)
