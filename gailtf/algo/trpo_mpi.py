@@ -70,8 +70,8 @@ def extract_observation(time_step):
         time_step.observation["screen"][11]                     # unit_density
     ]
 
-    for i in range(0, len(state['screen'])):
-        print(np.array(state['screen']).shape)
+    # for i in range(0, len(state['screen'])):
+    #     print(np.array(state['screen']).shape)
 
     state["player"] = time_step.observation["player"]
         
