@@ -4,6 +4,7 @@ from gailtf.baselines.common import tf_util as U
 from gailtf.common.tf_util import *
 import numpy as np
 import ipdb
+import tensorflow.contrib.layers as layers
 
 class TransitionClassifier(object):
   def __init__(self, hidden_size, entcoeff=0.001, lr_rate=1e-3, scope="adversary"):
