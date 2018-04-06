@@ -38,7 +38,7 @@ def extract_observation(time_step):
         time_step.observation["minimap"][6]                         # selected
     ]
 
-    print(np.array(state['minimap'][0]).shape)
+    # print(np.array(state['minimap'][0]).shape)
 
     unit_type = time_step.observation["screen"][6]
     unit_type_compressed = np.zeros(unit_type.shape, dtype=np.float)
@@ -79,11 +79,15 @@ def extract_observation(time_step):
     output_ob = []
     for x in state["minimap"]:
         output_ob.extend(list(x.flatten()))
+        print(len(output_ob))
     for x in state["screen"]:
         output_ob.extend(list(x.flatten()))
+        print(len(output_ob))
     output_ob.extend(list(state['player']))
+    print(len(output_ob))
     output_ob.extend(list(state['available_actions']))
-
+    print(len(output_ob))
+    
     output_ob = [output_ob]
 
     return output_ob
