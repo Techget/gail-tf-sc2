@@ -82,6 +82,8 @@ def extract_observation(time_step):
     output_ob.extend(list(state['player']))
     output_ob.extend(list(state['available_actions']))
 
+    output_ob = [output_ob]
+
     return output_ob
 
 
