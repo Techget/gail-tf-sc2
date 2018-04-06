@@ -157,6 +157,8 @@ class TransitionClassifier(object):
       obs = np.expand_dims(obs, 0)
     if len(acs.shape) == 1:
       acs = np.expand_dims(acs, 0)
+
+    print(acs)
     feed_dict = {self.generator_obs_ph:obs, self.generator_acs_ph:acs}
     reward = sess.run(self.reward_op, feed_dict)
     return reward
