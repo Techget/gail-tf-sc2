@@ -142,7 +142,7 @@ def learn(env, policy_func, *,
     ob_space = env.observation_space
     ac_space = env.action_space
 
-    # ob_space = (5*60*60, 9*60*60 , 11 , 524) # minimap, screen, info, available_actions
+    # ob_space = (5*60*60, 10*60*60 , 11 , 524) # minimap, screen, info, available_actions
     # ac_space = (524, 2) # actions argument
     
     pi = policy_func("pi", ob_space, ac_space)

@@ -18,7 +18,7 @@ class TransitionClassifier(object):
     self.isize = 11
     self.available_action_size = 524
     from gym import spaces
-    self.ob_space = spaces.Box(low=-1000, high=10000, shape=(5*60*60 + 9*60*60 + 11 + 524,))
+    self.ob_space = spaces.Box(low=-1000, high=10000, shape=(5*60*60 + 10*60*60 + 11 + 524,))
     self.ac_space = spaces.Discrete(524) 
     self.observation_shape = self.ob_space.shape
     self.actions_shape = (1,)

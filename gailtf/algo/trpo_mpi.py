@@ -70,6 +70,9 @@ def extract_observation(time_step):
         time_step.observation["screen"][11]                     # unit_density
     ]
 
+    for i in range(0, len(state['screen'])):
+        print(np.array(state['screen']).shape)
+
     state["player"] = time_step.observation["player"]
         
     state["available_actions"] = np.zeros(len(sc_action.FUNCTIONS))
@@ -79,14 +82,14 @@ def extract_observation(time_step):
     output_ob = []
     for x in state["minimap"]:
         output_ob.extend(list(x.flatten()))
-    print(len(output_ob))
+    # print(len(output_ob))
     for x in state["screen"]:
         output_ob.extend(list(x.flatten()))
-    print(len(output_ob))
+    # print(len(output_ob))
     output_ob.extend(list(state['player']))
-    print(len(output_ob))
+    # print(len(output_ob))
     output_ob.extend(list(state['available_actions']))
-    print(len(output_ob))
+    # print(len(output_ob))
 
     output_ob = [output_ob]
 
@@ -99,7 +102,7 @@ def traj_segment_generator(pi, discriminator, horizon, stochastic):
     t = 0
     # ac = env.action_space.sample()
     from gym import spaces
-    ob_space = spaces.Box(low=-1000, high=10000, shape=(5*60*60 + 9*60*60 + 11 + 524,))
+    ob_space = spaces.Box(low=-1000, high=10000, shape=(5*60*60 + 10*60*60 + 11 + 524,))
     ac_space = spaces.Discrete(524)
     ac = ac_space.sample()
 
@@ -214,10 +217,10 @@ def learn(policy_func, discriminator, expert_dataset,
     np.set_printoptions(precision=3)    
     # Setup losses and stuff
     # ----------------------------------------
-    # ob_space = np.array([5*60*60 + 9*60*60 + 11 + 524]) # env.observation_space
+    # ob_space = np.array([5*60*60 + 10*60*60 + 11 + 524]) # env.observation_space
     # ac_space = np.array([1]) #env.action_space
     from gym import spaces
-    ob_space = spaces.Box(low=-1000, high=10000, shape=(5*60*60 + 9*60*60 + 11 + 524,))
+    ob_space = spaces.Box(low=-1000, high=10000, shape=(5*60*60 + 10*60*60 + 11 + 524,))
     ac_space = spaces.Discrete(524)
     pi = policy_func("pi", ob_space, ac_space, reuse=(pretrained_weight!=None))
     oldpi = policy_func("oldpi", ob_space, ac_space)
