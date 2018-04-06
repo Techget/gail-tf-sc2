@@ -74,7 +74,7 @@ def traj_segment_generator(pi, discriminator, horizon, stochastic):
     ac = ac_space.sample()
 
     env = sc2_env.SC2Env(
-        map_name='Odyssey LE',
+        map_name= 'Odyssey',  #'Odyssey LE'
         agent_race="T", #Terran
         bot_race="T",
         difficulty=1,
