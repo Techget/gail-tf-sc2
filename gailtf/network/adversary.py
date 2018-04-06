@@ -87,32 +87,26 @@ class TransitionClassifier(object):
       mconv1 = layers.conv2d(tf.reshape(minimap, [0,self.msize,self.msize,5]),
                    num_outputs=16,
                    kernel_size=5,
-                   stride=1,
-                   scope='mconv1')
+                   stride=1)
       mconv2 = layers.conv2d(mconv1,
                    num_outputs=32,
                    kernel_size=3,
-                   stride=1,
-                   scope='mconv2')
+                   stride=1)
       sconv1 = layers.conv2d(tf.reshape(screen, [0,self.ssize, self.ssize,9]),
                    num_outputs=16,
                    kernel_size=5,
-                   stride=1,
-                   scope='sconv1')
+                   stride=1)
       sconv2 = layers.conv2d(sconv1,
                    num_outputs=32,
                    kernel_size=3,
-                   stride=1,
-                   scope='sconv2')
+                   stride=1)
       info_fc = layers.fully_connected(layers.flatten(info),
                    num_outputs=256,
-                   activation_fn=tf.tanh,
-                   scope='info_fc')
+                   activation_fn=tf.tanh)
 
       aa_fc = layers.fully_connected(layers.flatten(available_action),
                    num_outputs=256,
-                   activation_fn=tf.tanh,
-                   scope='aa_fc')
+                   activation_fn=tf.tanh)
 
       # feat_conv = tf.concat([mconv2, sconv2], axis=3)
       # spatial_action = layers.conv2d(feat_conv,
