@@ -111,8 +111,8 @@ def learn(policy_func, discriminator, expert_dataset,
     np.set_printoptions(precision=3)    
     # Setup losses and stuff
     # ----------------------------------------
-    ob_space = (5*60*60 + 9*60*60 + 11 + 524,) # env.observation_space
-    ac_space = (1,) #env.action_space
+    ob_space = np.array([5*60*60 + 9*60*60 + 11 + 524]) # env.observation_space
+    ac_space = np.array([1]) #env.action_space
     from gym import spaces
     ac_space = spaces.Discrete(524)
     pi = policy_func("pi", ob_space, ac_space, reuse=(pretrained_weight!=None))
