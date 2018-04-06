@@ -68,11 +68,9 @@ class SC2Dataset(object):
                 int(loaded_replay_info_json['player_info'][1]['playerResult']['playerId']):
                 int(loaded_replay_info_json['player_info'][0]['playerResult']['playerId'])
 
-        # end = self.loaded_replay_pointer + batch_size
         obs = []
         acs = []
-        temp_index = self.loaded_replay_pointer
-        for i in range(temp_index, len(self.loaded_replay['state'])):
+        for i in range(self.loaded_replay_pointer, len(self.loaded_replay['state'])):
             if len(obs) >= batch_size:
                 break
             self.loaded_replay_pointer += 1
@@ -98,10 +96,10 @@ class SC2Dataset(object):
                     obs.append(temp_obs)
                     acs.append(a[0])
 
-
-        if(self.loaded_replay_pointer == len(self.loaded_replay['state'])):
+        if(self.loaded_replay_pointer == len(self.loaded_replay['state'])) - 1:
             self.loaded_replay = None
             self.loaded_replay_pointer = 0
+            self.win_player_id = None
 
         return obs, acs
 

@@ -5,12 +5,13 @@ from gailtf.baselines import bench
 import os.path as osp
 from gailtf.baselines import logger
 from gailtf.dataset.mujoco import Mujoco_Dset
+from gailtf.dataset.sc2_dataset import SC2Dataset
 import numpy as np
 import ipdb
 
 def argsparser():
     parser = argparse.ArgumentParser("Tensorflow Implementation of GAIL")
-    parser.add_argument('--env_id', help='environment ID', default='Hopper-v1')
+    parser.add_argument('--env_id', help='environment ID', default='sc2')
     parser.add_argument('--seed', help='RNG seed', type=int, default=0)
     parser.add_argument('--num_cpu', help='number of cpu to used', type=int, default=1)
     parser.add_argument('--expert_path', type=str, default='baselines/ppo1/deterministic.ppo.Hopper.0.00.pkl')
@@ -74,6 +75,7 @@ def main(args):
     args.checkpoint_dir = osp.join(args.checkpoint_dir, task_name)
     args.log_dir = osp.join(args.log_dir, task_name)
     # dataset = Mujoco_Dset(expert_path=args.expert_path, ret_threshold=args.ret_threshold, traj_limitation=args.traj_limitation)
+    dataset = SC2Dataset(expert_path=args.expert_path)
     pretrained_weight = None
     # if (args.pretrained and args.task == 'train') or args.algo == 'bc':
     #     # Pretrain with behavior cloning
