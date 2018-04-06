@@ -98,7 +98,7 @@ class TransitionClassifier(object):
                    num_outputs=32,
                    kernel_size=3,
                    stride=1)
-      sconv1 = layers.conv2d(tf.reshape(screen, [-1,self.ssize, self.ssize,9]),
+      sconv1 = layers.conv2d(tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
                    num_outputs=16,
                    kernel_size=5,
                    stride=1)
