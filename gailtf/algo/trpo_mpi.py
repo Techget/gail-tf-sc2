@@ -22,6 +22,8 @@ from pysc2.lib import features
 from pysc2.lib import FUNCTIONS
 from pysc2.lib import static_data
 
+import math
+
 def extract_observation(time_step):
     state = {}
 
