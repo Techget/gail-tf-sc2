@@ -92,6 +92,7 @@ def extract_observation(time_step):
     # print(len(output_ob))
 
     output_ob = [output_ob]
+    output_ob = np.array(output_ob)
 
     return output_ob
 
