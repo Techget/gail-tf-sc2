@@ -23,7 +23,7 @@ class TransitionClassifier(object):
     self.observation_shape = self.ob_space.shape
     self.actions_shape = self.ac_space.shape
     # self.actions_shape = (1,)
-    # self.observation_shape = np.array([5*self.msize*self.msize + 9*self.ssize*self.ssize + self.isize + self.available_action_size,]) # minimap, screen, info, available_actions
+    # self.observation_shape = np.array([5*self.msize*self.msize + 10*self.ssize*self.ssize + self.isize + self.available_action_size,]) # minimap, screen, info, available_actions
     # self.actions_shape = np.array([1,]) # actions argument, one value, range in (0, 524)
 
     # self.input_shape = tuple([o+a for o,a in zip(self.observation_shape, self.actions_shape)])
@@ -36,7 +36,7 @@ class TransitionClassifier(object):
 
     
     # self.minimap = tf.placeholder(tf.float32, [None, 5, self.msize, self.msize], name='minimap')
-    # self.screen = tf.placeholder(tf.float32, [None, 9, self.ssize, self.ssize], name='screen')
+    # self.screen = tf.placeholder(tf.float32, [None, 10, self.ssize, self.ssize], name='screen')
     # self.info = tf.placeholder(tf.float32, [None, self.isize], name='info')
     # self.available_action = tf.placeholder(tf.float32, [None, self.available_action_size], name='available_action')
 
@@ -86,12 +86,12 @@ class TransitionClassifier(object):
       # obs = (obs_ph - self.obs_rms.mean) / self.obs_rms.std
 
       minimap = obs_ph[:, 0:5*self.msize*self.msize]
-      screen = obs_ph[:, 5*self.msize*self.msize:9*self.ssize*self.ssize]
-      info = obs_ph[:, (5*self.msize*self.msize+9*self.ssize*self.ssize):(5*self.msize*self.msize+9*self.ssize*self.ssize+self.isize)]
-      available_action = obs_ph[:, (5*self.msize*self.msize+9*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+9*self.ssize*self.ssize+self.isize+self.available_action_size)]
+      screen = obs_ph[:, 5*self.msize*self.msize:10*self.ssize*self.ssize]
+      info = obs_ph[:, (5*self.msize*self.msize+10*self.ssize*self.ssize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize)]
+      available_action = obs_ph[:, (5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize+self.available_action_size)]
 
       mconv1 = layers.conv2d(tf.reshape(minimap, [-1,self.msize,self.msize,5]),
-                   num_outputs=16,
+                   num_outputs=32,
                    kernel_size=5,
                    stride=1)
       mconv2 = layers.conv2d(mconv1,
@@ -99,7 +99,7 @@ class TransitionClassifier(object):
                    kernel_size=3,
                    stride=1)
       sconv1 = layers.conv2d(tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
-                   num_outputs=16,
+                   num_outputs=32,
                    kernel_size=5,
                    stride=1)
       sconv2 = layers.conv2d(sconv1,
