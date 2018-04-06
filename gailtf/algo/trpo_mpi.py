@@ -38,6 +38,8 @@ def extract_observation(time_step):
         time_step.observation["minimap"][6]                         # selected
     ]
 
+    print(np.array(state['minimap'][0]).shape)
+
     unit_type = time_step.observation["screen"][6]
     unit_type_compressed = np.zeros(unit_type.shape, dtype=np.float)
     for y in range(len(unit_type)):
