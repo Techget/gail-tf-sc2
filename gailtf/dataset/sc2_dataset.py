@@ -55,8 +55,8 @@ class SC2Dataset(object):
             self.loaded_replay = pickle.load(open(self.replay_files[self.replay_files_index], "rb"))
             loaded_replay_info_json = MessageToJson(self.loaded_replay['info'])
 
-            if loaded_replay_info_json['mapName'] != self.map_used or 
-                loaded_replay_info_json['player_info'][0]['playerInfo']['raceActual'] != self.race_used or
+            if loaded_replay_info_json['mapName'] != self.map_used or \
+                loaded_replay_info_json['player_info'][0]['playerInfo']['raceActual'] != self.race_used or \
                 loaded_replay_info_json['player_info'][1]['playerInfo']['raceActual'] != self.race_used:
                 self.loaded_replay = None
                 self.replay_files_index += 1
