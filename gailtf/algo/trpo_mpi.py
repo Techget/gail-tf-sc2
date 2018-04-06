@@ -16,7 +16,7 @@ from pysc2.env import available_actions_printer
 from pysc2.env import sc2_env
 from pysc2.lib import stopwatch
 
-def extract_observation(timestep):
+def extract_observation(time_step):
     state = {}
 
     state["minimap"] = [
