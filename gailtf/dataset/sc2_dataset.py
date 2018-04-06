@@ -81,7 +81,7 @@ class SC2Dataset(object):
                 if len(self.loaded_replay['state'][i]['actions']) == 0:
                     continue
 
-                for x in self.loaded_replay['state'][i]['minimap']
+                for x in self.loaded_replay['state'][i]['minimap']:
                     temp_obs.extend(list(x.flatten()))
 
                 for x in self.loaded_replay['state'][i]['screen']:
