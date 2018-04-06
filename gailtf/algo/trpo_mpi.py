@@ -16,6 +16,12 @@ from pysc2.env import available_actions_printer
 from pysc2.env import sc2_env
 from pysc2.lib import stopwatch
 
+from pysc2.lib import actions as sc_action
+from pysc2.lib import static_data
+from pysc2.lib import features
+from pysc2.lib import FUNCTIONS
+from pysc2.lib import static_data
+
 def extract_observation(time_step):
     state = {}
 
