@@ -87,7 +87,7 @@ def traj_segment_generator(pi, discriminator, horizon, stochastic):
     rew = 0.0
     true_rew = 0.0
     timestep = env.reset()
-    ob = extract_observation
+    ob = extract_observation(timestep)
 
     cur_ep_ret = 0
     cur_ep_len = 0

@@ -53,7 +53,7 @@ class MlpPolicy(object):
         self._act = U.function([stochastic, ob], [ac, self.vpred])
 
     def act(self, stochastic, ob):
-        print('~~~~',ob)
+        # print('~~~~',ob)
         ac1, vpred1 =  self._act(stochastic, ob[None])
         return ac1[0], vpred1[0]
     def get_variables(self):
