@@ -19,7 +19,7 @@ def argsparser():
     parser.add_argument('--env_id', help='environment ID', default='sc2')
     parser.add_argument('--seed', help='RNG seed', type=int, default=0)
     parser.add_argument('--num_cpu', help='number of cpu to used', type=int, default=1)
-    parser.add_argument('--expert_path', type=str, default='baselines/ppo1/deterministic.ppo.Hopper.0.00.pkl')
+    parser.add_argument('--expert_path', type=str, default='~/pysc2-replay/data/')
     parser.add_argument('--checkpoint_dir', help='the directory to save model', default='checkpoint')
     parser.add_argument('--log_dir', help='the directory to save log file', default='log')
     parser.add_argument('--load_model_path', help='if provided, load the model', type=str, default=None)
