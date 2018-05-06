@@ -19,7 +19,7 @@ def argsparser():
     parser.add_argument('--env_id', help='environment ID', default='sc2')
     parser.add_argument('--seed', help='RNG seed', type=int, default=0)
     parser.add_argument('--num_cpu', help='number of cpu to used', type=int, default=1)
-    parser.add_argument('--expert_path', type=str, default='/home/xuan/pysc2-replay/data')
+    parser.add_argument('--expert_path', type=str, default='/home/xuan/pysc2-replay/data_full/')
     parser.add_argument('--checkpoint_dir', help='the directory to save model', default='checkpoint')
     parser.add_argument('--log_dir', help='the directory to save log file', default='log')
     parser.add_argument('--load_model_path', help='if provided, load the model', type=str, default=None)
@@ -69,6 +69,16 @@ def main(args):
     U.make_session(num_cpu=args.num_cpu).__enter__()
     # set_global_seeds(args.seed)
     # env = gym.make(args.env_id)
+    env = sc2_env.SC2Env(
+        map_name= 'Odyssey',  #'Odyssey LE'
+        agent_race="T", #Terran
+        bot_race="T",
+        difficulty=1,
+        step_mul=8,
+        screen_size_px=(64,64), # will change to (64,64)
+        minimap_size_px=(64,64),
+        visualize=False) 
+
     def policy_fn(name, ob_space, ac_space, reuse=False):
         return mlp_policy.MlpPolicy(name=name, ob_space=ob_space, ac_space=ac_space,
             reuse=reuse, hid_size=64, num_hid_layers=2)
@@ -108,7 +118,7 @@ def main(args):
         # env.seed(workerseed)
         from gailtf.algo import trpo_mpi
         if args.task == 'train':
-            trpo_mpi.learn(policy_fn, discriminator, dataset,
+            trpo_mpi.learn(env, policy_fn, discriminator, dataset,
                 pretrained=args.pretrained, pretrained_weight=pretrained_weight,
                 g_step=args.g_step, d_step=args.d_step,
                 timesteps_per_batch=32, 

@@ -13,13 +13,13 @@ class TransitionClassifier(object):
     # self.actions_shape = env.action_space.shape
 
     # print('~~~~~~~~~~', self.observation_shape, self.actions_space)
-    self.msize = 60 # change to 64 later
-    self.ssize = 60 
+    self.msize = 64 # change to 64 later
+    self.ssize = 64 
     self.isize = 11
     self.available_action_size = 524
     from gym import spaces
-    self.ob_space = spaces.Box(low=-1000, high=10000, shape=(5*60*60 + 10*60*60 + 11 + 524,))
-    self.ac_space = spaces.Discrete(524) 
+    self.ob_space = spaces.Box(low=-1000, high=10000, shape=(5*self.msize*self.msize + 10*self.ssize*self.ssize + self.isize + self.available_action_size,))
+    self.ac_space = spaces.Discrete(available_action_size) 
     self.observation_shape = self.ob_space.shape
     self.actions_shape = self.ac_space.shape
     # self.actions_shape = (1,)

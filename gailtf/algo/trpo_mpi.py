@@ -20,7 +20,7 @@ from pysc2.lib import actions as sc_action
 from pysc2.lib import static_data
 from pysc2.lib import features
 from pysc2.lib import FUNCTIONS
-from pysc2.lib import static_data
+# from pysc2.lib import static_data
 
 import math
 
@@ -90,35 +90,25 @@ def extract_observation(time_step):
     output_ob = [output_ob]
     output_ob = np.array(output_ob)
 
-    return output_ob
+    return state, output_ob
 
 
 
-def traj_segment_generator(pi, discriminator, horizon, stochastic):
+def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
     # Initialize state variables
     t = 0
     # ac = env.action_space.sample()
     from gym import spaces
-    ob_space = spaces.Box(low=-1000, high=10000, shape=(5*60*60 + 10*60*60 + 11 + 524,))
+    ob_space = spaces.Box(low=-1000, high=10000, shape=(5*64*64 + 10*64*64 + 11 + 524,))
     ac_space = spaces.Discrete(524)
     ac = ac_space.sample()
-
-    env = sc2_env.SC2Env(
-        map_name= 'Odyssey',  #'Odyssey LE'
-        agent_race="T", #Terran
-        bot_race="T",
-        difficulty=1,
-        step_mul=8,
-        screen_size_px=(60,60), # will change to (64,64)
-        minimap_size_px=(60,60),
-        visualize=False) 
 
     new = True
     rew = 0.0
     true_rew = 0.0
     timestep = env.reset()
 
-    ob = extract_observation(timestep[0])
+    state_dict, ob = extract_observation(timestep[0])
 
     cur_ep_ret = 0
     cur_ep_len = 0
@@ -134,7 +124,32 @@ def traj_segment_generator(pi, discriminator, horizon, stochastic):
     vpreds = np.zeros(horizon, 'float32')
     news = np.zeros(horizon, 'int32')
     acs = np.array([ac for _ in range(horizon)])
-    prevacs = acs.copy()
+    prevacs = acs.copy()  
+
+    new_saver = tf.train.import_meta_graph('my_test_model-1000.meta')
+    new_saver.restore(sess, tf.train.latest_checkpoint('./'))
+    original_graph = tf.get_default_graph()
+
+    sess=tf.Session(graph=original_graph)
+    # placeholder
+    minimap_placeholder = graph.get_tensor_by_name("minimap_placeholder:0")
+    screen_placeholder = graph.get_tensor_by_name("screen_placeholder:0")
+    user_info_placeholder = graph.get_tensor_by_name("user_info_placeholder:0")
+    action_placeholder = graph.get_tensor_by_name("action_placeholder:0")
+    # ops
+    screen_output_pred = graph.get_tensor_by_name("screen_output_pred:0")
+    minimap_output_pred = graph.get_tensor_by_name("minimap_output_pred:0")
+    screen2_output_pred = graph.get_tensor_by_name("screen2_output_pred:0")
+    queued_pred_cls = graph.get_tensor_by_name("queued_pred_cls:0")
+    control_group_act_cls = graph.get_tensor_by_name("control_group_act_cls:0")
+    control_group_id_output = graph.get_tensor_by_name("control_group_id_output:0")
+    select_point_act_cls = graph.get_tensor_by_name("select_point_act_cls:0")
+    select_add_pred_cls = graph.get_tensor_by_name("select_add_pred_cls:0")
+    select_unit_act_cls = graph.get_tensor_by_name("select_unit_act_cls:0")
+    select_unit_id_output = graph.get_tensor_by_name("select_unit_id_output:0")
+    select_worker_cls = graph.get_tensor_by_name("select_worker_cls:0")
+    build_queue_id_output = graph.get_tensor_by_name("build_queue_id_output:0")
+    unload_id_output = graph.get_tensor_by_name("unload_id_output:0")
 
     while True:
         prevac = ac
@@ -146,7 +161,7 @@ def traj_segment_generator(pi, discriminator, horizon, stochastic):
             yield {"ob" : obs, "rew" : rews, "vpred" : vpreds, "new" : news,
                     "ac" : acs, "prevac" : prevacs, "nextvpred": vpred * (1 - new),
                     "ep_rets" : ep_rets, "ep_lens" : ep_lens, "ep_true_rets": ep_true_rets}
-            _, vpred = pi.act(stochastic, ob)            
+            _, vpred = pi.act(stochastic, ob)
             # Be careful!!! if you change the downstream algorithm to aggregate
             # several of these batches, then be sure to do a deepcopy
             ep_rets = []
@@ -160,8 +175,118 @@ def traj_segment_generator(pi, discriminator, horizon, stochastic):
         prevacs[i] = prevac
 
         rew = discriminator.get_reward(ob, ac)
-        timestep = env.step(ac)
-        ob = extract_observation(timestep[0])
+
+        print('in traj_segment_generator, ac:', ac)
+
+        # get action arguments with action_id
+        function_type = pysc2_actions.FUNCTIONS[ac].function_type.__name__
+        one_hot_ac = np.zeros((1, 524)) # shape will be 1*254
+        one_hot_ac[np.arange(1), [ac]] = 1
+        if ft[i] == 'move_camera':
+            _, loss_ = sess.run([],
+                {minimap_placeholder: [m[i]], 
+                screen_placeholder: [s[i]], 
+                action_placeholder: [a[i]], 
+                user_info_placeholder: [u[i]], 
+                arg_minimap_replay_ouput: [y[i][0]]})
+        elif ft[i] == 'select_point':
+            _, loss_ = sess.run([train_ops[ft[i]], Function_type_losses[ft[i]]],
+                {minimap_placeholder: [m[i]], 
+                screen_placeholder: [s[i]], 
+                action_placeholder: [a[i]], 
+                user_info_placeholder: [u[i]], 
+                arg_select_point_act_output: [y[i][0]],
+                arg_screen_replay_ouput: [y[i][1]]})
+        elif ft[i] == 'select_rect':
+            _, loss_ = sess.run([train_ops[ft[i]], Function_type_losses[ft[i]]],
+                {minimap_placeholder: [m[i]], 
+                screen_placeholder: [s[i]], 
+                action_placeholder: [a[i]], 
+                user_info_placeholder: [u[i]], 
+                arg_select_add_output: [y[i][0]],
+                arg_screen_replay_ouput: [y[i][1]],
+                arg_screen2_replay_ouput: [y[i][2]]})
+        elif ft[i] == 'select_unit':
+            _, loss_ = sess.run([train_ops[ft[i]], Function_type_losses[ft[i]]],
+                {minimap_placeholder: [m[i]], 
+                screen_placeholder: [s[i]], 
+                action_placeholder: [a[i]], 
+                user_info_placeholder:[u[i]], 
+                arg_select_unit_act_output: [y[i][0]],
+                arg_select_unit_id_output: [y[i][1]]})
+        elif ft[i] == 'control_group':
+            _, loss_ = sess.run([train_ops[ft[i]], Function_type_losses[ft[i]]],
+                {minimap_placeholder: [m[i]], 
+                screen_placeholder: [s[i]], 
+                action_placeholder: [a[i]], 
+                user_info_placeholder:[u[i]], 
+                arg_control_group_act_replay_output: [y[i][0]],
+                arg_control_group_id_output: [y[i][1]]})
+        elif ft[i] == 'select_idle_worker':
+            _, loss_ = sess.run([train_ops[ft[i]], Function_type_losses[ft[i]]],
+                {minimap_placeholder: [m[i]], 
+                screen_placeholder: [s[i]], 
+                action_placeholder: [a[i]], 
+                user_info_placeholder:[u[i]], 
+                arg_select_worker_output: [y[i][0]]})
+        elif ft[i] == 'select_army':
+            _, loss_ = sess.run([train_ops[ft[i]], Function_type_losses[ft[i]]],
+                {minimap_placeholder: [m[i]], 
+                screen_placeholder: [s[i]], 
+                action_placeholder: [a[i]], 
+                user_info_placeholder:[u[i]], 
+                arg_select_add_output: [y[i][0]]})
+        elif ft[i] == 'select_warp_gates':
+             _, loss_ = sess.run([train_ops[ft[i]], Function_type_losses[ft[i]]],
+                {minimap_placeholder: [m[i]], 
+                screen_placeholder: [s[i]], 
+                action_placeholder: [a[i]], 
+                user_info_placeholder:[u[i]], 
+                arg_select_add_output: [y[i][0]]})
+        elif ft[i] == 'unload':
+            _, loss_ = sess.run([train_ops[ft[i]], Function_type_losses[ft[i]]],
+                {minimap_placeholder: [m[i]], 
+                screen_placeholder: [s[i]], 
+                action_placeholder: [a[i]], 
+                user_info_placeholder:[u[i]], 
+                arg_unload_id_output: [y[i][0]]})
+        elif ft[i] == 'build_queue':
+            _, loss_ = sess.run([train_ops[ft[i]], Function_type_losses[ft[i]]],
+                {minimap_placeholder: [m[i]], 
+                screen_placeholder: [s[i]], 
+                action_placeholder: [a[i]], 
+                user_info_placeholder:[u[i]], 
+                arg_build_queue_id_output: [y[i][0]]})
+        elif ft[i] == 'cmd_quick':
+            _, loss_ = sess.run([train_ops[ft[i]], Function_type_losses[ft[i]]],
+                {minimap_placeholder: [m[i]], 
+                screen_placeholder: [s[i]], 
+                action_placeholder: [a[i]], 
+                user_info_placeholder:[u[i]], 
+                arg_queued_replay_output: [y[i][0]]})
+        elif ft[i] == 'cmd_screen':
+            _, loss_ = sess.run([train_ops[ft[i]], Function_type_losses[ft[i]]],
+                {minimap_placeholder: [m[i]], 
+                screen_placeholder: [s[i]], 
+                action_placeholder: [a[i]], 
+                user_info_placeholder:[u[i]], 
+                arg_queued_replay_output: [y[i][0]],
+                arg_screen_replay_ouput: [y[i][1]]})
+        elif ft[i] == 'cmd_minimap':
+            _, loss_ = sess.run([train_ops[ft[i]], Function_type_losses[ft[i]]],
+                {minimap_placeholder: [m[i]], 
+                screen_placeholder: [s[i]], 
+                action_placeholder: [a[i]], 
+                user_info_placeholder:[u[i]], 
+                arg_queued_replay_output: [y[i][0]],
+                arg_minimap_replay_ouput: [y[i][1]]})
+        else:
+            print("unknown FUNCTION types !!") 
+
+
+        ac_with_param = sc_action.FunctionCall(ac, ac_args)
+        timestep = env.step(ac_with_param)
+        state_dict, ob = extract_observation(timestep[0])
         true_rew = timestep[0].reward
         new = timestep[0].last() # check is Done.
         # ob, true_rew, new, _ = 
@@ -178,7 +303,8 @@ def traj_segment_generator(pi, discriminator, horizon, stochastic):
             cur_ep_ret = 0
             cur_ep_true_ret = 0
             cur_ep_len = 0
-            ob = env.reset()
+            timestep = env.reset()
+            state_dict, ob = extract_observation(timestep[0])
         t += 1
 
 def add_vtarg_and_adv(seg, gamma, lam):
@@ -194,7 +320,7 @@ def add_vtarg_and_adv(seg, gamma, lam):
         gaelam[t] = lastgaelam = delta + gamma * lam * nonterminal * lastgaelam
     seg["tdlamret"] = seg["adv"] + seg["vpred"]
 
-def learn(policy_func, discriminator, expert_dataset,
+def learn(env, policy_func, discriminator, expert_dataset,
         pretrained, pretrained_weight, *,
         g_step, d_step,
         timesteps_per_batch, # what to train on
@@ -214,10 +340,10 @@ def learn(policy_func, discriminator, expert_dataset,
     np.set_printoptions(precision=3)    
     # Setup losses and stuff
     # ----------------------------------------
-    # ob_space = np.array([5*60*60 + 10*60*60 + 11 + 524]) # env.observation_space
+    # ob_space = np.array([5*64*64 + 10*64*64 + 11 + 524]) # env.observation_space
     # ac_space = np.array([1]) #env.action_space
     from gym import spaces
-    ob_space = spaces.Box(low=-1000, high=10000, shape=(5*60*60 + 10*60*60 + 11 + 524,))
+    ob_space = spaces.Box(low=-1000, high=10000, shape=(5*64*64 + 10*64*64 + 11 + 524,))
     ac_space = spaces.Discrete(524)
     pi = policy_func("pi", ob_space, ac_space, reuse=(pretrained_weight!=None))
     oldpi = policy_func("oldpi", ob_space, ac_space)
@@ -300,7 +426,7 @@ def learn(policy_func, discriminator, expert_dataset,
 
     # Prepare for rollouts
     # ----------------------------------------
-    seg_gen = traj_segment_generator(pi, discriminator, timesteps_per_batch, stochastic=True)
+    seg_gen = traj_segment_generator(pi, env, discriminator, timesteps_per_batch, stochastic=True)
 
     episodes_so_far = 0
     timesteps_so_far = 0
