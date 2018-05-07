@@ -37,13 +37,13 @@ class Dset(object):
 
 class SC2Dataset(object):
     def __init__(self, expert_path, train_fraction=0.7, ret_threshold=None, traj_limitation=np.inf, randomize=True):
-        self.map_used = 'Odyssey LE'
-        self.race_used = 'Terran'
+        # self.map_used = 'Odyssey LE'
+        # self.race_used = 'Terran'
 
         self.replay_files = []
         for file in os.listdir(expert_path):
             if file.endswith(".p"):
-                self.replay_files.append(file)
+                self.replay_files.append(expert_path+file)
 
         self.replay_files_index = 0
         self.loaded_replay = None
@@ -52,12 +52,19 @@ class SC2Dataset(object):
 
     def get_next_batch(self, batch_size, split=None):
         while loaded_replay == None:
-            self.loaded_replay = pickle.load(open(self.replay_files[self.replay_files_index], "rb"))
+            if self.replay_files_index > len(self.replay_files):
+                self.replay_files_index = 0
+
+            try:
+                self.loaded_replay = pickle.load(open(self.replay_files[self.replay_files_index], "rb"))
+            except:
+                self.replay_files_index += 1
+                self.loaded_replay = None
+                continue
+
             loaded_replay_info_json = MessageToJson(self.loaded_replay['info'])
 
-            if loaded_replay_info_json['mapName'] != self.map_used or \
-                loaded_replay_info_json['player_info'][0]['playerInfo']['raceActual'] != self.race_used or \
-                loaded_replay_info_json['player_info'][1]['playerInfo']['raceActual'] != self.race_used:
+            if loaded_replay_info_json['player_info'][0]['playerResult']['result'] == 'Tie':
                 self.loaded_replay = None
                 self.replay_files_index += 1
                 continue
@@ -96,10 +103,16 @@ class SC2Dataset(object):
                     obs.append(temp_obs)
                     acs.append(a[0])
 
-        if(self.loaded_replay_pointer == len(self.loaded_replay['state'])) - 1:
+        if self.loaded_replay_pointer == len(self.loaded_replay['state']):
             self.loaded_replay = None
             self.loaded_replay_pointer = 0
             self.win_player_id = None
+
+        if obs == [] or acs ==[]:
+            self.loaded_replay = None
+            self.loaded_replay_pointer = 0
+            self.win_player_id = None
+            return self.get_next_batch(batch_size, split)
 
         return obs, acs
 

@@ -132,24 +132,24 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
 
     sess=tf.Session(graph=original_graph)
     # placeholder
-    minimap_placeholder = graph.get_tensor_by_name("minimap_placeholder:0")
-    screen_placeholder = graph.get_tensor_by_name("screen_placeholder:0")
-    user_info_placeholder = graph.get_tensor_by_name("user_info_placeholder:0")
-    action_placeholder = graph.get_tensor_by_name("action_placeholder:0")
+    minimap_placeholder = original_graph.get_tensor_by_name("minimap_placeholder:0")
+    screen_placeholder = original_graph.get_tensor_by_name("screen_placeholder:0")
+    user_info_placeholder = original_graph.get_tensor_by_name("user_info_placeholder:0")
+    action_placeholder = original_graph.get_tensor_by_name("action_placeholder:0")
     # ops
-    screen_output_pred = graph.get_tensor_by_name("screen_output_pred:0")
-    minimap_output_pred = graph.get_tensor_by_name("minimap_output_pred:0")
-    screen2_output_pred = graph.get_tensor_by_name("screen2_output_pred:0")
-    queued_pred_cls = graph.get_tensor_by_name("queued_pred_cls:0")
-    control_group_act_cls = graph.get_tensor_by_name("control_group_act_cls:0")
-    control_group_id_output = graph.get_tensor_by_name("control_group_id_output:0")
-    select_point_act_cls = graph.get_tensor_by_name("select_point_act_cls:0")
-    select_add_pred_cls = graph.get_tensor_by_name("select_add_pred_cls:0")
-    select_unit_act_cls = graph.get_tensor_by_name("select_unit_act_cls:0")
-    select_unit_id_output = graph.get_tensor_by_name("select_unit_id_output:0")
-    select_worker_cls = graph.get_tensor_by_name("select_worker_cls:0")
-    build_queue_id_output = graph.get_tensor_by_name("build_queue_id_output:0")
-    unload_id_output = graph.get_tensor_by_name("unload_id_output:0")
+    screen_output_pred = original_graph.get_tensor_by_name("screen_output_pred:0")
+    minimap_output_pred = original_graph.get_tensor_by_name("minimap_output_pred:0")
+    screen2_output_pred = original_graph.get_tensor_by_name("screen2_output_pred:0")
+    queued_pred_cls = original_graph.get_tensor_by_name("queued_pred_cls:0")
+    control_group_act_cls = original_graph.get_tensor_by_name("control_group_act_cls:0")
+    control_group_id_output = original_graph.get_tensor_by_name("control_group_id_output:0")
+    select_point_act_cls = original_graph.get_tensor_by_name("select_point_act_cls:0")
+    select_add_pred_cls = original_graph.get_tensor_by_name("select_add_pred_cls:0")
+    select_unit_act_cls = original_graph.get_tensor_by_name("select_unit_act_cls:0")
+    select_unit_id_output = original_graph.get_tensor_by_name("select_unit_id_output:0")
+    select_worker_cls = original_graph.get_tensor_by_name("select_worker_cls:0")
+    build_queue_id_output = original_graph.get_tensor_by_name("build_queue_id_output:0")
+    unload_id_output = original_graph.get_tensor_by_name("unload_id_output:0")
 
     while True:
         prevac = ac
@@ -182,107 +182,64 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
         function_type = pysc2_actions.FUNCTIONS[ac].function_type.__name__
         one_hot_ac = np.zeros((1, 524)) # shape will be 1*254
         one_hot_ac[np.arange(1), [ac]] = 1
-        if ft[i] == 'move_camera':
-            _, loss_ = sess.run([],
-                {minimap_placeholder: [m[i]], 
-                screen_placeholder: [s[i]], 
-                action_placeholder: [a[i]], 
-                user_info_placeholder: [u[i]], 
-                arg_minimap_replay_ouput: [y[i][0]]})
-        elif ft[i] == 'select_point':
-            _, loss_ = sess.run([train_ops[ft[i]], Function_type_losses[ft[i]]],
-                {minimap_placeholder: [m[i]], 
-                screen_placeholder: [s[i]], 
-                action_placeholder: [a[i]], 
-                user_info_placeholder: [u[i]], 
-                arg_select_point_act_output: [y[i][0]],
-                arg_screen_replay_ouput: [y[i][1]]})
-        elif ft[i] == 'select_rect':
-            _, loss_ = sess.run([train_ops[ft[i]], Function_type_losses[ft[i]]],
-                {minimap_placeholder: [m[i]], 
-                screen_placeholder: [s[i]], 
-                action_placeholder: [a[i]], 
-                user_info_placeholder: [u[i]], 
-                arg_select_add_output: [y[i][0]],
-                arg_screen_replay_ouput: [y[i][1]],
-                arg_screen2_replay_ouput: [y[i][2]]})
-        elif ft[i] == 'select_unit':
-            _, loss_ = sess.run([train_ops[ft[i]], Function_type_losses[ft[i]]],
-                {minimap_placeholder: [m[i]], 
-                screen_placeholder: [s[i]], 
-                action_placeholder: [a[i]], 
-                user_info_placeholder:[u[i]], 
-                arg_select_unit_act_output: [y[i][0]],
-                arg_select_unit_id_output: [y[i][1]]})
-        elif ft[i] == 'control_group':
-            _, loss_ = sess.run([train_ops[ft[i]], Function_type_losses[ft[i]]],
-                {minimap_placeholder: [m[i]], 
-                screen_placeholder: [s[i]], 
-                action_placeholder: [a[i]], 
-                user_info_placeholder:[u[i]], 
-                arg_control_group_act_replay_output: [y[i][0]],
-                arg_control_group_id_output: [y[i][1]]})
-        elif ft[i] == 'select_idle_worker':
-            _, loss_ = sess.run([train_ops[ft[i]], Function_type_losses[ft[i]]],
-                {minimap_placeholder: [m[i]], 
-                screen_placeholder: [s[i]], 
-                action_placeholder: [a[i]], 
-                user_info_placeholder:[u[i]], 
-                arg_select_worker_output: [y[i][0]]})
-        elif ft[i] == 'select_army':
-            _, loss_ = sess.run([train_ops[ft[i]], Function_type_losses[ft[i]]],
-                {minimap_placeholder: [m[i]], 
-                screen_placeholder: [s[i]], 
-                action_placeholder: [a[i]], 
-                user_info_placeholder:[u[i]], 
-                arg_select_add_output: [y[i][0]]})
-        elif ft[i] == 'select_warp_gates':
-             _, loss_ = sess.run([train_ops[ft[i]], Function_type_losses[ft[i]]],
-                {minimap_placeholder: [m[i]], 
-                screen_placeholder: [s[i]], 
-                action_placeholder: [a[i]], 
-                user_info_placeholder:[u[i]], 
-                arg_select_add_output: [y[i][0]]})
-        elif ft[i] == 'unload':
-            _, loss_ = sess.run([train_ops[ft[i]], Function_type_losses[ft[i]]],
-                {minimap_placeholder: [m[i]], 
-                screen_placeholder: [s[i]], 
-                action_placeholder: [a[i]], 
-                user_info_placeholder:[u[i]], 
-                arg_unload_id_output: [y[i][0]]})
-        elif ft[i] == 'build_queue':
-            _, loss_ = sess.run([train_ops[ft[i]], Function_type_losses[ft[i]]],
-                {minimap_placeholder: [m[i]], 
-                screen_placeholder: [s[i]], 
-                action_placeholder: [a[i]], 
-                user_info_placeholder:[u[i]], 
-                arg_build_queue_id_output: [y[i][0]]})
-        elif ft[i] == 'cmd_quick':
-            _, loss_ = sess.run([train_ops[ft[i]], Function_type_losses[ft[i]]],
-                {minimap_placeholder: [m[i]], 
-                screen_placeholder: [s[i]], 
-                action_placeholder: [a[i]], 
-                user_info_placeholder:[u[i]], 
-                arg_queued_replay_output: [y[i][0]]})
-        elif ft[i] == 'cmd_screen':
-            _, loss_ = sess.run([train_ops[ft[i]], Function_type_losses[ft[i]]],
-                {minimap_placeholder: [m[i]], 
-                screen_placeholder: [s[i]], 
-                action_placeholder: [a[i]], 
-                user_info_placeholder:[u[i]], 
-                arg_queued_replay_output: [y[i][0]],
-                arg_screen_replay_ouput: [y[i][1]]})
-        elif ft[i] == 'cmd_minimap':
-            _, loss_ = sess.run([train_ops[ft[i]], Function_type_losses[ft[i]]],
-                {minimap_placeholder: [m[i]], 
-                screen_placeholder: [s[i]], 
-                action_placeholder: [a[i]], 
-                user_info_placeholder:[u[i]], 
-                arg_queued_replay_output: [y[i][0]],
-                arg_minimap_replay_ouput: [y[i][1]]})
-        else:
-            print("unknown FUNCTION types !!") 
+        ac_args = []
 
+        feed_dict = {minimap_placeholder: [state_dict['minimap']], 
+                screen_placeholder: [state_dict['screen']], 
+                action_placeholder: [one_hot_ac], 
+                user_info_placeholder: [state_dict['player']]}
+
+        if function_type == 'move_camera':
+            temp_arg1 = sess.run([minimap_output_pred], feed_dict)
+            print('move_camera temp_arg1: ', temp_arg1)
+            ac_args.append(temp_arg1)
+        elif function_type == 'select_point':
+            temp_arg1, temp_arg2 = sess.run([select_point_act_cls, screen_output_pred], feed_dict)
+            ac_args.append(temp_arg1)
+            ac_args.append(temp_arg2)
+        elif function_type == 'select_rect':
+            temp_arg1,temp_arg2, temp_arg3 = sess.run([select_add_pred_cls, screen_output_pred, screen2_output_pred],
+                feed_dict)
+            ac_args.append(temp_arg1)
+            ac_args.append(temp_arg2)
+            ac_args.append(temp_arg3)
+        elif function_type == 'select_unit':
+            temp_arg1, temp_arg2 = sess.run([select_unit_act_cls, select_unit_id_output], feed_dict)
+            ac_args.append(temp_arg1)
+            ac_args.append(temp_arg2)
+        elif function_type == 'control_group':
+            temp_arg1, temp_arg2 = sess.run([control_group_act_cls, control_group_id_output], feed_dict)
+            ac_args.append(temp_arg1)
+            ac_args.append(temp_arg2)
+        elif function_type == 'select_idle_worker':
+            temp_arg1 = sess.run([select_worker_cls], feed_dict)
+            ac_args.append(temp_arg1)
+        elif function_type == 'select_army':
+            temp_arg1 = sess.run([select_add_pred_cls], feed_dict)
+            ac_args.append(temp_arg1)
+        elif function_type == 'select_warp_gates':
+            temp_arg1 = sess.run([select_add_pred_cls], feed_dict)
+            ac_args.append(temp_arg1)
+        elif function_type == 'unload':
+            temp_arg1 = sess.run([unload_id_output], feed_dict)
+            ac_args.append(temp_arg1)
+        elif function_type == 'build_queue':
+            temp_arg1 = sess.run([build_queue_id_output], feed_dict)
+            ac_args.append(temp_arg1)
+        elif function_type == 'cmd_quick':
+            temp_arg1 = sess.run([queued_pred_cls], feed_dict)
+            print('cmd_quick queued param:', temp_arg1)
+            ac_args.append(temp_arg1)
+        elif function_type == 'cmd_screen':
+            temp_arg1, temp_arg2 = sess.run([queued_pred_cls, screen_output_pred], feed_dict)
+            ac_args.append(temp_arg1)
+        elif function_type == 'cmd_minimap':
+            temp_arg1, temp_arg2 = sess.run([queued_pred_cls, minimap_output_pred], feed_dict)
+            ac_args.append(temp_arg1)
+        elif function_type == 'no_op' or function_type == 'select_larva' or function_type == 'autocast':
+            # do nothing
+        else:
+            print("UNKNOWN FUNCTION TYPE: ", function_type)
 
         ac_with_param = sc_action.FunctionCall(ac, ac_args)
         timestep = env.step(ac_with_param)

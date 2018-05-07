@@ -54,7 +54,18 @@ class MlpPolicy(object):
 
     def act(self, stochastic, ob):
         # print('~~~~',ob)
+        available_act_one_hot = ob[-524:]
+        available_act = []
+        for i in range(0, len(available_act_one_hot)):
+            if available_act_one_hot[i] == 1.0:
+                available_act.append(i)
+        print('available_act int mlp_policy.py act function: ', available_act)
+        # try to get valid action id,
         ac1, vpred1 =  self._act(stochastic, ob)
+        while ac1[0] not in available_act:
+            print('try to loop to get action in available_act: ', ac1[0])
+            ac1, vpred1 =  self._act(True, ob) # have to use stochastic
+
         return ac1[0], vpred1[0]
     def get_variables(self):
         return tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, self.scope)
