@@ -131,7 +131,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
     # saver = tf.train.Saver()
 
     original_graph = tf.Graph()
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.2)
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5)
     param_sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options), graph=original_graph)
     # sess.run(tf.global_variables_initializer())
     saved_model_path = os.path.expanduser('~')+'/pysc2-gail-research-project/supervised_learning_baseline/saved_model/action_params'
