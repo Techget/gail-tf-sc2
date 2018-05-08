@@ -126,11 +126,15 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
     acs = np.array([ac for _ in range(horizon)])
     prevacs = acs.copy()  
 
-    new_saver = tf.train.import_meta_graph('my_test_model-1000.meta')
-    new_saver.restore(sess, tf.train.latest_checkpoint('./'))
+    # new_saver = tf.train.import_meta_graph('my_test_model-1000.meta')
+    # new_saver.restore(sess, tf.train.latest_checkpoint('./'))
+    saver = tf.train.Saver()
+    sess=tf.Session()
+    # sess.run(tf.global_variables_initializer())
+    saver.restore(sess, os.path.expanduser('~')+'/pysc2-gail-research-project/supervised_learning_baseline/saved_model')
+
     original_graph = tf.get_default_graph()
 
-    sess=tf.Session(graph=original_graph)
     # placeholder
     minimap_placeholder = original_graph.get_tensor_by_name("minimap_placeholder:0")
     screen_placeholder = original_graph.get_tensor_by_name("screen_placeholder:0")
