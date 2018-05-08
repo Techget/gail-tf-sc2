@@ -8,7 +8,7 @@ from gailtf.dataset.mujoco import Mujoco_Dset
 from gailtf.dataset.sc2_dataset import SC2Dataset
 import numpy as np
 import ipdb
-
+from pysc2.env import sc2_env
 from absl import flags
 import sys
 FLAGS = flags.FLAGS
