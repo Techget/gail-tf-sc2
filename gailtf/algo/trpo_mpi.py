@@ -150,8 +150,13 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
     action_placeholder = original_graph.get_tensor_by_name("action_placeholder:0")
     # ops
 
-    print([n.name for n in original_graph.as_graph_def().node])
-    screen_output_pred = original_graph.get_operation_by_name("screen_output_pred:0").outputs[0]
+    temp_2 = []
+    for n in original_graph.as_graph_def().node:
+        if "screen" in n.name:
+            temp_2.append(n.name)
+
+    print(temp_2)
+    screen_output_pred = original_graph.get_operation_by_name("screen_output_pred").outputs[0]
     minimap_output_pred = original_graph.get_tensor_by_name("minimap_output_pred:0")
     screen2_output_pred = original_graph.get_tensor_by_name("screen2_output_pred:0")
     queued_pred_cls = original_graph.get_tensor_by_name("queued_pred_cls:0")
