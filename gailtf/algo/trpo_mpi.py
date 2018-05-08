@@ -129,7 +129,8 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
     # new_saver = tf.train.import_meta_graph('my_test_model-1000.meta')
     # new_saver.restore(sess, tf.train.latest_checkpoint('./'))
     saver = tf.train.Saver()
-    sess=tf.Session()
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.2)
+    sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
     # sess.run(tf.global_variables_initializer())
     saver.restore(sess, os.path.expanduser('~')+'/pysc2-gail-research-project/supervised_learning_baseline/saved_model')
 
@@ -242,6 +243,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
             ac_args.append(temp_arg1)
         elif function_type == 'no_op' or function_type == 'select_larva' or function_type == 'autocast':
             # do nothing
+            pass
         else:
             print("UNKNOWN FUNCTION TYPE: ", function_type)
 
