@@ -74,7 +74,7 @@ def main(args):
     RACE_USED = "Terran"
 
     env = sc2_env.SC2Env(
-        map_name= MAP_USED,
+        map_name= 'AscensiontoAiur',
         agent_race="T", #Terran
         bot_race="T",
         difficulty=1,
