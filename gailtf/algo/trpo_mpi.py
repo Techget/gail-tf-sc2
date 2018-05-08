@@ -152,15 +152,15 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
 
     temp_2 = []
     for n in original_graph.as_graph_def().node:
-        if "screen" in n.name:
+        if "minimap" in n.name:
             temp_2.append(n.name)
 
     print(temp_2)
-    screen_output_pred = original_graph.get_operation_by_name("screen_output_pred").outputs[0]
+    control_group_act_cls = original_graph.get_tensor_by_name("control_group_act_cls:0")
+    screen_output_pred = original_graph.get_tensor_by_name("screen_output_pred:0")
     minimap_output_pred = original_graph.get_tensor_by_name("minimap_output_pred:0")
     screen2_output_pred = original_graph.get_tensor_by_name("screen2_output_pred:0")
     queued_pred_cls = original_graph.get_tensor_by_name("queued_pred_cls:0")
-    control_group_act_cls = original_graph.get_tensor_by_name("control_group_act_cls:0")
     control_group_id_output = original_graph.get_tensor_by_name("control_group_id_output:0")
     select_point_act_cls = original_graph.get_tensor_by_name("select_point_act_cls:0")
     select_add_pred_cls = original_graph.get_tensor_by_name("select_add_pred_cls:0")
