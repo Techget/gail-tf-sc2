@@ -69,8 +69,12 @@ def main(args):
     U.make_session(num_cpu=args.num_cpu).__enter__()
     # set_global_seeds(args.seed)
     # env = gym.make(args.env_id)
+
+    MAP_USED = "'Ascension to Aiur LE'"
+    RACE_USED = "Terran"
+
     env = sc2_env.SC2Env(
-        map_name= 'Odyssey',  #'Odyssey LE'
+        map_name= MAP_USED,
         agent_race="T", #Terran
         bot_race="T",
         difficulty=1,
