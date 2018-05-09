@@ -58,8 +58,8 @@ class SC2Dataset(object):
                 self.replay_files_index = 0
 
             try:
-                print(self.replay_files[self.replay_files_index])
-                self.loaded_replay = pickle.load(open(self.replay_files[self.replay_files_index], "rb"))
+                # print(self.replay_files[self.replay_files_index])
+                self.loaded_replay = pkl.load(open(self.replay_files[self.replay_files_index], "rb"))
             except:
                 print('exception')
                 self.replay_files_index += 1
