@@ -57,7 +57,7 @@ class MlpPolicy(object):
         available_act_one_hot = ob[-524:]
         # print(available_act_one_hot)
         available_act = []
-        for i in range(0, len(available_act_one_hot)):
+        for i in range(0, len(available_act_one_hot[0])):
             if available_act_one_hot[0][i] == 1.0:
                 available_act.append(i)
         print('available_act int mlp_policy.py act function: ', available_act)
