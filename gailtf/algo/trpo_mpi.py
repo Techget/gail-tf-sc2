@@ -93,12 +93,9 @@ def extract_observation(time_step):
     return state, output_ob
 
 def process_coordinates_param_nn_output(coordinate):
-    # print(coordinate)
-    # assert(len(coordinate) == 1)
     coordinate = np.array(coordinate)
     coordinate = coordinate.flatten()
-
-    coordinate = coordinate[0]
+    
     coordinate[0] = int(coordinate[0])
     coordinate[1] = int(coordinate[1])
     return coordinate
