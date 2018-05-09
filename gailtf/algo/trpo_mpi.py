@@ -210,7 +210,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
 
         feed_dict = {minimap_placeholder: [reshaped_minimap], 
                 screen_placeholder: [reshaped_screen], 
-                action_placeholder: [one_hot_ac], 
+                action_placeholder: one_hot_ac, 
                 user_info_placeholder: [state_dict['player']]}
 
         if function_type == 'move_camera':
