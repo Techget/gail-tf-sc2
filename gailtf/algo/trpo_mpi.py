@@ -93,8 +93,10 @@ def extract_observation(time_step):
     return state, output_ob
 
 def process_coordinates_param_nn_output(coordinate):
-    print(coordinate)
-    assert(len(coordinate) == 1)
+    # print(coordinate)
+    # assert(len(coordinate) == 1)
+    coordinate = np.array(coordinate)
+    coordinate = coordinate.flatten()
 
     coordinate = coordinate[0]
     coordinate[0] = int(coordinate[0])
@@ -221,8 +223,8 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
                 user_info_placeholder: [state_dict['player']]}
 
         if function_type == 'move_camera':
-            temp_arg1 = param_sess.run([minimap_output_pred], feed_dict) # temp_arg1 is look like [[x, y]]
-            # print('move_camera temp_arg1: ', temp_arg1)
+            temp_arg1 = param_sess.run([minimap_output_pred], feed_dict) # temp_arg1 is look like [[[x, y]]]
+            # shape of minimap output is different from screen and screen2
             temp_arg1 = process_coordinates_param_nn_output(temp_arg1[0])
             ac_args.append(temp_arg1)
         elif function_type == 'select_point':
