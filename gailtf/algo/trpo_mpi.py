@@ -209,51 +209,51 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
                 user_info_placeholder: [state_dict['player']]}
 
         if function_type == 'move_camera':
-            temp_arg1 = sess.run([minimap_output_pred], feed_dict)
+            temp_arg1 = param_sess.run([minimap_output_pred], feed_dict)
             print('move_camera temp_arg1: ', temp_arg1)
             ac_args.append(temp_arg1)
         elif function_type == 'select_point':
-            temp_arg1, temp_arg2 = sess.run([select_point_act_cls, screen_output_pred], feed_dict)
+            temp_arg1, temp_arg2 = param_sess.run([select_point_act_cls, screen_output_pred], feed_dict)
             ac_args.append(temp_arg1)
             ac_args.append(temp_arg2)
         elif function_type == 'select_rect':
-            temp_arg1,temp_arg2, temp_arg3 = sess.run([select_add_pred_cls, screen_output_pred, screen2_output_pred],
+            temp_arg1,temp_arg2, temp_arg3 = param_sess.run([select_add_pred_cls, screen_output_pred, screen2_output_pred],
                 feed_dict)
             ac_args.append(temp_arg1)
             ac_args.append(temp_arg2)
             ac_args.append(temp_arg3)
         elif function_type == 'select_unit':
-            temp_arg1, temp_arg2 = sess.run([select_unit_act_cls, select_unit_id_output], feed_dict)
+            temp_arg1, temp_arg2 = param_sess.run([select_unit_act_cls, select_unit_id_output], feed_dict)
             ac_args.append(temp_arg1)
             ac_args.append(temp_arg2)
         elif function_type == 'control_group':
-            temp_arg1, temp_arg2 = sess.run([control_group_act_cls, control_group_id_output], feed_dict)
+            temp_arg1, temp_arg2 = param_sess.run([control_group_act_cls, control_group_id_output], feed_dict)
             ac_args.append(temp_arg1)
             ac_args.append(temp_arg2)
         elif function_type == 'select_idle_worker':
-            temp_arg1 = sess.run([select_worker_cls], feed_dict)
+            temp_arg1 = param_sess.run([select_worker_cls], feed_dict)
             ac_args.append(temp_arg1)
         elif function_type == 'select_army':
-            temp_arg1 = sess.run([select_add_pred_cls], feed_dict)
+            temp_arg1 = param_sess.run([select_add_pred_cls], feed_dict)
             ac_args.append(temp_arg1)
         elif function_type == 'select_warp_gates':
-            temp_arg1 = sess.run([select_add_pred_cls], feed_dict)
+            temp_arg1 = param_sess.run([select_add_pred_cls], feed_dict)
             ac_args.append(temp_arg1)
         elif function_type == 'unload':
-            temp_arg1 = sess.run([unload_id_output], feed_dict)
+            temp_arg1 = param_sess.run([unload_id_output], feed_dict)
             ac_args.append(temp_arg1)
         elif function_type == 'build_queue':
-            temp_arg1 = sess.run([build_queue_id_output], feed_dict)
+            temp_arg1 = param_sess.run([build_queue_id_output], feed_dict)
             ac_args.append(temp_arg1)
         elif function_type == 'cmd_quick':
-            temp_arg1 = sess.run([queued_pred_cls], feed_dict)
+            temp_arg1 = param_sess.run([queued_pred_cls], feed_dict)
             print('cmd_quick queued param:', temp_arg1)
             ac_args.append(temp_arg1)
         elif function_type == 'cmd_screen':
-            temp_arg1, temp_arg2 = sess.run([queued_pred_cls, screen_output_pred], feed_dict)
+            temp_arg1, temp_arg2 = param_sess.run([queued_pred_cls, screen_output_pred], feed_dict)
             ac_args.append(temp_arg1)
         elif function_type == 'cmd_minimap':
-            temp_arg1, temp_arg2 = sess.run([queued_pred_cls, minimap_output_pred], feed_dict)
+            temp_arg1, temp_arg2 = param_sess.run([queued_pred_cls, minimap_output_pred], feed_dict)
             ac_args.append(temp_arg1)
         elif function_type == 'no_op' or function_type == 'select_larva' or function_type == 'autocast':
             # do nothing
