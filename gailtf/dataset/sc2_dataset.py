@@ -52,14 +52,16 @@ class SC2Dataset(object):
 
     def get_next_batch(self, batch_size, split=None):
         print("start sc2_dataset get_next_batch")
-        
+
         while self.loaded_replay == None:
             if self.replay_files_index > len(self.replay_files):
                 self.replay_files_index = 0
 
             try:
+                print(self.replay_files[self.replay_files_index])
                 self.loaded_replay = pickle.load(open(self.replay_files[self.replay_files_index], "rb"))
             except:
+                print('exception')
                 self.replay_files_index += 1
                 self.loaded_replay = None
                 continue
