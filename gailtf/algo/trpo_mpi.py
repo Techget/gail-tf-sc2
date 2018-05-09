@@ -134,7 +134,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
     # gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.5) #config=tf.ConfigProto(gpu_options=gpu_options)
     param_sess = tf.Session(graph=original_graph)
     # sess.run(tf.global_variables_initializer())
-    saved_model_path = os.path.expanduser('~')+'/pysc2-gail-research-project/supervised_learning_baseline/saved_model/action_params'
+    saved_model_path = os.path.expanduser('~')+'/pysc2-gail-research-project/supervised_learning_baseline/param_pred_model/action_params'
     # saver.restore(sess, saved_model_path+'action_params')
 
     with original_graph.as_default():
@@ -150,16 +150,16 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
     action_placeholder = original_graph.get_tensor_by_name("action_placeholder:0")
     # ops
 
-    temp_2 = []
-    for n in original_graph.as_graph_def().node:
-        if "minimap" in n.name:
-            temp_2.append(n.name)
+    # temp_2 = []
+    # for n in original_graph.as_graph_def().node:
+    #     if "minimap" in n.name:
+    #         temp_2.append(n.name)
 
-    print(temp_2)
+    # print(temp_2)
     control_group_act_cls = original_graph.get_tensor_by_name("control_group_act_cls:0")
-    screen_output_pred = original_graph.get_tensor_by_name("screen_output_pred:0")
-    minimap_output_pred = original_graph.get_tensor_by_name("minimap_output_pred:0")
-    screen2_output_pred = original_graph.get_tensor_by_name("screen2_output_pred:0")
+    screen_output_pred = original_graph.get_tensor_by_name("screen_param_prediction:0")
+    minimap_output_pred = original_graph.get_tensor_by_name("minimap_param_prediction:0")
+    screen2_output_pred = original_graph.get_tensor_by_name("screen2_param_prediction:0")
     queued_pred_cls = original_graph.get_tensor_by_name("queued_pred_cls:0")
     control_group_id_output = original_graph.get_tensor_by_name("control_group_id_output:0")
     select_point_act_cls = original_graph.get_tensor_by_name("select_point_act_cls:0")
