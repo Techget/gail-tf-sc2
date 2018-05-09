@@ -92,7 +92,13 @@ def extract_observation(time_step):
 
     return state, output_ob
 
+def process_coordinates_param_nn_output(coordinate):
+    assert(len(coordinate) == 1)
 
+    coordinate = coordinate[0]
+    coordinate[0] = int(coordinate[0])
+    coordinate[1] = int(coordinate[1])
+    return coordinate
 
 def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
     # Initialize state variables
@@ -214,18 +220,22 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
                 user_info_placeholder: [state_dict['player']]}
 
         if function_type == 'move_camera':
-            temp_arg1 = param_sess.run([minimap_output_pred], feed_dict)
-            print('move_camera temp_arg1: ', temp_arg1)
+            temp_arg1 = param_sess.run([minimap_output_pred], feed_dict) # temp_arg1 is look like [[x, y]]
+            # print('move_camera temp_arg1: ', temp_arg1)
+            temp_arg1 = process_coordinates_param_nn_output(temp_arg1)
             ac_args.append(temp_arg1)
         elif function_type == 'select_point':
             temp_arg1, temp_arg2 = param_sess.run([select_point_act_cls, screen_output_pred], feed_dict)
             ac_args.append(temp_arg1)
+            temp_arg2 = process_coordinates_param_nn_output(temp_arg2)
             ac_args.append(temp_arg2)
         elif function_type == 'select_rect':
             temp_arg1,temp_arg2, temp_arg3 = param_sess.run([select_add_pred_cls, screen_output_pred, screen2_output_pred],
                 feed_dict)
             ac_args.append(temp_arg1)
+            temp_arg2 = process_coordinates_param_nn_output(temp_arg2)
             ac_args.append(temp_arg2)
+            temp_arg3 = process_coordinates_param_nn_output(temp_arg3)
             ac_args.append(temp_arg3)
         elif function_type == 'select_unit':
             temp_arg1, temp_arg2 = param_sess.run([select_unit_act_cls, select_unit_id_output], feed_dict)
@@ -257,9 +267,13 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
         elif function_type == 'cmd_screen':
             temp_arg1, temp_arg2 = param_sess.run([queued_pred_cls, screen_output_pred], feed_dict)
             ac_args.append(temp_arg1)
+            temp_arg2 = process_coordinates_param_nn_output(temp_arg2)
+            ac_args.append(temp_arg2)
         elif function_type == 'cmd_minimap':
             temp_arg1, temp_arg2 = param_sess.run([queued_pred_cls, minimap_output_pred], feed_dict)
             ac_args.append(temp_arg1)
+            temp_arg2 = process_coordinates_param_nn_output(temp_arg2)
+            ac_args.append(temp_arg2)
         elif function_type == 'no_op' or function_type == 'select_larva' or function_type == 'autocast':
             # do nothing
             pass
