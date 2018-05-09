@@ -477,6 +477,8 @@ def learn(env, policy_func, discriminator, expert_dataset,
 
             args = seg["ob"], seg["ac"], atarg
             fvpargs = [arr[::5] for arr in args]
+            for arr in args:
+                print(arr.shape)
 
             assign_old_eq_new() # set old parameter values to new parameter values
             with timed("computegrad"):
