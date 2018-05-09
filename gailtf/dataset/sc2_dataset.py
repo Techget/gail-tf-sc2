@@ -52,7 +52,7 @@ class SC2Dataset(object):
         self.win_player_id = None
 
     def get_next_batch(self, batch_size, split=None):
-        print("start sc2_dataset get_next_batch")
+        # print("start sc2_dataset get_next_batch")
 
         while self.loaded_replay == None:
             if self.replay_files_index > len(self.replay_files):
@@ -81,7 +81,7 @@ class SC2Dataset(object):
                 info_dict['playerInfo'][0]['playerResult']['result'] == 'Victory' else \
                 int(info_dict['playerInfo'][0]['playerResult']['playerId'])
 
-        print("successfully load a valid replay")
+        # print("successfully load a valid replay")
 
         obs = []
         acs = []
@@ -111,7 +111,7 @@ class SC2Dataset(object):
                     obs.append(temp_obs)
                     acs.append(a[0])
 
-        print("sc2_dataset finish preparing obs and acs, lengthes: ", len(obs), " ",len(acs))
+        # print("sc2_dataset finish preparing obs and acs, lengthes: ", len(obs), " ",len(acs))
 
         if self.loaded_replay_pointer == len(self.loaded_replay['state']):
             self.loaded_replay = None
