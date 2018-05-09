@@ -5,6 +5,7 @@ from tqdm import tqdm
 import ipdb
 import os
 from google.protobuf.json_format import MessageToJson
+import json
 
 class Dset(object):
     def __init__(self, inputs, labels, randomize):
@@ -68,7 +69,7 @@ class SC2Dataset(object):
 
             loaded_replay_info_json = MessageToJson(self.loaded_replay['info'])
             info_dict = json.loads(loaded_replay_info_json)
-            
+
             if info_dict['player_info'][0]['playerResult']['result'] == 'Tie':
                 self.loaded_replay = None
                 self.replay_files_index += 1
