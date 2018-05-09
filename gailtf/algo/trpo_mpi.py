@@ -222,7 +222,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
         if function_type == 'move_camera':
             temp_arg1 = param_sess.run([minimap_output_pred], feed_dict) # temp_arg1 is look like [[x, y]]
             # print('move_camera temp_arg1: ', temp_arg1)
-            temp_arg1 = process_coordinates_param_nn_output(temp_arg1)
+            temp_arg1 = process_coordinates_param_nn_output(temp_arg1[0])
             ac_args.append(temp_arg1)
         elif function_type == 'select_point':
             temp_arg1, temp_arg2 = param_sess.run([select_point_act_cls, screen_output_pred], feed_dict)
@@ -272,7 +272,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
         elif function_type == 'cmd_minimap':
             temp_arg1, temp_arg2 = param_sess.run([queued_pred_cls, minimap_output_pred], feed_dict)
             ac_args.append(temp_arg1)
-            temp_arg2 = process_coordinates_param_nn_output(temp_arg2)
+            temp_arg2 = process_coordinates_param_nn_output(temp_arg2[0])
             ac_args.append(temp_arg2)
         elif function_type == 'no_op' or function_type == 'select_larva' or function_type == 'autocast':
             # do nothing
