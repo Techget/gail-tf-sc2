@@ -51,7 +51,7 @@ class SC2Dataset(object):
         self.win_player_id = None
 
     def get_next_batch(self, batch_size, split=None):
-        while loaded_replay == None:
+        while self.loaded_replay == None:
             if self.replay_files_index > len(self.replay_files):
                 self.replay_files_index = 0
 
