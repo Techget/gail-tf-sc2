@@ -54,7 +54,8 @@ class MlpPolicy(object):
 
     def act(self, stochastic, ob):
         # print('~~~~',ob)
-        available_act_one_hot = ob[-524:]
+
+        available_act_one_hot = ob[0][-524:]
         # print(available_act_one_hot)
         available_act = []
         for i in range(0, len(available_act_one_hot[0])):
