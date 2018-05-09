@@ -77,9 +77,9 @@ class SC2Dataset(object):
 
             self.replay_files_index += 1
             self.loaded_replay_pointer = 0
-            self.win_player_id = int(info_dict['player_info'][1]['playerResult']['playerId']) if\
-                info_dict['player_info'][0]['playerResult']['result'] == 'Victory' else \
-                int(info_dict['player_info'][0]['playerResult']['playerId'])
+            self.win_player_id = int(info_dict['playerInfo'][1]['playerResult']['playerId']) if\
+                info_dict['playerInfo'][0]['playerResult']['result'] == 'Victory' else \
+                int(info_dict['playerInfo'][0]['playerResult']['playerId'])
 
         print("successfully load a valid replay")
 
