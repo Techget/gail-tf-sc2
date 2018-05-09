@@ -203,8 +203,13 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
         one_hot_ac[np.arange(1), [ac]] = 1
         ac_args = []
 
-        feed_dict = {minimap_placeholder: [state_dict['minimap']], 
-                screen_placeholder: [state_dict['screen']], 
+
+        # reshaped_minimap = 
+        reshaped_minimap = np.reshape(np.array(state_dict['minimap']), (64,64,5))
+        reshaped_screen = np.reshape(np.array(state_dict['screen']), (64,64,10))
+
+        feed_dict = {minimap_placeholder: [reshaped_minimap], 
+                screen_placeholder: [reshaped_screen], 
                 action_placeholder: [one_hot_ac], 
                 user_info_placeholder: [state_dict['player']]}
 
