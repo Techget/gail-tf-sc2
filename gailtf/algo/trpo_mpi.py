@@ -267,7 +267,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
             print("UNKNOWN FUNCTION TYPE: ", function_type)
 
         ac_with_param = sc_action.FunctionCall(ac, ac_args)
-        timestep = env.step(ac_with_param)
+        timestep = env.step([ac_with_param])
         state_dict, ob = extract_observation(timestep[0])
         true_rew = timestep[0].reward
         new = timestep[0].last() # check is Done.
