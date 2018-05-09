@@ -124,7 +124,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
     ep_lens = []
 
     # Initialize history arrays
-    obs = np.array([ob for _ in range(horizon)])
+    obs = np.array([ob.flatten() for _ in range(horizon)])
     true_rews = np.zeros(horizon, 'float32')
     rews = np.zeros(horizon, 'float32')
     vpreds = np.zeros(horizon, 'float32')
@@ -186,7 +186,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
             ep_true_rets = []
             ep_lens = []
         i = t % horizon
-        obs[i] = ob[0] # change shape from (32, 1, 61975) to (32, 61975)
+        obs[i] = ob.flatten() # change shape from (32, 1, 61975) to (32, 61975)
         vpreds[i] = vpred
         news[i] = new
         acs[i] = ac
