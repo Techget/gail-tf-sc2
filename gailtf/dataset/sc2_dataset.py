@@ -51,6 +51,8 @@ class SC2Dataset(object):
         self.win_player_id = None
 
     def get_next_batch(self, batch_size, split=None):
+        print("start sc2_dataset get_next_batch")
+        
         while self.loaded_replay == None:
             if self.replay_files_index > len(self.replay_files):
                 self.replay_files_index = 0
@@ -74,6 +76,8 @@ class SC2Dataset(object):
             self.win_player_id = int(loaded_replay_info_json['player_info'][1]['playerResult']['playerId']) if\
                 loaded_replay_info_json['player_info'][0]['playerResult']['result'] == 'Victory' else \
                 int(loaded_replay_info_json['player_info'][0]['playerResult']['playerId'])
+
+        print("successfully load a valid replay")
 
         obs = []
         acs = []
@@ -102,6 +106,8 @@ class SC2Dataset(object):
                     # same observation with different action ids
                     obs.append(temp_obs)
                     acs.append(a[0])
+
+        print("sc2_dataset finish preparing obs and acs, lengthes: ", len(obs), " ",len(acs))
 
         if self.loaded_replay_pointer == len(self.loaded_replay['state']):
             self.loaded_replay = None
