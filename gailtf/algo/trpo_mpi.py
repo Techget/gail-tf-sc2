@@ -98,7 +98,7 @@ def process_coordinates_param_nn_output(coordinate):
     
     coordinate[0] = int(coordinate[0])
     coordinate[1] = int(coordinate[1])
-    print(coordinate)
+    # print(coordinate)
     return coordinate
 
 def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
@@ -277,6 +277,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
         else:
             print("UNKNOWN FUNCTION TYPE: ", function_type)
 
+        print(ac_args)
         ac_with_param = sc_action.FunctionCall(ac, ac_args)
         timestep = env.step([ac_with_param])
         state_dict, ob = extract_observation(timestep[0])
