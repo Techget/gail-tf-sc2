@@ -101,6 +101,11 @@ def process_coordinates_param_nn_output(coordinate):
     # print(coordinate)
     return coordinate
 
+def flatten_param(param):
+    param = np.array(param)
+    param = param.flatten()
+    return param
+
 def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
     # Initialize state variables
     t = 0
@@ -233,32 +238,40 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
             ac_args.append(temp_arg3)
         elif function_type == 'select_unit':
             temp_arg1, temp_arg2 = param_sess.run([select_unit_act_cls, select_unit_id_output], feed_dict)
+            temp_arg1 = flatten_param(temp_arg1)
+            temp_arg2 = flatten_param(temp_arg2)
             ac_args.append(temp_arg1)
             ac_args.append(temp_arg2)
         elif function_type == 'control_group':
             temp_arg1, temp_arg2 = param_sess.run([control_group_act_cls, control_group_id_output], feed_dict)
+            temp_arg1 = flatten_param(temp_arg1)
+            temp_arg2 = flatten_param(temp_arg2)
             ac_args.append(temp_arg1)
             ac_args.append(temp_arg2)
         elif function_type == 'select_idle_worker':
             temp_arg1 = param_sess.run([select_worker_cls], feed_dict)
+            temp_arg1 = flatten_param(temp_arg1)
             ac_args.append(temp_arg1)
         elif function_type == 'select_army':
             temp_arg1 = param_sess.run([select_add_pred_cls], feed_dict)
+            temp_arg1 = flatten_param(temp_arg1)
             ac_args.append(temp_arg1)
         elif function_type == 'select_warp_gates':
             temp_arg1 = param_sess.run([select_add_pred_cls], feed_dict)
+            temp_arg1 = flatten_param(temp_arg1)
             ac_args.append(temp_arg1)
         elif function_type == 'unload':
             temp_arg1 = param_sess.run([unload_id_output], feed_dict)
+            temp_arg1 = flatten_param(temp_arg1)
             ac_args.append(temp_arg1)
         elif function_type == 'build_queue':
             temp_arg1 = param_sess.run([build_queue_id_output], feed_dict)
+            temp_arg1 = flatten_param(temp_arg1)
             ac_args.append(temp_arg1)
         elif function_type == 'cmd_quick':
             temp_arg1 = param_sess.run([queued_pred_cls], feed_dict)
             # print('cmd_quick queued param:', temp_arg1)
-            temp_arg1 = np.array(temp_arg1)
-            temp_arg1 = temp_arg1.flatten()
+            temp_arg1 = flatten_param(temp_arg1)
             ac_args.append(temp_arg1)
         elif function_type == 'cmd_screen':
             temp_arg1, temp_arg2 = param_sess.run([queued_pred_cls, screen_output_pred], feed_dict)
