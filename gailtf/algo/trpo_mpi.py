@@ -200,7 +200,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
 
         rew = discriminator.get_reward(ob, ac)
 
-        print('in traj_segment_generator, ac:', ac)
+        # print('in traj_segment_generator, ac:', ac)
 
         # get action arguments with action_id
         function_type = sc_action.FUNCTIONS[ac].function_type.__name__
@@ -297,7 +297,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
         else:
             print("UNKNOWN FUNCTION TYPE: ", function_type)
 
-        print(ac_args)
+        # print(ac_args)
         ac_with_param = sc_action.FunctionCall(ac, ac_args)
         timestep = env.step([ac_with_param])
         state_dict, ob = extract_observation(timestep[0])
@@ -494,8 +494,6 @@ def learn(env, policy_func, discriminator, expert_dataset,
 
             args = seg["ob"], seg["ac"], atarg
             fvpargs = [arr[::5] for arr in args]
-            for arr in args:
-                print(arr.shape)
 
             assign_old_eq_new() # set old parameter values to new parameter values
             with timed("computegrad"):
