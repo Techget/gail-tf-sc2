@@ -198,7 +198,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
         print('in traj_segment_generator, ac:', ac)
 
         # get action arguments with action_id
-        function_type = pysc2_actions.FUNCTIONS[ac].function_type.__name__
+        function_type = sc_action.FUNCTIONS[ac].function_type.__name__
         one_hot_ac = np.zeros((1, 524)) # shape will be 1*254
         one_hot_ac[np.arange(1), [ac]] = 1
         ac_args = []
