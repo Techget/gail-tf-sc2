@@ -103,7 +103,7 @@ class SC2Dataset(object):
                     temp_obs.extend(list(x.flatten()))
 
                 temp_obs.extend(list(self.loaded_replay['state'][i]['player']))
-                temp_obs.extend(list(self.loaded_replay['stete'][i]['available_actions']))
+                temp_obs.extend(list(self.loaded_replay['state'][i]['available_actions']))
 
                 for a in self.loaded_replay['state'][i]['actions']:
                     # one captured state, may have multiple actions, so output should be the
