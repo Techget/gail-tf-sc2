@@ -257,17 +257,20 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
         elif function_type == 'cmd_quick':
             temp_arg1 = param_sess.run([queued_pred_cls], feed_dict)
             # print('cmd_quick queued param:', temp_arg1)
-            temp_arg1 = temp_arg1[0]
+            temp_arg1 = np.array(temp_arg1)
+            temp_arg1 = temp_arg1.flatten()
             ac_args.append(temp_arg1)
         elif function_type == 'cmd_screen':
             temp_arg1, temp_arg2 = param_sess.run([queued_pred_cls, screen_output_pred], feed_dict)
-            temp_arg1 = temp_arg1[0]
+            temp_arg1 = np.array(temp_arg1)
+            temp_arg1 = temp_arg1.flatten()
             ac_args.append(temp_arg1)
             temp_arg2 = process_coordinates_param_nn_output(temp_arg2)
             ac_args.append(temp_arg2)
         elif function_type == 'cmd_minimap':
             temp_arg1, temp_arg2 = param_sess.run([queued_pred_cls, minimap_output_pred], feed_dict)
-            temp_arg1 = temp_arg1[0]
+            temp_arg1 = np.array(temp_arg1)
+            temp_arg1 = temp_arg1.flatten()
             ac_args.append(temp_arg1)
             temp_arg2 = process_coordinates_param_nn_output(temp_arg2[0])
             ac_args.append(temp_arg2)
