@@ -155,13 +155,6 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
     user_info_placeholder = original_graph.get_tensor_by_name("user_info_placeholder:0")
     action_placeholder = original_graph.get_tensor_by_name("action_placeholder:0")
     # ops
-
-    # temp_2 = []
-    # for n in original_graph.as_graph_def().node:
-    #     if "minimap" in n.name:
-    #         temp_2.append(n.name)
-
-    # print(temp_2)
     control_group_act_cls = original_graph.get_tensor_by_name("control_group_act_cls:0")
     screen_output_pred = original_graph.get_tensor_by_name("screen_param_prediction:0")
     minimap_output_pred = original_graph.get_tensor_by_name("minimap_param_prediction:0")
@@ -193,7 +186,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
             ep_true_rets = []
             ep_lens = []
         i = t % horizon
-        obs[i] = ob
+        obs[i] = ob[0] # change shape from (32, 1, 61975) to (32, 61975)
         vpreds[i] = vpred
         news[i] = new
         acs[i] = ac
