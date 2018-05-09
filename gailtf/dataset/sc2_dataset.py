@@ -67,17 +67,18 @@ class SC2Dataset(object):
                 continue
 
             loaded_replay_info_json = MessageToJson(self.loaded_replay['info'])
-
-            if loaded_replay_info_json['player_info'][0]['playerResult']['result'] == 'Tie':
+            info_dict = json.loads(loaded_replay_info_json)
+            
+            if info_dict['player_info'][0]['playerResult']['result'] == 'Tie':
                 self.loaded_replay = None
                 self.replay_files_index += 1
                 continue
 
             self.replay_files_index += 1
             self.loaded_replay_pointer = 0
-            self.win_player_id = int(loaded_replay_info_json['player_info'][1]['playerResult']['playerId']) if\
-                loaded_replay_info_json['player_info'][0]['playerResult']['result'] == 'Victory' else \
-                int(loaded_replay_info_json['player_info'][0]['playerResult']['playerId'])
+            self.win_player_id = int(info_dict['player_info'][1]['playerResult']['playerId']) if\
+                info_dict['player_info'][0]['playerResult']['result'] == 'Victory' else \
+                int(info_dict['player_info'][0]['playerResult']['playerId'])
 
         print("successfully load a valid replay")
 
