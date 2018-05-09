@@ -246,6 +246,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
             temp_arg1, temp_arg2 = param_sess.run([control_group_act_cls, control_group_id_output], feed_dict)
             temp_arg1 = flatten_param(temp_arg1)
             temp_arg2 = flatten_param(temp_arg2)
+            temp_arg2[0] = int(temp_arg2[0])
             ac_args.append(temp_arg1)
             ac_args.append(temp_arg2)
         elif function_type == 'select_idle_worker':
