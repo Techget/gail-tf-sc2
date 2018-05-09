@@ -70,7 +70,7 @@ class SC2Dataset(object):
             loaded_replay_info_json = MessageToJson(self.loaded_replay['info'])
             info_dict = json.loads(loaded_replay_info_json)
 
-            if info_dict['player_info'][0]['playerResult']['result'] == 'Tie':
+            if info_dict['playerInfo'][0]['playerResult']['result'] == 'Tie':
                 self.loaded_replay = None
                 self.replay_files_index += 1
                 continue
