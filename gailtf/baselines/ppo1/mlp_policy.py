@@ -52,8 +52,8 @@ class MlpPolicy(object):
         #            activation=tf.nn.leaky_relu,
         #            name="polmconv1")
         # mconv1 = tf.nn.leaky_relu(U.conv2d(tf.reshape(minimap, [-1,self.msize,self.msize,5]), 32, "polmconv1"))
-        sconv1 = layers.conv2d(tf.reshape(minimap, [-1,self.msize,self.msize,5]),
-            num_outputs=2048,
+        mconv1 = layers.conv2d(tf.reshape(minimap, [-1,self.msize,self.msize,5]),
+            num_outputs=1024,
             kernel_size=3,
             stride=1,
             scope="polsconv1")
@@ -119,7 +119,7 @@ class MlpPolicy(object):
                    name="poldense1")
         
         aa_fc = tf.layers.dense(inputs=layers.flatten(available_action),
-                   units=64,
+                   units=32,
                    activation=tf.tanh,
                    name="poldense2")
 
