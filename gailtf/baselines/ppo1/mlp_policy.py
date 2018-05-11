@@ -44,74 +44,26 @@ class MlpPolicy(object):
         info = obz[:, (5*self.msize*self.msize+10*self.ssize*self.ssize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize)]
         available_action = obz[:, (5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize+self.available_action_size)]
 
-        # mconv1 = tf.layers.conv2d(inputs=tf.reshape(minimap, [-1,self.msize,self.msize,5]),
-        #            filters=128,
-        #            kernel_size=5,
-        #            stride=1,
-        #            padding='same',
-        #            activation=tf.nn.leaky_relu,
-        #            name="polmconv1")
-        # mconv1 = tf.nn.leaky_relu(U.conv2d(tf.reshape(minimap, [-1,self.msize,self.msize,5]), 32, "polmconv1"))
         mconv1 = layers.conv2d(tf.reshape(minimap, [-1,self.msize,self.msize,5]),
-            num_outputs=512,
-            kernel_size=3,
-            stride=1,
-            scope="polmconv1")
-
-        pool1_minimap = tf.layers.max_pooling2d(mconv1, pool_size=2, strides=2, name="polmpool1")
-        # mconv2 = tf.layers.conv2d(inputs=pool1_minimap,
-        #            filters=32,
-        #            kernel_size=3,
-        #            stride=1,
-        #            padding='same',
-        #            activation=tf.nn.leaky_relu,
-        #            name="polmconv2")
-        # mconv2 = tf.nn.leaky_relu(U.conv2d(pool1_minimap, 64, "polmconv2"))
-        mconv2 = layers.conv2d(pool1_minimap,
+                   num_outputs=1024,
+                   kernel_size=5,
+                   stride=1,
+                   scope="polmconv1")
+        mconv2 = layers.conv2d(mconv1,
                    num_outputs=256,
                    kernel_size=3,
                    stride=1,
                    scope="polmconv2")
-
-        # pool2_minimap = tf.layers.max_pooling2d(mconv2, 2, 2, name="polmpool2")
-        # minimap_dense = tf.layers.dense(inputs=layers.flatten(pool2_minimap),
-        #     units=512,
-        #     activation=tf.nn.relu,
-        #     name="minimap_dense")
-
-        # sconv1 = tf.layers.conv2d(inputs=tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
-        #            filters=128,
-        #            kernel_size=5,
-        #            stride=1,
-        #            padding='same',
-        #            activation=tf.nn.leaky_relu,
-        #            name="polsconv1")
-        # sconv1 = tf.nn.leaky_relu(U.conv2d(tf.reshape(screen, [-1,self.msize,self.msize,5]), 32, "polsconv1"))
-        sconv1 = layers.conv2d(tf.reshape(screen, [-1,self.ssize,self.ssize,10]),
-            num_outputs=512,
-            kernel_size=3,
-            stride=1,
-            scope="polsconv1")
-        pool1_screen = tf.layers.max_pooling2d(sconv1, pool_size=2, strides=2, name="polspool1")
-        # sconv2 = tf.layers.conv2d(inputs=pool1_screen,
-        #            filters=32,
-        #            kernel_size=3,
-        #            stride=1,
-        #            padding='same',
-        #            activation=tf.nn.leaky_relu,
-        #            name="polsconv2")
-        # sconv2 = tf.nn.leaky_relu(U.conv2d(pool1_screen, 64, "polsconv2"))
-        # pool2_screen = tf.layers.max_pooling2d(sconv2, 2, 2, name="polspool2")
-        # screen_dense = tf.layers.dense(inputs=layers.flatten(pool2_screen),
-        #     units=512,
-        #     activation=tf.nn.relu,
-        #     name="screen_dense")
-        sconv2 = layers.conv2d(pool1_screen,
+        sconv1 = layers.conv2d(tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
+                   num_outputs=1024,
+                   kernel_size=5,
+                   stride=1,
+                   scope="polsconv1")
+        sconv2 = layers.conv2d(sconv1,
                    num_outputs=256,
                    kernel_size=3,
                    stride=1,
                    scope="polsconv2")
-
 
         info_fc = tf.layers.dense(inputs=layers.flatten(info),
                    units=8,
