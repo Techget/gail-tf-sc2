@@ -44,21 +44,27 @@ class MlpPolicy(object):
         info = obz[:, (5*self.msize*self.msize+10*self.ssize*self.ssize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize)]
         available_action = obz[:, (5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize+self.available_action_size)]
 
-        mconv1 = tf.layers.conv2d(tf.reshape(minimap, [-1,self.msize,self.msize,5]),
-                   num_outputs=2048,
-                   kernel_size=5,
-                   stride=1,
-                   name="polmconv1")
+        # mconv1 = tf.layers.conv2d(inputs=tf.reshape(minimap, [-1,self.msize,self.msize,5]),
+        #            filters=128,
+        #            kernel_size=5,
+        #            stride=1,
+        #            padding='same',
+        #            activation=tf.nn.leaky_relu,
+        #            name="polmconv1")
+        mconv1 = tf.nn.leaky_relu(U.conv2d(tf.reshape(minimap, [-1,self.msize,self.msize,5]), 128, "polmconv1"))
         pool1_minimap = tf.layers.max_pooling2d(mconv1, pool_size=2, strides=2, name="polmpool1")
-        mconv2 = tf.layers.conv2d(pool1_minimap,
-                   num_outputs=512,
-                   kernel_size=3,
-                   stride=1,
-                   name="polmconv2")
+        # mconv2 = tf.layers.conv2d(inputs=pool1_minimap,
+        #            filters=32,
+        #            kernel_size=3,
+        #            stride=1,
+        #            padding='same',
+        #            activation=tf.nn.leaky_relu,
+        #            name="polmconv2")
+        mconv2 = tf.nn.leaky_relu(U.conv2d(pool1_minimap, 64, "polmconv2"))
         pool2_minimap = tf.layers.max_pooling2d(mconv2, 2, 2, name="polmpool2")
         mconv_flatten = layers.flatten(pool2_minimap)
 
-        sconv1 = tf.layers.conv2d(tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
+        sconv1 = tf.layers.conv2d(inputs=tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
                    num_outputs=2048,
                    kernel_size=5,
                    stride=1,
