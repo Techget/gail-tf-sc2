@@ -1,6 +1,7 @@
 from gailtf.baselines.common.mpi_running_mean_std import RunningMeanStd
 import gailtf.baselines.common.tf_util as U
 import tensorflow as tf
+import tensorflow.contrib.layers as layers
 import gym
 from gailtf.baselines.common.distributions import make_pdtype
 
