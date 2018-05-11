@@ -80,7 +80,7 @@ class MlpPolicy(object):
         #            padding='same',
         #            activation=tf.nn.leaky_relu,
         #            name="polsconv1")
-        sconv1 = tf.nn.leaky_relu(U.conv2d(tf.reshape(screen, [-1,self.msize,self.msize,5]), 128, "polsconv1"))
+        sconv1 = tf.nn.leaky_relu(U.conv2d(tf.reshape(screen, [-1,self.ssize,self.ssize,10]), 128, "polsconv1"))
         pool1_screen = tf.layers.max_pooling2d(sconv1, pool_size=2, strides=2, name="polspool1")
         # sconv2 = tf.layers.conv2d(inputs=pool1_screen,
         #            filters=32,
