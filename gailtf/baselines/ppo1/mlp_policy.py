@@ -64,21 +64,23 @@ class MlpPolicy(object):
         pool2_minimap = tf.layers.max_pooling2d(mconv2, 2, 2, name="polmpool2")
         mconv_flatten = layers.flatten(pool2_minimap)
 
-        sconv1 = tf.layers.conv2d(inputs=tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
-                   filters=128,
-                   kernel_size=5,
-                   stride=1,
-                   padding='same',
-                   activation=tf.nn.leaky_relu,
-                   name="polsconv1")
+        # sconv1 = tf.layers.conv2d(inputs=tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
+        #            filters=128,
+        #            kernel_size=5,
+        #            stride=1,
+        #            padding='same',
+        #            activation=tf.nn.leaky_relu,
+        #            name="polsconv1")
+        sconv1 = tf.nn.leaky_relu(U.conv2d(tf.reshape(screen, [-1,self.msize,self.msize,5]), 128, "polsconv1"))
         pool1_screen = tf.layers.max_pooling2d(sconv1, pool_size=2, strides=2, name="polspool1")
-        sconv2 = tf.layers.conv2d(inputs=pool1_screen,
-                   filters=32,
-                   kernel_size=3,
-                   stride=1,
-                   padding='same',
-                   activation=tf.nn.leaky_relu,
-                   name="polsconv2")
+        # sconv2 = tf.layers.conv2d(inputs=pool1_screen,
+        #            filters=32,
+        #            kernel_size=3,
+        #            stride=1,
+        #            padding='same',
+        #            activation=tf.nn.leaky_relu,
+        #            name="polsconv2")
+        sconv2 = tf.nn.leaky_relu(U.conv2d(pool1_screen, 64, "polsconv2"))
         pool2_minimap = tf.layers.max_pooling2d(sconv2, 2, 2, name="polspool2")
         sconv_flatten = layers.flatten(pool2_minimap)
 
