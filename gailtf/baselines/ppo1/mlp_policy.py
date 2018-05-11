@@ -101,7 +101,7 @@ class MlpPolicy(object):
                    name="poldense2")
 
         last_out = tf.concat([flat_minimap, flat_screen, info_fc, aa_fc], axis=1, name="polconcat")
-        last_out = tf.layers.dense(inputs=last_out,units=600,name="poldense3")
+        # last_out = tf.layers.dense(inputs=last_out,units=600,name="poldense3")
         # last_out = tf.nn.tanh(U.dense(last_out, hid_size, "polfc1", weight_init=U.normc_initializer(1.0)))
 
         if gaussian_fixed_var and isinstance(ac_space, gym.spaces.Box):
