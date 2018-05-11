@@ -68,15 +68,13 @@ class MlpPolicy(object):
         pool2_minimap = tf.layers.max_pooling2d(sconv2, 2, 2, name="polConv2")
         sconv_flatten = layers.flatten(pool2_minimap)
 
-        info_fc = tf.nn.dense(layers.flatten(info),
+        info_fc = layers.fully_connected(layers.flatten(info),
                    num_outputs=8,
-                   activation=tf.tanh,
-                   name="polfc1")
+                   activation_fn=tf.tanh)
 
-        aa_fc = tf.nn.dense(layers.flatten(available_action),
+        aa_fc = layers.fully_connected(layers.flatten(available_action),
                    num_outputs=64,
-                   activation=tf.tanh,
-                   name="polfc2")
+                   activation_fn=tf.tanh)
 
         last_out = tf.concat([mconv_flatten, sconv_flatten, info_fc, aa_fc], axis=1, name="polconcat")
         last_out = tf.nn.tanh(U.dense(last_out, hid_size, "polfc3", weight_init=U.normc_initializer(1.0)))
