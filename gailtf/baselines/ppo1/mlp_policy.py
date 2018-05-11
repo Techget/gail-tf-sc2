@@ -45,27 +45,29 @@ class MlpPolicy(object):
         available_action = obz[:, (5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize+self.available_action_size)]
 
         mconv1 = layers.conv2d(tf.reshape(minimap, [-1,self.msize,self.msize,5]),
-                   num_outputs=4096,
+                   num_outputs=8192,
                    kernel_size=5,
-                   stride=1,
-                   activation=tf.nn.leaky_relu)
-        mconv2 = layers.conv2d(mconv1,
-                   num_outputs=1024,
-                   kernel_size=3,
-                   stride=1,
-                   activation=tf.nn.leaky_relu,
-                   name="polConv1")
-        sconv1 = layers.conv2d(tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
-                   num_outputs=4096,
-                   kernel_size=5,
-                   activation=tf.nn.leaky_relu,
                    stride=1)
-        sconv2 = layers.conv2d(sconv1,
-                   num_outputs=1024,
+        pool1_minimap = tf.layers.max_pooling2d(mconv1, pool_size=2, strides=2)
+        mconv2 = layers.conv2d(pool1_minimap,
+                   num_outputs=2048,
                    kernel_size=3,
-                   stride=1,
-                   activation=tf.nn.leaky_relu,
-                   name="polConv2")
+                   stride=1)
+        pool2_minimap = tf.layers.max_pooling2d(mconv2, 2, 2)
+        mconv_flatten = layers.flatten(pool2_minimap, name="polConv1")
+
+        sconv1 = layers.conv2d(tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
+                   num_outputs=8192,
+                   kernel_size=5,
+                   stride=1)
+        pool1_screen = tf.layers.max_pooling2d(sconv1, pool_size=2, strides=2)
+        sconv2 = layers.conv2d(pool1_screen,
+                   num_outputs=2048,
+                   kernel_size=3,
+                   stride=1)
+        pool2_minimap = tf.layers.max_pooling2d(sconv2, 2, 2)
+        sconv_flatten = layers.flatten(pool2_minimap, name="polConv2")
+
         info_fc = layers.fully_connected(layers.flatten(info),
                    num_outputs=8,
                    activation_fn=tf.tanh,
@@ -76,7 +78,7 @@ class MlpPolicy(object):
                    activation_fn=tf.tanh,
                    name="polfc2")
 
-        last_out = tf.concat([layers.flatten(mconv2), layers.flatten(sconv2), info_fc, aa_fc], axis=1, name="polconcat")
+        last_out = tf.concat([mconv_flatten, sconv_flatten, info_fc, aa_fc], axis=1, name="polconcat")
         last_out = tf.nn.tanh(U.dense(last_out, hid_size, "polfc3", weight_init=U.normc_initializer(1.0)))
 
         if gaussian_fixed_var and isinstance(ac_space, gym.spaces.Box):
