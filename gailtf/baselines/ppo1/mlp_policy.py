@@ -60,12 +60,18 @@ class MlpPolicy(object):
         #            padding='same',
         #            activation=tf.nn.leaky_relu,
         #            name="polmconv2")
-        mconv2 = tf.nn.leaky_relu(U.conv2d(pool1_minimap, 64, "polmconv2"))
-        pool2_minimap = tf.layers.max_pooling2d(mconv2, 2, 2, name="polmpool2")
-        minimap_dense = tf.layers.dense(inputs=layers.flatten(pool2_minimap),
-            units=512,
-            activation=tf.nn.relu,
-            name="minimap_dense")
+        # mconv2 = tf.nn.leaky_relu(U.conv2d(pool1_minimap, 64, "polmconv2"))
+        mconv2 = layers.conv2d(pool1_minimap,
+                   num_outputs=1024,
+                   kernel_size=3,
+                   stride=1,
+                   scope="polmconv2")
+
+        # pool2_minimap = tf.layers.max_pooling2d(mconv2, 2, 2, name="polmpool2")
+        # minimap_dense = tf.layers.dense(inputs=layers.flatten(pool2_minimap),
+        #     units=512,
+        #     activation=tf.nn.relu,
+        #     name="minimap_dense")
 
         # sconv1 = tf.layers.conv2d(inputs=tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
         #            filters=128,
@@ -83,12 +89,18 @@ class MlpPolicy(object):
         #            padding='same',
         #            activation=tf.nn.leaky_relu,
         #            name="polsconv2")
-        sconv2 = tf.nn.leaky_relu(U.conv2d(pool1_screen, 64, "polsconv2"))
-        pool2_screen = tf.layers.max_pooling2d(sconv2, 2, 2, name="polspool2")
-        screen_dense = tf.layers.dense(inputs=layers.flatten(pool2_screen),
-            units=512,
-            activation=tf.nn.relu,
-            name="screen_dense")
+        # sconv2 = tf.nn.leaky_relu(U.conv2d(pool1_screen, 64, "polsconv2"))
+        # pool2_screen = tf.layers.max_pooling2d(sconv2, 2, 2, name="polspool2")
+        # screen_dense = tf.layers.dense(inputs=layers.flatten(pool2_screen),
+        #     units=512,
+        #     activation=tf.nn.relu,
+        #     name="screen_dense")
+        sconv2 = layers.conv2d(pool1_screen,
+                   num_outputs=1024,
+                   kernel_size=3,
+                   stride=1,
+                   scope="polsconv2")
+
 
         info_fc = tf.layers.dense(inputs=layers.flatten(info),
                    units=8,
@@ -100,7 +112,7 @@ class MlpPolicy(object):
                    activation=tf.tanh,
                    name="poldense2")
 
-        last_out = tf.concat([minimap_dense, screen_dense, info_fc, aa_fc], axis=1, name="polconcat")
+        last_out = tf.concat([layers.flatten(mconv2), layers.flatten(sconv2), info_fc, aa_fc], axis=1, name="polconcat")
         last_out = tf.nn.tanh(U.dense(last_out, hid_size, "polfc3", weight_init=U.normc_initializer(1.0)))
 
         if gaussian_fixed_var and isinstance(ac_space, gym.spaces.Box):
