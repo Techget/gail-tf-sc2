@@ -85,7 +85,7 @@ def main(args):
 
     def policy_fn(name, ob_space, ac_space, reuse=False):
         return mlp_policy.MlpPolicy(name=name, ob_space=ob_space, ac_space=ac_space,
-            reuse=reuse, hid_size=1024, num_hid_layers=4)
+            reuse=reuse, hid_size=1024, num_hid_layers=2)
     # env = bench.Monitor(env, logger.get_dir() and
     #     osp.join(logger.get_dir(), "monitor.json"))
     # env.seed(args.seed)
