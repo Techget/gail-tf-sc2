@@ -45,7 +45,7 @@ class MlpPolicy(object):
         available_action = obz[:, (5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize+self.available_action_size)]
 
         conv1_minimap = tf.layers.conv2d(   
-            inputs=minimap,
+            inputs=tf.reshape(minimap, [-1,self.msize,self.msize,5]),
             filters=16,
             kernel_size=5,
             strides=1,
@@ -68,7 +68,7 @@ class MlpPolicy(object):
         # minimap_output = tf.layers.dense(dense_minimap, 64)
 
         conv1_screen = tf.layers.conv2d(   
-            inputs=screen,
+            inputs=tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
             filters=16,
             kernel_size=5,
             strides=1,
