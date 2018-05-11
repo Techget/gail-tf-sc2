@@ -62,7 +62,7 @@ class MlpPolicy(object):
         #            name="polmconv2")
         # mconv2 = tf.nn.leaky_relu(U.conv2d(pool1_minimap, 64, "polmconv2"))
         mconv2 = layers.conv2d(pool1_minimap,
-                   num_outputs=1024,
+                   num_outputs=512,
                    kernel_size=3,
                    stride=1,
                    scope="polmconv2")
@@ -96,7 +96,7 @@ class MlpPolicy(object):
         #     activation=tf.nn.relu,
         #     name="screen_dense")
         sconv2 = layers.conv2d(pool1_screen,
-                   num_outputs=1024,
+                   num_outputs=512,
                    kernel_size=3,
                    stride=1,
                    scope="polsconv2")
@@ -113,7 +113,7 @@ class MlpPolicy(object):
                    name="poldense2")
 
         last_out = tf.concat([layers.flatten(mconv2), layers.flatten(sconv2), info_fc, aa_fc], axis=1, name="polconcat")
-        last_out = tf.layers.dense(inputs=last_out,units=1024,name="poldense3")
+        # last_out = tf.layers.dense(inputs=last_out,units=1024,name="poldense3")
         last_out = tf.nn.tanh(U.dense(last_out, hid_size, "polfc1", weight_init=U.normc_initializer(1.0)))
 
         if gaussian_fixed_var and isinstance(ac_space, gym.spaces.Box):
