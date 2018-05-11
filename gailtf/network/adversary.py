@@ -91,27 +91,27 @@ class TransitionClassifier(object):
       available_action = obs_ph[:, (5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize+self.available_action_size)]
 
       mconv1 = layers.conv2d(tf.reshape(minimap, [-1,self.msize,self.msize,5]),
-                   num_outputs=32,
+                   num_outputs=4096,
                    kernel_size=5,
                    stride=1)
       mconv2 = layers.conv2d(mconv1,
-                   num_outputs=32,
+                   num_outputs=256,
                    kernel_size=3,
                    stride=1)
       sconv1 = layers.conv2d(tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
-                   num_outputs=32,
+                   num_outputs=4096,
                    kernel_size=5,
                    stride=1)
       sconv2 = layers.conv2d(sconv1,
-                   num_outputs=32,
+                   num_outputs=256,
                    kernel_size=3,
                    stride=1)
       info_fc = layers.fully_connected(layers.flatten(info),
-                   num_outputs=32,
+                   num_outputs=8,
                    activation_fn=tf.tanh)
 
       aa_fc = layers.fully_connected(layers.flatten(available_action),
-                   num_outputs=32,
+                   num_outputs=64,
                    activation_fn=tf.tanh)
 
       # feat_conv = tf.concat([mconv2, sconv2], axis=3)

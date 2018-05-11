@@ -30,9 +30,54 @@ class MlpPolicy(object):
             last_out = tf.nn.tanh(U.dense(last_out, hid_size, "vffc%i"%(i+1), weight_init=U.normc_initializer(1.0)))
         self.vpred = U.dense(last_out, 1, "vffinal", weight_init=U.normc_initializer(1.0))[:,0]
 
-        last_out = obz
-        for i in range(num_hid_layers):
-            last_out = tf.nn.tanh(U.dense(last_out, hid_size, "polfc%i"%(i+1), weight_init=U.normc_initializer(1.0)))
+        # last_out = obz
+        # for i in range(num_hid_layers):
+        #     last_out = tf.nn.tanh(U.dense(last_out, hid_size, "polfc%i"%(i+1), weight_init=U.normc_initializer(1.0)))
+        ### add conv net instead of using dense
+        self.msize = 64 # change to 64 later
+        self.ssize = 64 
+        self.isize = 11
+        self.available_action_size = 524
+        minimap = obz[:, 0:5*self.msize*self.msize]
+        screen = obz[:, 5*self.msize*self.msize: 5*self.msize*self.msize+ 10*self.ssize*self.ssize]
+        info = obz[:, (5*self.msize*self.msize+10*self.ssize*self.ssize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize)]
+        available_action = obz[:, (5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize+self.available_action_size)]
+
+        mconv1 = layers.conv2d(tf.reshape(minimap, [-1,self.msize,self.msize,5]),
+                   num_outputs=4096,
+                   kernel_size=5,
+                   stride=1,
+                   activation=tf.nn.leaky_relu)
+        mconv2 = layers.conv2d(mconv1,
+                   num_outputs=1024,
+                   kernel_size=3,
+                   stride=1,
+                   activation=tf.nn.leaky_relu,
+                   name="polConv1")
+        sconv1 = layers.conv2d(tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
+                   num_outputs=4096,
+                   kernel_size=5,
+                   activation=tf.nn.leaky_relu,
+                   stride=1)
+        sconv2 = layers.conv2d(sconv1,
+                   num_outputs=1024,
+                   kernel_size=3,
+                   stride=1,
+                   activation=tf.nn.leaky_relu,
+                   name="polConv2")
+        info_fc = layers.fully_connected(layers.flatten(info),
+                   num_outputs=8,
+                   activation_fn=tf.tanh,
+                   name="polfc1")
+
+        aa_fc = layers.fully_connected(layers.flatten(available_action),
+                   num_outputs=64,
+                   activation_fn=tf.tanh,
+                   name="polfc2")
+
+        last_out = tf.concat([layers.flatten(mconv2), layers.flatten(sconv2), info_fc, aa_fc], axis=1, name="polconcat")
+        last_out = tf.nn.tanh(U.dense(last_out, hid_size, "polfc3", weight_init=U.normc_initializer(1.0)))
+
         if gaussian_fixed_var and isinstance(ac_space, gym.spaces.Box):
             mean = U.dense(last_out, pdtype.param_shape()[0]//2, "polfinal", U.normc_initializer(0.01))
             logstd = tf.get_variable(name="logstd", shape=[1, pdtype.param_shape()[0]//2], initializer=tf.zeros_initializer())
