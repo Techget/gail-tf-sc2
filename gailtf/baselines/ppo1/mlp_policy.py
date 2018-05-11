@@ -81,8 +81,8 @@ class MlpPolicy(object):
         #            activation=tf.nn.leaky_relu,
         #            name="polsconv2")
         sconv2 = tf.nn.leaky_relu(U.conv2d(pool1_screen, 64, "polsconv2"))
-        pool2_minimap = tf.layers.max_pooling2d(sconv2, 2, 2, name="polspool2")
-        sconv_flatten = layers.flatten(pool2_minimap)
+        pool2_screen = tf.layers.max_pooling2d(sconv2, 2, 2, name="polspool2")
+        sconv_flatten = layers.flatten(pool2_screen)
 
         info_fc = tf.layers.dense(inputs=layers.flatten(info),
                    units=8,
