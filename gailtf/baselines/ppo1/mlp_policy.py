@@ -53,8 +53,8 @@ class MlpPolicy(object):
                    num_outputs=2048,
                    kernel_size=3,
                    stride=1)
-        pool2_minimap = tf.layers.max_pooling2d(mconv2, 2, 2)
-        mconv_flatten = layers.flatten(pool2_minimap, name="polConv1")
+        pool2_minimap = tf.layers.max_pooling2d(mconv2, 2, 2, name="polConv1")
+        mconv_flatten = layers.flatten(pool2_minimap)
 
         sconv1 = layers.conv2d(tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
                    num_outputs=8192,
@@ -65,8 +65,8 @@ class MlpPolicy(object):
                    num_outputs=2048,
                    kernel_size=3,
                    stride=1)
-        pool2_minimap = tf.layers.max_pooling2d(sconv2, 2, 2)
-        sconv_flatten = layers.flatten(pool2_minimap, name="polConv2")
+        pool2_minimap = tf.layers.max_pooling2d(sconv2, 2, 2, name="polConv2")
+        sconv_flatten = layers.flatten(pool2_minimap)
 
         info_fc = layers.fully_connected(layers.flatten(info),
                    num_outputs=8,
