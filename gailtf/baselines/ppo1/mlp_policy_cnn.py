@@ -25,7 +25,7 @@ class MlpPolicy(object):
         with tf.variable_scope("obfilter"):
             self.ob_rms = RunningMeanStd(shape=ob_space.shape)
 
-        obz = tf.clip_by_value((ob - self.ob_rms.mean) / self.ob_rms.std, -10.0, 10.0)
+        obz = tf.clip_by_value((ob - self.ob_rms.mean) / self.ob_rms.std, -20.0, 20.0)
         last_out = obz
         for i in range(num_hid_layers):
             last_out = tf.nn.tanh(U.dense(last_out, hid_size, "vffc%i"%(i+1), weight_init=U.normc_initializer(1.0)))
@@ -59,9 +59,9 @@ class MlpPolicy(object):
             strides=4,
             name="polmpool1"
         )           # -> (16, 16, 10)
-        # conv2_minimap = tf.layers.conv2d(pool1_minimap, 10, 5, 1, 'same', activation=tf.nn.relu, name="polmconv2")    # -> (16, 16, 10)
-        # pool2_minimap = tf.layers.max_pooling2d(conv2_minimap, 2, 2, name="polmpool2")    # -> (8, 8, 10)
-        flat_minimap = tf.reshape(pool1_minimap, [-1, 16*16*10])          # -> (8*8*10, )
+        conv2_minimap = tf.layers.conv2d(pool1_minimap, 10, 5, 1, 'same', activation=tf.nn.relu, name="polmconv2")    # -> (16, 16, 10)
+        pool2_minimap = tf.layers.max_pooling2d(conv2_minimap, 2, 2, name="polmpool2")    # -> (8, 8, 10)
+        flat_minimap = tf.reshape(pool2_minimap, [-1, 8*8*10])          # -> (8*8*10, )
         # dense_minimap = tf.layers.dense(inputs=flat_minimap, units=1024, activation=tf.nn.relu)
         # # dropout_mininmap = tf.layers.dropout(
         # #     inputs=dense_minimap, rate=0.4, training=mode == tf.estimator.ModeKeys.TRAIN)
@@ -82,9 +82,9 @@ class MlpPolicy(object):
             strides=4,
             name="polspool1"
         )           # -> (16, 16, 20)
-        # conv2_screen = tf.layers.conv2d(pool1_screen, 20, 5, 1, 'same', activation=tf.nn.relu, name="polsconv2") # -> (16, 16, 20)
-        # pool2_screen = tf.layers.max_pooling2d(conv2_screen, 2, 2, name="polspool2")    # -> (8, 8, 20)
-        flat_screen = tf.reshape(pool1_screen, [-1, 16*16*20])          # -> (8*8*20, )
+        conv2_screen = tf.layers.conv2d(pool1_screen, 20, 5, 1, 'same', activation=tf.nn.relu, name="polsconv2") # -> (16, 16, 20)
+        pool2_screen = tf.layers.max_pooling2d(conv2_screen, 2, 2, name="polspool2")    # -> (8, 8, 20)
+        flat_screen = tf.reshape(pool2_screen, [-1, 8*8*20])          # -> (8*8*20, )
         # dense_screen = tf.layers.dense(inputs=flat_screen, units=1024, activation=tf.nn.relu)
         # # dropout_screen = tf.layers.dropout(
         # #     inputs=dense_screen, rate=0.4, training=mode == tf.estimator.ModeKeys.TRAIN)
