@@ -298,8 +298,8 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
         timestep = env.step([ac_with_param])
         state_dict, ob = extract_observation(timestep[0])
         true_rew = timestep[0].reward
-        if true_rew == None:
-            true_rew = 0
+        # if true_rew == None:
+        #     true_rew = 0
         new = timestep[0].last() # check is Done.
         # ob, true_rew, new, _ = 
         rews[i] = rew
@@ -308,7 +308,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
         cur_ep_ret += rew
         cur_ep_true_ret += true_rew
         cur_ep_len += 1
-        print('######new, cur_ep_len, rew, true_rew:', new, cur_ep_len, rew, true_rew)
+        # print('######new, cur_ep_len, rew, true_rew:', new, cur_ep_len, rew, true_rew)
 
         if new:
             ep_rets.append(cur_ep_ret)
@@ -557,7 +557,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         d_losses = [] # list of tuples, each of which gives the loss for a minibatch
         for ob_batch, ac_batch in dataset.iterbatches((ob, ac), 
                include_final_partial_batch=False, batch_size=batch_size):
-            print("###### len(ob_batch): ", len(ob_batch))
+            # print("###### len(ob_batch): ", len(ob_batch))
             ob_expert, ac_expert = expert_dataset.get_next_batch(len(ob_batch))
             # update running mean/std for discriminator
             if hasattr(discriminator, "obs_rms"): discriminator.obs_rms.update(np.concatenate((ob_batch, ob_expert), 0))
@@ -568,10 +568,8 @@ def learn(env, policy_func, discriminator, expert_dataset,
 
 
         lrlocal = (seg["ep_lens"], seg["ep_rets"], seg["ep_true_rets"]) # local values
-        print('##### lrlocal: ', lrlocal)
         listoflrpairs = MPI.COMM_WORLD.allgather(lrlocal) # list of tuples
         lens, rews, true_rets = map(flatten_lists, zip(*listoflrpairs))
-        print("##### lens, rews, true_rets:", lens, rews, true_rets)
         true_rewbuffer.extend(true_rets)
         lenbuffer.extend(lens)
         rewbuffer.extend(rews)
