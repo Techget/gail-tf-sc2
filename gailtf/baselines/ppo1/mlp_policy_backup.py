@@ -24,57 +24,15 @@ class MlpPolicy(object):
         with tf.variable_scope("obfilter"):
             self.ob_rms = RunningMeanStd(shape=ob_space.shape)
 
-        obz = tf.clip_by_value((ob - self.ob_rms.mean) / self.ob_rms.std, -20.0, 20.0)
-        # last_out = obz
-        # for i in range(num_hid_layers):
-        #     last_out = tf.nn.tanh(U.dense(last_out, hid_size, "vffc%i"%(i+1), weight_init=U.normc_initializer(1.0)))
-        # self.vpred = U.dense(last_out, 1, "vffinal", weight_init=U.normc_initializer(1.0))[:,0]
+        obz = tf.clip_by_value((ob - self.ob_rms.mean) / self.ob_rms.std, -10.0, 10.0)
+        last_out = obz
+        for i in range(num_hid_layers):
+            last_out = tf.nn.tanh(U.dense(last_out, hid_size, "vffc%i"%(i+1), weight_init=U.normc_initializer(1.0)))
+        self.vpred = U.dense(last_out, 1, "vffinal", weight_init=U.normc_initializer(1.0))[:,0]
 
-
-        self.msize = 64 # change to 64 later
-        self.ssize = 64 
-        self.isize = 11
-        self.available_action_size = 524
-        minimap = obz[:, 0:5*self.msize*self.msize]
-        screen = obz[:, 5*self.msize*self.msize: 5*self.msize*self.msize+ 10*self.ssize*self.ssize]
-        info = obz[:, (5*self.msize*self.msize+10*self.ssize*self.ssize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize)]
-        available_action = obz[:, (5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize+self.available_action_size)]
-
-        # last_out = obz
-        # for i in range(num_hid_layers):
-        #     last_out = tf.nn.tanh(U.dense(last_out, hid_size, "polfc%i"%(i+1), weight_init=U.normc_initializer(1.0)))
-        last_out_minimap = tf.nn.relu(U.conv2d(minimap, 8, "l1-minimap", [8, 8], [4, 4], pad="VALID"))
-        last_out_minimap = U.flattenallbut0(last_out_minimap)
-        last_out_minimap = tf.nn.relu(U.dense(last_out_minimap, 128, 'lin-minimap', U.normc_initializer(1.0)))
-
-        last_out_screen = tf.nn.relu(U.conv2d(screen, 16, "l1-screen", [8, 8], [4, 4], pad="VALID"))
-        last_out_screen = U.flattenallbut0(last_out_screen)
-        last_out_screen = tf.nn.relu(U.dense(last_out_screen, 350, 'lin-screen', U.normc_initializer(1.0)))
-
-        info_fc = tf.layers.dense(inputs=layers.flatten(info),
-                   units=4,
-                   activation=tf.tanh,
-                   name="poldense1")
-        
-        aa_fc = tf.layers.dense(inputs=layers.flatten(available_action),
-                   units=16,
-                   activation=tf.tanh,
-                   name="poldense2")
-
-        last_out = tf.concat([flat_minimap, flat_screen, info_fc, aa_fc], axis=1, name="polconcat")
-
-
-        logits = U.dense(last_out, pdtype.param_shape()[0], "logits", U.normc_initializer(0.01))
-        self.pd = pdtype.pdfromflat(logits)
-        self.vpred = U.dense(last_out, 1, "value", U.normc_initializer(1.0))[:,0]
-
-        # self.state_in = []
-        # self.state_out = []
-
-        # stochastic = tf.placeholder(dtype=tf.bool, shape=())
-        # ac = self.pd.sample() # XXX
-        # self._act = U.function([stochastic, ob], [ac, self.vpred])
-
+        last_out = obz
+        for i in range(num_hid_layers):
+            last_out = tf.nn.tanh(U.dense(last_out, hid_size, "polfc%i"%(i+1), weight_init=U.normc_initializer(1.0)))
         if gaussian_fixed_var and isinstance(ac_space, gym.spaces.Box):
             mean = U.dense(last_out, pdtype.param_shape()[0]//2, "polfinal", U.normc_initializer(0.01))
             logstd = tf.get_variable(name="logstd", shape=[1, pdtype.param_shape()[0]//2], initializer=tf.zeros_initializer())

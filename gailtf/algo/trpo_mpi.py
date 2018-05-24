@@ -350,6 +350,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         load_model_path=None, task_name=None
         ):
     nworkers = MPI.COMM_WORLD.Get_size()
+    print("##### nworkers: ",nworkers)
     rank = MPI.COMM_WORLD.Get_rank()
     np.set_printoptions(precision=3)    
     # Setup losses and stuff
