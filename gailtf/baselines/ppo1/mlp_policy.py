@@ -26,10 +26,10 @@ class MlpPolicy(object):
             self.ob_rms = RunningMeanStd(shape=ob_space.shape)
 
         obz = tf.clip_by_value((ob - self.ob_rms.mean) / self.ob_rms.std, -20.0, 20.0)
-        # last_out = obz
-        # for i in range(num_hid_layers):
-        #     last_out = tf.nn.tanh(U.dense(last_out, hid_size, "vffc%i"%(i+1), weight_init=U.normc_initializer(1.0)))
-        # self.vpred = U.dense(last_out, 1, "vffinal", weight_init=U.normc_initializer(1.0))[:,0]
+        last_out = obz
+        for i in range(1):
+            last_out = tf.nn.tanh(U.dense(last_out, hid_size, "vffc%i"%(i+1), weight_init=U.normc_initializer(1.0)))
+        self.vpred = U.dense(last_out, 1, "vffinal", weight_init=U.normc_initializer(1.0))[:,0]
 
 
         self.msize = 64 # change to 64 later
@@ -65,11 +65,6 @@ class MlpPolicy(object):
                    name="poldense2")
 
         last_out = tf.concat([last_out_minimap, last_out_screen, info_fc, aa_fc], axis=1, name="polconcat")
-
-
-        logits = U.dense(last_out, pdtype.param_shape()[0], "logits", U.normc_initializer(0.01))
-        self.pd = pdtype.pdfromflat(logits)
-        self.vpred = U.dense(last_out, 1, "value", U.normc_initializer(1.0))[:,0]
 
         # self.state_in = []
         # self.state_out = []
