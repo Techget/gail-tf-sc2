@@ -540,7 +540,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
             with timed("vf"):
                 for _ in range(vf_iters):
                     for (mbob, mbret) in dataset.iterbatches((seg["ob"], seg["tdlamret"]),
-                    include_final_partial_batch=False, batch_size=128):
+                    include_final_partial_batch=False, batch_size=32):
                         if hasattr(pi, "ob_rms"): pi.ob_rms.update(mbob) # update running mean/std for policy
                         g = allmean(compute_vflossandgrad(mbob, mbret))
                         vfadam.update(g, vf_stepsize)
@@ -557,6 +557,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         d_losses = [] # list of tuples, each of which gives the loss for a minibatch
         for ob_batch, ac_batch in dataset.iterbatches((ob, ac), 
                include_final_partial_batch=False, batch_size=batch_size):
+            print("###### len(ob_batch): ", len(ob_batch))
             ob_expert, ac_expert = expert_dataset.get_next_batch(len(ob_batch))
             # update running mean/std for discriminator
             if hasattr(discriminator, "obs_rms"): discriminator.obs_rms.update(np.concatenate((ob_batch, ob_expert), 0))
