@@ -43,11 +43,13 @@ class MlpPolicy(object):
         # last_out = obz
         # for i in range(num_hid_layers):
         #     last_out = tf.nn.tanh(U.dense(last_out, hid_size, "polfc%i"%(i+1), weight_init=U.normc_initializer(1.0)))
-        last_out_minimap = tf.nn.relu(U.conv2d(minimap, 8, "l1-minimap", [8, 8], [4, 4], pad="VALID"))
+        last_out_minimap = tf.nn.relu(U.conv2d(tf.reshape(minimap, [-1,self.msize,self.msize,5]),
+            8, "l1-minimap", [8, 8], [4, 4], pad="VALID"))
         last_out_minimap = U.flattenallbut0(last_out_minimap)
         last_out_minimap = tf.nn.relu(U.dense(last_out_minimap, 128, 'lin-minimap', U.normc_initializer(1.0)))
 
-        last_out_screen = tf.nn.relu(U.conv2d(screen, 16, "l1-screen", [8, 8], [4, 4], pad="VALID"))
+        last_out_screen = tf.nn.relu(U.conv2d(tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
+            16, "l1-screen", [8, 8], [4, 4], pad="VALID"))
         last_out_screen = U.flattenallbut0(last_out_screen)
         last_out_screen = tf.nn.relu(U.dense(last_out_screen, 350, 'lin-screen', U.normc_initializer(1.0)))
 
