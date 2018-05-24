@@ -153,8 +153,6 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
         saver = tf.train.import_meta_graph(saved_model_path+'.meta', clear_devices=True)
         saver.restore(param_sess,saved_model_path)
 
-    # original_graph = tf.get_default_graph()
-
     # placeholder
     minimap_placeholder = original_graph.get_tensor_by_name("minimap_placeholder:0")
     screen_placeholder = original_graph.get_tensor_by_name("screen_placeholder:0")
@@ -208,8 +206,6 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
         one_hot_ac[np.arange(1), [ac]] = 1
         ac_args = []
 
-
-        # reshaped_minimap = 
         reshaped_minimap = np.reshape(np.array(state_dict['minimap']), (64,64,5))
         reshaped_screen = np.reshape(np.array(state_dict['screen']), (64,64,10))
 
@@ -302,6 +298,8 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
         timestep = env.step([ac_with_param])
         state_dict, ob = extract_observation(timestep[0])
         true_rew = timestep[0].reward
+        if true_rew == None:
+            true_rew = 0
         new = timestep[0].last() # check is Done.
         # ob, true_rew, new, _ = 
         rews[i] = rew
@@ -310,6 +308,8 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
         cur_ep_ret += rew
         cur_ep_true_ret += true_rew
         cur_ep_len += 1
+        print('######new, cur_ep_len, rew', new, cur_ep_len, rew)
+
         if new:
             ep_rets.append(cur_ep_ret)
             ep_true_rets.append(cur_ep_true_ret)
