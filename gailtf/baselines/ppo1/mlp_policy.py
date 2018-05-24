@@ -3,6 +3,7 @@ import gailtf.baselines.common.tf_util as U
 import tensorflow as tf
 import gym
 from gailtf.baselines.common.distributions import make_pdtype
+import tensorflow.contrib.layers as layers
 
 class MlpPolicy(object):
     recurrent = False
