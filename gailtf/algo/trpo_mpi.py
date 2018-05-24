@@ -308,7 +308,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
         cur_ep_ret += rew
         cur_ep_true_ret += true_rew
         cur_ep_len += 1
-        print('######new, cur_ep_len, rew', new, cur_ep_len, rew)
+        print('######new, cur_ep_len, rew:', new, cur_ep_len, rew)
 
         if new:
             ep_rets.append(cur_ep_ret)
@@ -570,6 +570,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         lrlocal = (seg["ep_lens"], seg["ep_rets"], seg["ep_true_rets"]) # local values
         listoflrpairs = MPI.COMM_WORLD.allgather(lrlocal) # list of tuples
         lens, rews, true_rets = map(flatten_lists, zip(*listoflrpairs))
+        print("##### lens, rews, true_rets": lens, rews, true_rets)
         true_rewbuffer.extend(true_rets)
         lenbuffer.extend(lens)
         rewbuffer.extend(rews)
