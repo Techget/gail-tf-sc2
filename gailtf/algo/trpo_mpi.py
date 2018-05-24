@@ -21,6 +21,7 @@ from pysc2.lib import static_data
 from pysc2.lib import features
 from pysc2.lib import FUNCTIONS
 # from pysc2.lib import static_data
+from gym import spaces
 
 import math
 
@@ -639,28 +640,68 @@ def evaluate(env, policy_func, load_model_path, timesteps_per_batch, number_traj
     from tqdm import tqdm
     # Setup network
     # ----------------------------------------
-    ob_space = env.observation_space
-    ac_space = env.action_space
+    # ob_space = env.observation_space
+    # ac_space = env.action_space
+    ob_space = spaces.Box(low=-1000, high=10000, shape=(5*64*64 + 10*64*64 + 11 + 524,))
+    ac_space = spaces.Discrete(524)
     pi = policy_func("pi", ob_space, ac_space, reuse=False)
     U.initialize()
     # Prepare for rollouts
     # ----------------------------------------
-    ep_gen = traj_episode_generator(pi, env, timesteps_per_batch, stochastic=stochastic_policy)
+    # ep_gen = traj_episode_generator(pi, env, timesteps_per_batch, stochastic=stochastic_policy)
     U.load_state(load_model_path)
 
-    len_list = []
-    ret_list = []
-    for _ in tqdm(range(number_trajs)):
-        traj = ep_gen.__next__()
-        ep_len, ep_ret = traj['ep_len'], traj['ep_ret']
-        len_list.append(ep_len)
-        ret_list.append(ep_ret)
-    if stochastic_policy: 
-        print ('stochastic policy:')
-    else:
-        print ('deterministic policy:' )
-    print ("Average length:", sum(len_list)/len(len_list))
-    print ("Average return:", sum(ret_list)/len(ret_list))
+    # len_list = []
+    # ret_list = []
+    # for _ in tqdm(range(number_trajs)):
+    #     traj = ep_gen.__next__()
+    #     ep_len, ep_ret = traj['ep_len'], traj['ep_ret']
+    #     len_list.append(ep_len)
+    #     ret_list.append(ep_ret)
+    # if stochastic_policy: 
+    #     print ('stochastic policy:')
+    # else:
+    #     print ('deterministic policy:' )
+    # print ("Average length:", sum(len_list)/len(len_list))
+    # print ("Average return:", sum(ret_list)/len(ret_list))
+
+    original_graph = tf.Graph()
+    param_sess = tf.Session(graph=original_graph) 
+    saved_model_path = os.path.expanduser('~')+'/pysc2-gail-research-project/supervised_learning_baseline/param_pred_model/action_params'
+
+    with original_graph.as_default():
+        saver = tf.train.import_meta_graph(saved_model_path+'.meta', clear_devices=True)
+        saver.restore(param_sess,saved_model_path)
+
+    # placeholder
+    minimap_placeholder = original_graph.get_tensor_by_name("minimap_placeholder:0")
+    screen_placeholder = original_graph.get_tensor_by_name("screen_placeholder:0")
+    user_info_placeholder = original_graph.get_tensor_by_name("user_info_placeholder:0")
+    action_placeholder = original_graph.get_tensor_by_name("action_placeholder:0")
+    # ops
+    control_group_act_cls = original_graph.get_tensor_by_name("control_group_act_cls:0")
+    screen_output_pred = original_graph.get_tensor_by_name("screen_param_prediction:0")
+    minimap_output_pred = original_graph.get_tensor_by_name("minimap_param_prediction:0")
+    screen2_output_pred = original_graph.get_tensor_by_name("screen2_param_prediction:0")
+    queued_pred_cls = original_graph.get_tensor_by_name("queued_pred_cls:0")
+    control_group_id_output = original_graph.get_tensor_by_name("control_group_id_output:0")
+    select_point_act_cls = original_graph.get_tensor_by_name("select_point_act_cls:0")
+    select_add_pred_cls = original_graph.get_tensor_by_name("select_add_pred_cls:0")
+    select_unit_act_cls = original_graph.get_tensor_by_name("select_unit_act_cls:0")
+    select_unit_id_output = original_graph.get_tensor_by_name("select_unit_id_output:0")
+    select_worker_cls = original_graph.get_tensor_by_name("select_worker_cls:0")
+    build_queue_id_output = original_graph.get_tensor_by_name("build_queue_id_output:0")
+    unload_id_output = original_graph.get_tensor_by_name("unload_id_output:0")
+
+
+    timestep = env.reset()
+    state_dict, ob = extract_observation(timestep[0])
+    is_done = False
+
+    while is_done == False:
+        
+
+
 
 def flatten_lists(listoflists):
     return [el for list_ in listoflists for el in list_]
