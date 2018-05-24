@@ -64,7 +64,7 @@ class MlpPolicy(object):
                    activation=tf.tanh,
                    name="poldense2")
 
-        last_out = tf.concat([flat_minimap, flat_screen, info_fc, aa_fc], axis=1, name="polconcat")
+        last_out = tf.concat([last_out_minimap, last_out_screen, info_fc, aa_fc], axis=1, name="polconcat")
 
 
         logits = U.dense(last_out, pdtype.param_shape()[0], "logits", U.normc_initializer(0.01))
