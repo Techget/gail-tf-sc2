@@ -308,7 +308,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
         cur_ep_ret += rew
         cur_ep_true_ret += true_rew
         cur_ep_len += 1
-        print('######new, cur_ep_len, rew:', new, cur_ep_len, rew)
+        print('######new, cur_ep_len, rew, true_rew:', new, cur_ep_len, rew, true_rew)
 
         if new:
             ep_rets.append(cur_ep_ret)
