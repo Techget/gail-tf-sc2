@@ -28,7 +28,7 @@ class MlpPolicy(object):
         # obz = tf.clip_by_value((ob - self.ob_rms.mean) / self.ob_rms.std, -20.0, 20.0)
         obz = (ob - self.ob_rms.mean) / self.ob_rms.std
         last_out = obz
-        for i in range(1):
+        for i in range(num_hid_layers):
             last_out = tf.nn.tanh(U.dense(last_out, hid_size, "vffc%i"%(i+1), weight_init=U.normc_initializer(1.0)))
         self.vpred = U.dense(last_out, 1, "vffinal", weight_init=U.normc_initializer(1.0))[:,0]
 
