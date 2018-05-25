@@ -636,34 +636,13 @@ def traj_episode_generator(pi, env, horizon, stochastic):
 
 def evaluate(env, policy_func, load_model_path, timesteps_per_batch, number_trajs=10, 
          stochastic_policy=False):
-    
-    from tqdm import tqdm
-    # Setup network
-    # ----------------------------------------
-    # ob_space = env.observation_space
-    # ac_space = env.action_space
+    # have it play with scripted bot for one full game
     ob_space = spaces.Box(low=-1000, high=10000, shape=(5*64*64 + 10*64*64 + 11 + 524,))
     ac_space = spaces.Discrete(524)
     pi = policy_func("pi", ob_space, ac_space, reuse=False)
     U.initialize()
-    # Prepare for rollouts
-    # ----------------------------------------
-    # ep_gen = traj_episode_generator(pi, env, timesteps_per_batch, stochastic=stochastic_policy)
+    
     U.load_state(load_model_path)
-
-    # len_list = []
-    # ret_list = []
-    # for _ in tqdm(range(number_trajs)):
-    #     traj = ep_gen.__next__()
-    #     ep_len, ep_ret = traj['ep_len'], traj['ep_ret']
-    #     len_list.append(ep_len)
-    #     ret_list.append(ep_ret)
-    # if stochastic_policy: 
-    #     print ('stochastic policy:')
-    # else:
-    #     print ('deterministic policy:' )
-    # print ("Average length:", sum(len_list)/len(len_list))
-    # print ("Average return:", sum(ret_list)/len(ret_list))
 
     original_graph = tf.Graph()
     param_sess = tf.Session(graph=original_graph) 
@@ -693,12 +672,110 @@ def evaluate(env, policy_func, load_model_path, timesteps_per_batch, number_traj
     build_queue_id_output = original_graph.get_tensor_by_name("build_queue_id_output:0")
     unload_id_output = original_graph.get_tensor_by_name("unload_id_output:0")
 
-
-    timestep = env.reset()
-    state_dict, ob = extract_observation(timestep[0])
+    timesteps = env.reset()
+    state_dict, ob = extract_observation(timesteps[0])
     is_done = False
 
-    # while is_done == False:
+    while is_done == False:
+        ac, vpred = pi.act(stochastic, ob)
+        function_type = sc_action.FUNCTIONS[ac].function_type.__name__
+        one_hot_ac = np.zeros((1, 524)) # shape will be 1*254
+        one_hot_ac[np.arange(1), [ac]] = 1
+        ac_args = []
+
+        reshaped_minimap = np.reshape(np.array(state_dict['minimap']), (64,64,5))
+        reshaped_screen = np.reshape(np.array(state_dict['screen']), (64,64,10))
+
+        feed_dict = {minimap_placeholder: [reshaped_minimap], 
+                screen_placeholder: [reshaped_screen], 
+                action_placeholder: one_hot_ac, 
+                user_info_placeholder: [state_dict['player']]}
+
+        if function_type == 'move_camera':
+            temp_arg1 = param_sess.run([minimap_output_pred], feed_dict) # temp_arg1 is look like [[[x, y]]]
+            # shape of minimap output is different from screen and screen2
+            temp_arg1 = process_coordinates_param_nn_output(temp_arg1[0])
+            ac_args.append(temp_arg1)
+        elif function_type == 'select_point':
+            temp_arg1, temp_arg2 = param_sess.run([select_point_act_cls, screen_output_pred], feed_dict)
+            ac_args.append(temp_arg1)
+            temp_arg2 = process_coordinates_param_nn_output(temp_arg2)
+            ac_args.append(temp_arg2)
+        elif function_type == 'select_rect':
+            temp_arg1,temp_arg2, temp_arg3 = param_sess.run([select_add_pred_cls, screen_output_pred, screen2_output_pred],
+                feed_dict)
+            ac_args.append(temp_arg1)
+            temp_arg2 = process_coordinates_param_nn_output(temp_arg2)
+            ac_args.append(temp_arg2)
+            temp_arg3 = process_coordinates_param_nn_output(temp_arg3)
+            ac_args.append(temp_arg3)
+        elif function_type == 'select_unit':
+            temp_arg1, temp_arg2 = param_sess.run([select_unit_act_cls, select_unit_id_output], feed_dict)
+            temp_arg1 = flatten_param(temp_arg1)
+            temp_arg2 = flatten_param(temp_arg2)
+            temp_arg2 = temp_arg2.astype(int)
+            ac_args.append(temp_arg1)
+            ac_args.append(temp_arg2)
+        elif function_type == 'control_group':
+            temp_arg1, temp_arg2 = param_sess.run([control_group_act_cls, control_group_id_output], feed_dict)
+            temp_arg1 = flatten_param(temp_arg1)
+            temp_arg2 = flatten_param(temp_arg2)
+            temp_arg2 = temp_arg2.astype(int)
+            ac_args.append(temp_arg1)
+            ac_args.append(temp_arg2)
+        elif function_type == 'select_idle_worker':
+            temp_arg1 = param_sess.run([select_worker_cls], feed_dict)
+            temp_arg1 = flatten_param(temp_arg1)
+            ac_args.append(temp_arg1)
+        elif function_type == 'select_army':
+            temp_arg1 = param_sess.run([select_add_pred_cls], feed_dict)
+            temp_arg1 = flatten_param(temp_arg1)
+            ac_args.append(temp_arg1)
+        elif function_type == 'select_warp_gates':
+            temp_arg1 = param_sess.run([select_add_pred_cls], feed_dict)
+            temp_arg1 = flatten_param(temp_arg1)
+            ac_args.append(temp_arg1)
+        elif function_type == 'unload':
+            temp_arg1 = param_sess.run([unload_id_output], feed_dict)
+            temp_arg1 = flatten_param(temp_arg1)
+            temp_arg1 = temp_arg1.astype(int)
+            ac_args.append(temp_arg1)
+        elif function_type == 'build_queue':
+            temp_arg1 = param_sess.run([build_queue_id_output], feed_dict)
+            temp_arg1 = flatten_param(temp_arg1)
+            temp_arg1 = temp_arg1.astype(int)
+            ac_args.append(temp_arg1)
+        elif function_type == 'cmd_quick':
+            temp_arg1 = param_sess.run([queued_pred_cls], feed_dict)
+            # print('cmd_quick queued param:', temp_arg1)
+            temp_arg1 = flatten_param(temp_arg1)
+            ac_args.append(temp_arg1)
+        elif function_type == 'cmd_screen':
+            temp_arg1, temp_arg2 = param_sess.run([queued_pred_cls, screen_output_pred], feed_dict)
+            temp_arg1 = np.array(temp_arg1)
+            temp_arg1 = temp_arg1.flatten()
+            ac_args.append(temp_arg1)
+            temp_arg2 = process_coordinates_param_nn_output(temp_arg2)
+            ac_args.append(temp_arg2)
+        elif function_type == 'cmd_minimap':
+            temp_arg1, temp_arg2 = param_sess.run([queued_pred_cls, minimap_output_pred], feed_dict)
+            temp_arg1 = np.array(temp_arg1)
+            temp_arg1 = temp_arg1.flatten()
+            ac_args.append(temp_arg1)
+            temp_arg2 = process_coordinates_param_nn_output(temp_arg2[0])
+            ac_args.append(temp_arg2)
+        elif function_type == 'no_op' or function_type == 'select_larva' or function_type == 'autocast':
+            # do nothing
+            pass
+        else:
+            print("UNKNOWN FUNCTION TYPE: ", function_type)
+
+        # print(ac_args)
+        ac_with_param = sc_action.FunctionCall(ac, ac_args)
+        timesteps = env.step([ac_with_param])
+        state_dict, ob = extract_observation(timesteps[0])
+        is_done = timesteps[0].last()
+
 
 def flatten_lists(listoflists):
     return [el for list_ in listoflists for el in list_]

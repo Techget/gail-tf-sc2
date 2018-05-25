@@ -60,15 +60,17 @@ class MlpPolicy(object):
             filters=32,
             kernel_size=[5, 5],
             padding="same",
-            activation=tf.nn.relu)
-        mpool1 = tf.layers.max_pooling2d(inputs=mconv1, pool_size=[2, 2], strides=2)
+            activation=tf.nn.relu,
+            name="polmconv1")
+        mpool1 = tf.layers.max_pooling2d(inputs=mconv1, pool_size=[2, 2], strides=2, name="polmpool1")
         mconv2 = tf.layers.conv2d(
             inputs=mpool1,
             filters=64,
             kernel_size=[5, 5],
             padding="same",
-            activation=tf.nn.relu)
-        mpool2 = tf.layers.max_pooling2d(inputs=mconv2, pool_size=[2, 2], strides=2)
+            activation=tf.nn.relu,
+            name="polmconv2")
+        mpool2 = tf.layers.max_pooling2d(inputs=mconv2, pool_size=[2, 2], strides=2, name="polmpool2")
         mpool2_flat = tf.reshape(mpool2, [-1, 16 * 16 * 64])
 
         sconv1 = tf.layers.conv2d(
@@ -76,15 +78,17 @@ class MlpPolicy(object):
             filters=48,
             kernel_size=[5, 5],
             padding="same",
-            activation=tf.nn.relu)
-        spool1 = tf.layers.max_pooling2d(inputs=sconv1, pool_size=[2, 2], strides=2)
+            activation=tf.nn.relu,
+            name="polsconv1")
+        spool1 = tf.layers.max_pooling2d(inputs=sconv1, pool_size=[2, 2], strides=2, name="polspool1")
         sconv2 = tf.layers.conv2d(
             inputs=spool1,
             filters=80,
             kernel_size=[5, 5],
             padding="same",
-            activation=tf.nn.relu)
-        spool2 = tf.layers.max_pooling2d(inputs=sconv2, pool_size=[2, 2], strides=2)
+            activation=tf.nn.relu,
+            name="polsconv2")
+        spool2 = tf.layers.max_pooling2d(inputs=sconv2, pool_size=[2, 2], strides=2, name="poolspool2")
         spool2_flat = tf.reshape(spool2, [-1, 16 * 16 * 80])
 
         info_fc = tf.layers.dense(inputs=layers.flatten(info),

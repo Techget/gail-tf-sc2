@@ -90,14 +90,6 @@ class TransitionClassifier(object):
       info = obs_ph[:, (5*self.msize*self.msize+10*self.ssize*self.ssize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize)]
       available_action = obs_ph[:, (5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize+self.available_action_size)]
 
-      # mconv1 = layers.conv2d(tf.reshape(minimap, [-1,self.msize,self.msize,5]),
-      #              num_outputs=16,
-      #              kernel_size=5,
-      #              stride=1)
-      # mconv2 = layers.conv2d(mconv1,
-      #              num_outputs=32,
-      #              kernel_size=3,
-      #              stride=1)
       mconv1 = tf.layers.conv2d(
         inputs=tf.reshape(minimap, [-1,self.msize,self.msize,5]),
         filters=32,
@@ -158,7 +150,6 @@ class TransitionClassifier(object):
       acs = np.expand_dims(acs, 0)
 
     acs = [acs]
-    # print('~~~~~~',acs)
     feed_dict = {self.generator_obs_ph:obs, self.generator_acs_ph:acs}
     reward = sess.run(self.reward_op, feed_dict)
     return reward
