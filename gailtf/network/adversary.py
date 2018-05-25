@@ -102,7 +102,7 @@ class TransitionClassifier(object):
       mpool1 = tf.layers.max_pooling2d(inputs=mconv1, pool_size=[2, 2], strides=2)
       mconv2 = tf.layers.conv2d(
         inputs=mpool1,
-        filters=48,
+        filters=64,
         kernel_size=[5, 5],
         padding="same",
         activation=tf.nn.relu)
@@ -111,14 +111,14 @@ class TransitionClassifier(object):
 
       sconv1 = tf.layers.conv2d(
         inputs=tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
-        filters=32,
+        filters=48,
         kernel_size=[5, 5],
         padding="same",
         activation=tf.nn.relu)
       spool1 = tf.layers.max_pooling2d(inputs=sconv1, pool_size=[2, 2], strides=2)
       sconv2 = tf.layers.conv2d(
         inputs=spool1,
-        filters=64,
+        filters=80,
         kernel_size=[5, 5],
         padding="same",
         activation=tf.nn.relu)

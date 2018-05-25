@@ -95,12 +95,12 @@ class MlpPolicy(object):
         spool2_flat = tf.reshape(spool2, [-1, 16 * 16 * 80])
 
         info_fc = tf.layers.dense(inputs=layers.flatten(info),
-                   units=4,
+                   units=8,
                    activation=tf.tanh,
                    name="poldense1")
         
         aa_fc = tf.layers.dense(inputs=layers.flatten(available_action),
-                   units=16,
+                   units=32,
                    activation=tf.tanh,
                    name="poldense2")
 

@@ -98,7 +98,7 @@ class SC2Dataset(object):
             temp_obs = []
             temp_acs = []
 
-            j = random.randint(0, loaded_replay_state_length)
+            j = random.randint(0, loaded_replay_state_length-1)
 
             if self.loaded_replay['state'][j]['player'][0] == self.win_player_id:
                 if len(self.loaded_replay['state'][j]['actions']) == 0:
