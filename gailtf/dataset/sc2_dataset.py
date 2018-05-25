@@ -6,6 +6,8 @@ import ipdb
 import os
 from google.protobuf.json_format import MessageToJson
 import json
+from datetime import datetime
+import random
 
 class Dset(object):
     def __init__(self, inputs, labels, randomize):
@@ -85,27 +87,33 @@ class SC2Dataset(object):
 
         obs = []
         acs = []
-        for i in range(self.loaded_replay_pointer, len(self.loaded_replay['state'])):
+        obs = []
+        acs = []
+        loaded_replay_state_length = len(self.loaded_replay['state'])
+        random.seed(datetime.now())
+        for i in range(self.loaded_replay_pointer, loaded_replay_state_length):
             if len(obs) >= batch_size:
                 break
             self.loaded_replay_pointer += 1
             temp_obs = []
             temp_acs = []
 
-            if self.loaded_replay['state'][i]['player'][0] == self.win_player_id:
-                if len(self.loaded_replay['state'][i]['actions']) == 0:
+            j = random.randint(0, loaded_replay_state_length)
+
+            if self.loaded_replay['state'][j]['player'][0] == self.win_player_id:
+                if len(self.loaded_replay['state'][j]['actions']) == 0:
                     continue
 
-                for x in self.loaded_replay['state'][i]['minimap']:
+                for x in self.loaded_replay['state'][j]['minimap']:
                     temp_obs.extend(list(x.flatten()))
 
-                for x in self.loaded_replay['state'][i]['screen']:
+                for x in self.loaded_replay['state'][j]['screen']:
                     temp_obs.extend(list(x.flatten()))
 
-                temp_obs.extend(list(self.loaded_replay['state'][i]['player']))
-                temp_obs.extend(list(self.loaded_replay['state'][i]['available_actions']))
+                temp_obs.extend(list(self.loaded_replay['state'][j]['player']))
+                temp_obs.extend(list(self.loaded_replay['state'][j]['available_actions']))
 
-                for a in self.loaded_replay['state'][i]['actions']:
+                for a in self.loaded_replay['state'][j]['actions']:
                     # one captured state, may have multiple actions, so output should be the
                     # same observation with different action ids
                     obs.append(temp_obs)
