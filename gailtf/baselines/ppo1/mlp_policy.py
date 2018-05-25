@@ -37,8 +37,11 @@ class MlpPolicy(object):
         self.isize = 11
         self.available_action_size = 524
         minimap = obz[:, 0:5*self.msize*self.msize]
+        minimap /= 8.0
         screen = obz[:, 5*self.msize*self.msize: 5*self.msize*self.msize+ 10*self.ssize*self.ssize]
+        screen /= 8.0
         info = obz[:, (5*self.msize*self.msize+10*self.ssize*self.ssize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize)]
+        info /= 10.0
         available_action = obz[:, (5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize+self.available_action_size)]
 
         # last_out = obz
