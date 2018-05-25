@@ -26,7 +26,7 @@ class MlpPolicy(object):
             self.ob_rms = RunningMeanStd(shape=ob_space.shape)
 
         # obz = tf.clip_by_value((ob - self.ob_rms.mean) / self.ob_rms.std, -20.0, 20.0)
-        obz = (obs_ph - self.obs_rms.mean) / self.obs_rms.std
+        obz = (ob - self.obs_rms.mean) / self.obs_rms.std
         last_out = obz
         for i in range(1):
             last_out = tf.nn.tanh(U.dense(last_out, hid_size, "vffc%i"%(i+1), weight_init=U.normc_initializer(1.0)))
