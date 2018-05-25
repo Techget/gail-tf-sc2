@@ -118,3 +118,6 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+
+param_pred_model/
