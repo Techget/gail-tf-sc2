@@ -698,10 +698,7 @@ def evaluate(env, policy_func, load_model_path, timesteps_per_batch, number_traj
     state_dict, ob = extract_observation(timestep[0])
     is_done = False
 
-    while is_done == False:
-        
-
-
+    # while is_done == False:
 
 def flatten_lists(listoflists):
     return [el for list_ in listoflists for el in list_]
