@@ -646,7 +646,7 @@ def evaluate(env, policy_func, load_model_path, timesteps_per_batch, number_traj
 
     original_graph = tf.Graph()
     param_sess = tf.Session(graph=original_graph) 
-    saved_model_path = os.path.expanduser('~')+'/pysc2-gail-research-project/supervised_learning_baseline/param_pred_model/action_params'
+    saved_model_path = 'param_pred_model/action_params'
 
     with original_graph.as_default():
         saver = tf.train.import_meta_graph(saved_model_path+'.meta', clear_devices=True)

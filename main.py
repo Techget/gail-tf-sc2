@@ -24,7 +24,7 @@ def argsparser():
     parser.add_argument('--log_dir', help='the directory to save log file', default='log')
     parser.add_argument('--load_model_path', help='if provided, load the model', type=str, default=None)
     # Task
-    parser.add_argument('--task', type=str, choices=['train', 'evaluate'], default='train')
+    parser.add_argument('--task', type=str, choices=['train', 'evaluate'], default='evaluate')
     # for evaluatation
     parser.add_argument('--stochastic_policy', type=bool, default=False)
     #  Mujoco Dataset Configuration
@@ -81,7 +81,7 @@ def main(args):
         step_mul=8,
         screen_size_px=(64,64), # will change to (64,64)
         minimap_size_px=(64,64),
-        visualize=False) 
+        visualize=True) 
 
     def policy_fn(name, ob_space, ac_space, reuse=False):
         return mlp_policy.MlpPolicy(name=name, ob_space=ob_space, ac_space=ac_space,
@@ -94,7 +94,7 @@ def main(args):
     args.checkpoint_dir = osp.join(args.checkpoint_dir, task_name)
     args.log_dir = osp.join(args.log_dir, task_name)
     # dataset = Mujoco_Dset(expert_path=args.expert_path, ret_threshold=args.ret_threshold, traj_limitation=args.traj_limitation)
-    dataset = SC2Dataset(expert_path=args.expert_path)
+    # dataset = SC2Dataset(expert_path=args.expert_path)
     pretrained_weight = None
     # if (args.pretrained and args.task == 'train') or args.algo == 'bc':
     #     # Pretrain with behavior cloning
@@ -134,7 +134,7 @@ def main(args):
                 save_per_iter=args.save_per_iter, load_model_path=args.load_model_path,
                 task_name=task_name)
         elif args.task == 'evaluate':
-            trpo_mpi.evaluate(env, policy_fn, args.checkpoint_dir, timesteps_per_batch=1024,
+            trpo_mpi.evaluate(env, policy_fn, 'checkpoint/trpo_gail.sc2.g_step_3.d_step_1.policy_entcoeff_0.adversary_entcoeff_0.001-100', timesteps_per_batch=1024,
                 number_trajs=10, stochastic_policy=args.stochastic_policy)
         else: raise NotImplementedError
     else: raise NotImplementedError
