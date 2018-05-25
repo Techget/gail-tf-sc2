@@ -532,6 +532,9 @@ def learn(env, policy_func, discriminator, expert_dataset,
                         logger.log("Stepsize OK!")
                         break
                     stepsize *= .5
+                    if np.allclose(stepsize, 0):
+                        logger.log("stepsize close to 0, increasing step")
+                        stepsize *= 2
                 else:
                     logger.log("couldn't compute a good step")
                     set_from_flat(thbefore)
