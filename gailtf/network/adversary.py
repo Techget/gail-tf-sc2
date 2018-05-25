@@ -90,22 +90,46 @@ class TransitionClassifier(object):
       info = obs_ph[:, (5*self.msize*self.msize+10*self.ssize*self.ssize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize)]
       available_action = obs_ph[:, (5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize+self.available_action_size)]
 
-      mconv1 = layers.conv2d(tf.reshape(minimap, [-1,self.msize,self.msize,5]),
-                   num_outputs=256,
-                   kernel_size=5,
-                   stride=1)
-      mconv2 = layers.conv2d(mconv1,
-                   num_outputs=128,
-                   kernel_size=3,
-                   stride=1)
-      sconv1 = layers.conv2d(tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
-                   num_outputs=300,
-                   kernel_size=5,
-                   stride=1)
-      sconv2 = layers.conv2d(sconv1,
-                   num_outputs=200,
-                   kernel_size=3,
-                   stride=1)
+      # mconv1 = layers.conv2d(tf.reshape(minimap, [-1,self.msize,self.msize,5]),
+      #              num_outputs=16,
+      #              kernel_size=5,
+      #              stride=1)
+      # mconv2 = layers.conv2d(mconv1,
+      #              num_outputs=32,
+      #              kernel_size=3,
+      #              stride=1)
+      mconv1 = tf.layers.conv2d(
+        inputs=tf.reshape(minimap, [-1,self.msize,self.msize,5]),
+        filters=32,
+        kernel_size=[5, 5],
+        padding="same",
+        activation=tf.nn.relu)
+      mpool1 = tf.layers.max_pooling2d(inputs=mconv1, pool_size=[2, 2], strides=2)
+      mconv2 = tf.layers.conv2d(
+        inputs=mpool1,
+        filters=48,
+        kernel_size=[5, 5],
+        padding="same",
+        activation=tf.nn.relu)
+      mpool2 = tf.layers.max_pooling2d(inputs=mconv2, pool_size=[2, 2], strides=2)
+      mpool2_flat = tf.reshape(mpool2, [-1, 16 * 16 * 48])
+
+      sconv1 = tf.layers.conv2d(
+        inputs=tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
+        filters=32,
+        kernel_size=[5, 5],
+        padding="same",
+        activation=tf.nn.relu)
+      spool1 = tf.layers.max_pooling2d(inputs=sconv1, pool_size=[2, 2], strides=2)
+      sconv2 = tf.layers.conv2d(
+        inputs=spool1,
+        filters=64,
+        kernel_size=[5, 5],
+        padding="same",
+        activation=tf.nn.relu)
+      spool2 = tf.layers.max_pooling2d(inputs=sconv2, pool_size=[2, 2], strides=2)
+      spool2_flat = tf.reshape(spool2, [-1, 16 * 16 * 64])
+
       info_fc = layers.fully_connected(layers.flatten(info),
                    num_outputs=8,
                    activation_fn=tf.tanh)
@@ -114,35 +138,10 @@ class TransitionClassifier(object):
                    num_outputs=32,
                    activation_fn=tf.tanh)
 
-      # feat_conv = tf.concat([mconv2, sconv2], axis=3)
-      # spatial_action = layers.conv2d(feat_conv,
-      #                                 num_outputs=1,
-      #                                 kernel_size=1,
-      #                                 stride=1,
-      #                                 activation_fn=None,
-      #                                 scope='spatial_action')
-      # self.spatial_action = tf.nn.softmax(layers.flatten(spatial_action))
-
-      # # Compute non spatial actions and value
-      # feat_fc = tf.concat([layers.flatten(mconv2), layers.flatten(sconv2), info_fc, aa_fc], axis=1)
-      # feat_fc = layers.fully_connected(feat_fc,
-      #                                  num_outputs=256,
-      #                                  activation_fn=tf.nn.relu,
-      #                                  scope='feat_fc')
-      # self.non_spatial_action = layers.fully_connected(feat_fc,
-      #                                             num_outputs=num_action,
-      #                                             activation_fn=tf.nn.softmax,
-      #                                             scope='non_spatial_action')
-      # self.value = tf.reshape(layers.fully_connected(feat_fc,
-      #                                           num_outputs=1,
-      #                                           activation_fn=None,
-      #                                           scope='value'), [-1])
-
-
       # _input = tf.concat([obs, acs_ph], axis=1) # concatenate the two input -> form a transition
       acs_ph_temp = tf.identity(acs_ph)
       acs_ph_temp = tf.expand_dims(acs_ph_temp, 1)
-      _input = tf.concat([layers.flatten(mconv2), layers.flatten(sconv2), info_fc, aa_fc, acs_ph_temp], axis=1)
+      _input = tf.concat([mpool2_flat, spool2_flat, info_fc, aa_fc, acs_ph_temp], axis=1)
       p_h1 = tf.contrib.layers.fully_connected(_input, self.hidden_size, activation_fn=tf.nn.tanh)
       p_h2 = tf.contrib.layers.fully_connected(p_h1, self.hidden_size, activation_fn=tf.nn.tanh)
       logits = tf.contrib.layers.fully_connected(p_h2, 1, activation_fn=tf.identity)

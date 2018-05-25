@@ -44,15 +44,48 @@ class MlpPolicy(object):
         # last_out = obz
         # for i in range(num_hid_layers):
         #     last_out = tf.nn.tanh(U.dense(last_out, hid_size, "polfc%i"%(i+1), weight_init=U.normc_initializer(1.0)))
-        last_out_minimap = tf.nn.relu(U.conv2d(tf.reshape(minimap, [-1,self.msize,self.msize,5]),
-            8, "l1-minimap", [8, 8], [4, 4], pad="VALID"))
-        last_out_minimap = U.flattenallbut0(last_out_minimap)
-        last_out_minimap = tf.nn.relu(U.dense(last_out_minimap, 128, 'lin-minimap', U.normc_initializer(1.0)))
+        # last_out_minimap = tf.nn.relu(U.conv2d(tf.reshape(minimap, [-1,self.msize,self.msize,5]),
+        #     8, "l1-minimap", [8, 8], [4, 4], pad="VALID"))
+        # last_out_minimap = U.flattenallbut0(last_out_minimap)
+        # last_out_minimap = tf.nn.relu(U.dense(last_out_minimap, 128, 'lin-minimap', U.normc_initializer(1.0)))
 
-        last_out_screen = tf.nn.relu(U.conv2d(tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
-            16, "l1-screen", [8, 8], [4, 4], pad="VALID"))
-        last_out_screen = U.flattenallbut0(last_out_screen)
-        last_out_screen = tf.nn.relu(U.dense(last_out_screen, 350, 'lin-screen', U.normc_initializer(1.0)))
+        # last_out_screen = tf.nn.relu(U.conv2d(tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
+        #     16, "l1-screen", [8, 8], [4, 4], pad="VALID"))
+        # last_out_screen = U.flattenallbut0(last_out_screen)
+        # last_out_screen = tf.nn.relu(U.dense(last_out_screen, 350, 'lin-screen', U.normc_initializer(1.0)))
+
+
+        mconv1 = tf.layers.conv2d(
+            inputs=tf.reshape(minimap, [-1,self.msize,self.msize,5]),
+            filters=32,
+            kernel_size=[5, 5],
+            padding="same",
+            activation=tf.nn.relu)
+        mpool1 = tf.layers.max_pooling2d(inputs=mconv1, pool_size=[2, 2], strides=2)
+        mconv2 = tf.layers.conv2d(
+            inputs=mpool1,
+            filters=64,
+            kernel_size=[5, 5],
+            padding="same",
+            activation=tf.nn.relu)
+        mpool2 = tf.layers.max_pooling2d(inputs=mconv2, pool_size=[2, 2], strides=2)
+        mpool2_flat = tf.reshape(mpool2, [-1, 16 * 16 * 64])
+
+        sconv1 = tf.layers.conv2d(
+            inputs=tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
+            filters=48,
+            kernel_size=[5, 5],
+            padding="same",
+            activation=tf.nn.relu)
+        spool1 = tf.layers.max_pooling2d(inputs=sconv1, pool_size=[2, 2], strides=2)
+        sconv2 = tf.layers.conv2d(
+            inputs=spool1,
+            filters=80,
+            kernel_size=[5, 5],
+            padding="same",
+            activation=tf.nn.relu)
+        spool2 = tf.layers.max_pooling2d(inputs=sconv2, pool_size=[2, 2], strides=2)
+        spool2_flat = tf.reshape(spool2, [-1, 16 * 16 * 80])
 
         info_fc = tf.layers.dense(inputs=layers.flatten(info),
                    units=4,
@@ -64,7 +97,7 @@ class MlpPolicy(object):
                    activation=tf.tanh,
                    name="poldense2")
 
-        last_out = tf.concat([last_out_minimap, last_out_screen, info_fc, aa_fc], axis=1, name="polconcat")
+        last_out = tf.concat([mpool2_flat, spool2_flat, info_fc, aa_fc], axis=1, name="polconcat")
 
         # self.state_in = []
         # self.state_out = []
