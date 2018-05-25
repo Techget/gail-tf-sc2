@@ -134,7 +134,7 @@ def main(args):
                 save_per_iter=args.save_per_iter, load_model_path=args.load_model_path,
                 task_name=task_name)
         elif args.task == 'evaluate':
-            trpo_mpi.evaluate(env, policy_fn, args.load_model_path, timesteps_per_batch=1024,
+            trpo_mpi.evaluate(env, policy_fn, args.checkpoint_dir, timesteps_per_batch=1024,
                 number_trajs=10, stochastic_policy=args.stochastic_policy)
         else: raise NotImplementedError
     else: raise NotImplementedError
