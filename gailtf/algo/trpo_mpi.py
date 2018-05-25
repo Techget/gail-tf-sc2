@@ -772,7 +772,9 @@ def evaluate(env, policy_func, load_model_path, timesteps_per_batch, number_traj
 
         # print(ac_args)
         ac_with_param = sc_action.FunctionCall(ac, ac_args)
+        print('take action with param: ', ac_with_param)
         timesteps = env.step([ac_with_param])
+        print('env reward: ', timestep[0].reward)
         state_dict, ob = extract_observation(timesteps[0])
         is_done = timesteps[0].last()
 
