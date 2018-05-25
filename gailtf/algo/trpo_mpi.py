@@ -677,7 +677,7 @@ def evaluate(env, policy_func, load_model_path, timesteps_per_batch, number_traj
     is_done = False
 
     while is_done == False:
-        ac, vpred = pi.act(stochastic, ob)
+        ac, vpred = pi.act(stochastic_policy, ob)
         function_type = sc_action.FUNCTIONS[ac].function_type.__name__
         one_hot_ac = np.zeros((1, 524)) # shape will be 1*254
         one_hot_ac[np.arange(1), [ac]] = 1
