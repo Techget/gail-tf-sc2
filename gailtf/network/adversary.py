@@ -81,17 +81,17 @@ class TransitionClassifier(object):
       if reuse:
         tf.get_variable_scope().reuse_variables()
 
-      # with tf.variable_scope("obfilter"):
-      #     self.obs_rms = RunningMeanStd(shape=self.observation_shape)
-      # obs = (obs_ph - self.obs_rms.mean) / self.obs_rms.std
+      with tf.variable_scope("obfilter"):
+          self.obs_rms = RunningMeanStd(shape=self.observation_shape)
+      obs = (obs_ph - self.obs_rms.mean) / self.obs_rms.std
 
-      minimap = obs_ph[:, 0:5*self.msize*self.msize]
+      minimap = obs[:, 0:5*self.msize*self.msize]
       minimap /= 8
-      screen = obs_ph[:, 5*self.msize*self.msize: 5*self.msize*self.msize+ 10*self.ssize*self.ssize]
+      screen = obs[:, 5*self.msize*self.msize: 5*self.msize*self.msize+ 10*self.ssize*self.ssize]
       screen /= 8
-      info = obs_ph[:, (5*self.msize*self.msize+10*self.ssize*self.ssize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize)]
+      info = obs[:, (5*self.msize*self.msize+10*self.ssize*self.ssize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize)]
       info /= 10
-      available_action = obs_ph[:, (5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize+self.available_action_size)]
+      available_action = obs[:, (5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize+self.available_action_size)]
 
       mconv1 = tf.layers.conv2d(
         inputs=tf.reshape(minimap, [-1,self.msize,self.msize,5]),
