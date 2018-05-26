@@ -154,7 +154,7 @@ class CategoricalPd(Pd):
         return U.sum(p0 * (tf.log(z0) - a0), axis=-1)
     def sample(self,available_action):
         u = tf.random_uniform(tf.shape(self.logits))
-
+        print(u)
         available_u = u[available_action]
         available_logits = self.logits[available_action]
 
