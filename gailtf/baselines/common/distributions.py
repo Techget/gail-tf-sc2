@@ -126,11 +126,13 @@ class CategoricalPd(Pd):
     def flatparam(self):
         return self.logits
     def mode(self, available_action):
-        temp_logits = self.logits[0]
-        temp_logits = temp_logits.flatten()
-        available_logits = temp_logits[available_action]
-        index = U.argmax(available_logits, axis=-1)
-        return available_action[np.array(index, dtype=np.int32)]
+        available_act = tf.argmax(available_action, axis=1)
+        available_logits = tf.gather(self.logits, available_act, axis=1)
+
+        index_for_available_act = U.argmax(available_logits, axis=1)
+        act = tf.gather(available_act, index_for_available_act, axis=-1)
+
+        return act
     def neglogp(self, x):
         # return tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=x)
         # Note: we can't use sparse_softmax_cross_entropy_with_logits because
@@ -160,9 +162,9 @@ class CategoricalPd(Pd):
         u = tf.random_uniform(tf.shape(self.logits))
         available_u = tf.gather(u, available_act, axis=1)
         available_logits = tf.gather(self.logits, available_act, axis=1)
-        index_for_availabe_action = tf.argmax(available_logits - tf.log(-tf.log(available_u)), axis=-1)
-        act = tf.gather(available_act, index_for_availabe_action, axis=1)
-        print(tf.shape(act))
+        index_for_available_act = tf.argmax(available_logits - tf.log(-tf.log(available_u)), axis=-1)
+        act = tf.gather(available_act, index_for_available_act, axis=-1)
+        # print(tf.shape(act))
         return act
     @classmethod
     def fromflat(cls, flat):
