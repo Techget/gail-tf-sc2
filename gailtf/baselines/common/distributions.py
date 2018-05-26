@@ -125,8 +125,10 @@ class CategoricalPd(Pd):
         self.logits = logits
     def flatparam(self):
         return self.logits
-    def mode(self):
-        return U.argmax(self.logits, axis=-1)
+    def mode(self, available_action):
+        available_logits = self.logits[available_action]
+        index = U.argmax(available_logits, axis=-1)
+        return available_action[index]
     def neglogp(self, x):
         # return tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=x)
         # Note: we can't use sparse_softmax_cross_entropy_with_logits because
@@ -150,9 +152,14 @@ class CategoricalPd(Pd):
         z0 = U.sum(ea0, axis=-1, keepdims=True)
         p0 = ea0 / z0
         return U.sum(p0 * (tf.log(z0) - a0), axis=-1)
-    def sample(self):
+    def sample(self,available_action):
         u = tf.random_uniform(tf.shape(self.logits))
-        return tf.argmax(self.logits - tf.log(-tf.log(u)), axis=-1)
+
+        available_u = u[available_action]
+        available_logits = self.logits[available_action]
+
+        index = tf.argmax(available_logits - tf.log(-tf.log(available_u)), axis=-1)
+        return available_action[index]
     @classmethod
     def fromflat(cls, flat):
         return cls(flat)
