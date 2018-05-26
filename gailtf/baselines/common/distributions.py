@@ -158,9 +158,9 @@ class CategoricalPd(Pd):
         indexes = tf.argmax(available_action, axis=1)
 
         u = tf.random_uniform(tf.shape(self.logits))
-        u_available = u[indexes]
+        u_available = tf.gather(u, indexes, axis=1)
 
-        print(u_available.shape)
+        print(tf.shape(u_available))
 
         logits_available = self.logits[indexes]
         # tf.argmax(self.logits - tf.log(-tf.log(u)), axis=-1)
