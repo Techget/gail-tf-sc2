@@ -145,7 +145,7 @@ class TransitionClassifier(object):
   def get_trainable_variables(self):
     return tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, self.scope)
 
-  def get_reward(self, obs, acs):
+  def get_reward(self, obs, acs, should_discount):
     sess = U.get_session()
     if len(obs.shape) == 1:
       obs = np.expand_dims(obs, 0)
@@ -155,5 +155,9 @@ class TransitionClassifier(object):
     acs = [acs]
     feed_dict = {self.generator_obs_ph:obs, self.generator_acs_ph:acs}
     reward = sess.run(self.reward_op, feed_dict)
+
+    if should_discount:
+      reward /= -2 # discourage current policy
+
     return reward
 

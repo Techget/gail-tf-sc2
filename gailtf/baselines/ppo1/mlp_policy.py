@@ -137,6 +137,7 @@ class MlpPolicy(object):
 
     def act(self, stochastic, ob):
         # print('~~~~',ob)
+        should_discount = False
 
         available_act_one_hot = ob[0][-524:]
         # print(available_act_one_hot)
@@ -152,24 +153,26 @@ class MlpPolicy(object):
         if available_act == []:
             with open('act.log', 'a+') as f:
                 f.write('available_act is empty, return 0 as no_op')
-            return 0, vpred1[0] # no_op
+            should_discount = True
+            return 0, vpred1[0], should_discount # no_op
 
         while ac1[0] not in available_act:
             # print('try to loop to get action in available_act: ', ac1[0])
             ac1, vpred1 =  self._act(True, ob) # have to use stochastic
-            if loop_count > 50:
+            if loop_count > 20:
                 rdm_choice = random.choice(available_act)
                 with open('act.log', 'a+') as f:
                     print("Cannot pick proper action, actions picked: {}, use {} keep on training, available_act are: {}".format(actions_picked, 
                         rdm_choice, available_act), file = f)
                 # return rdm_choice, vpred1[0]
                 ac1[0] = rdm_choice
+                should_discount = True
                 break
             loop_count += 1
             actions_picked.append(ac1[0])
 
         print('select action: ', ac1[0])
-        return ac1[0], vpred1[0]
+        return ac1[0], vpred1[0], should_discount
     # def act(self, stochastic, ob):
     #     # print('~~~~',ob)
 

@@ -176,7 +176,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
 
     while True:
         prevac = ac
-        ac, vpred = pi.act(stochastic, ob)
+        ac, vpred, should_discount = pi.act(stochastic, ob)
         # Slight weirdness here because we need value function at time T
         # before returning segment [0, T-1] so we get the correct
         # terminal value
@@ -184,7 +184,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
             yield {"ob" : obs, "rew" : rews, "vpred" : vpreds, "new" : news,
                     "ac" : acs, "prevac" : prevacs, "nextvpred": vpred * (1 - new),
                     "ep_rets" : ep_rets, "ep_lens" : ep_lens, "ep_true_rets": ep_true_rets}
-            _, vpred = pi.act(stochastic, ob)
+            _, vpred, should_discount = pi.act(stochastic, ob)
             # Be careful!!! if you change the downstream algorithm to aggregate
             # several of these batches, then be sure to do a deepcopy
             ep_rets = []
@@ -197,7 +197,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
         acs[i] = ac
         prevacs[i] = prevac
 
-        rew = discriminator.get_reward(ob, ac)
+        rew = discriminator.get_reward(ob, ac, should_discount)
 
         # print('in traj_segment_generator, ac:', ac)
 
@@ -597,46 +597,6 @@ def learn(env, policy_func, discriminator, expert_dataset,
             ep_stats.add_all_summary(writer, [np.mean(true_rewbuffer), np.mean(rewbuffer),
                            np.mean(lenbuffer)], iters_so_far)
 
-# Sample one trajectory (until trajectory end)
-def traj_episode_generator(pi, env, horizon, stochastic):
-    t = 0
-    ac = env.action_space.sample() # not used, just so we have the datatype
-    new = True # marks if we're on first timestep of an episode
-
-    ob = env.reset()
-    cur_ep_ret = 0 # return in current episode
-    cur_ep_len = 0 # len of current episode
-
-    # Initialize history arrays
-    obs = []; rews = []; news = []; acs = []
-
-    while True:
-        prevac = ac
-        ac, vpred = pi.act(stochastic, ob)
-        obs.append(ob)
-        news.append(new)
-        acs.append(ac)
-
-        ob, rew, new, _ = env.step(ac)
-        rews.append(rew)
-
-        cur_ep_ret += rew
-        cur_ep_len += 1
-        if t > 0 and (new or t % horizon == 0):
-            # convert list into numpy array
-            obs = np.array(obs)
-            rews = np.array(rews)
-            news = np.array(news)
-            acs = np.array(acs)
-            yield {"ob":obs, "rew":rews, "new":news, "ac":acs,
-                    "ep_ret":cur_ep_ret, "ep_len":cur_ep_len}
-            ob = env.reset()
-            cur_ep_ret = 0; cur_ep_len = 0; t = 0
-
-            # Initialize history arrays
-            obs = []; rews = []; news = []; acs = []
-        t += 1
-
 def evaluate(env, policy_func, load_model_path, timesteps_per_batch, number_trajs=10, 
          stochastic_policy=False):
     # have it play with scripted bot for one full game
@@ -680,7 +640,7 @@ def evaluate(env, policy_func, load_model_path, timesteps_per_batch, number_traj
     is_done = False
 
     while is_done == False:
-        ac, vpred = pi.act(stochastic_policy, ob)
+        ac, vpred, should_discount = pi.act(stochastic_policy, ob)
         function_type = sc_action.FUNCTIONS[ac].function_type.__name__
         one_hot_ac = np.zeros((1, 524)) # shape will be 1*254
         one_hot_ac[np.arange(1), [ac]] = 1
