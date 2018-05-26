@@ -167,6 +167,7 @@ class MlpPolicy(object):
             loop_count += 1
             actions_picked.append([ac1[0]])
 
+        print('select action: ', ac1[0])
         return ac1[0], vpred1[0]
     def get_variables(self):
         return tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, self.scope)
