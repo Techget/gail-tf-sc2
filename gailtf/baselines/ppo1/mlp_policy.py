@@ -5,6 +5,7 @@ import gym
 from gailtf.baselines.common.distributions import make_pdtype
 import tensorflow.contrib.layers as layers
 import random
+import numpy as np
 
 class MlpPolicy(object):
     recurrent = False
