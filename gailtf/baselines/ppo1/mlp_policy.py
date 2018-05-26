@@ -153,16 +153,17 @@ class MlpPolicy(object):
         if available_act == []:
             with open('act.log', 'a+') as f:
                 f.write('available_act is empty, return 0 as no_op')
-            return 0,vpred1[0] # no_op
+            return np.array([0]),vpred1[0] # no_op
 
         while ac1[0] not in available_act:
             # print('try to loop to get action in available_act: ', ac1[0])
             ac1, vpred1 =  self._act(True, ob) # have to use stochastic
-            if loop_count > 20:
+            if loop_count > 50:
                 rdm_choice = random.choice(available_act)
                 with open('act.log', 'a+') as f:
-                    print("Cannot pick proper action, actions picked: {}, use {} keep on training".format(actions_picked, rdm_choice), file = f)
-                return rdm_choice, vpred1[0]
+                    print("Cannot pick proper action, actions picked: {}, use {} keep on training, available_act are: {}".format(actions_picked, 
+                        rdm_choice, available_act), file = f)
+                return np.array([rdm_choice]), vpred1[0]
 
             loop_count += 1
             actions_picked.append([ac1[0]])
