@@ -134,7 +134,7 @@ class MlpPolicy(object):
             if available_action[0][i] == 1.0:
                 available_act.append(i)
         available_act = np.array(available_act, dtype=np.int32)
-        available_act = np.flaten(available_act)
+        available_act = np.flatten(available_act)
 
         stochastic = U.get_placeholder(name="stochastic", dtype=tf.bool, shape=())
         ac = U.switch(stochastic, self.pd.sample(available_act), self.pd.mode(available_act))
