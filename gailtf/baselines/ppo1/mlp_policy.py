@@ -161,7 +161,7 @@ class MlpPolicy(object):
             if loop_count > 20:
                 rdm_choice = random.choice(available_act)
                 with open('act.log', 'a+') as f:
-                    f.write("Cannot pick proper action, actions picked: {}, use {} keep on training".format(','.join(actions_picked), rdm_choice))
+                    print("Cannot pick proper action, actions picked: {}, use {} keep on training".format(actions_picked, rdm_choice), file = f)
                 return rdm_choice, vpred1[0]
 
             loop_count += 1
