@@ -129,8 +129,8 @@ class MlpPolicy(object):
         # change for BC
         #stochastic = tf.placeholder(dtype=tf.bool, shape=())
         available_act = []
-        for i in range(0, len(available_act_one_hot)):
-            if available_act_one_hot[i] == 1.0:
+        for i in range(0, len(available_action)):
+            if available_action[i] == 1.0:
                 available_act.append(i)
 
         stochastic = U.get_placeholder(name="stochastic", dtype=tf.bool, shape=())
