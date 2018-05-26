@@ -127,7 +127,7 @@ class CategoricalPd(Pd):
         return self.logits
     def mode(self, available_action):
         temp_logits = self.logits[0]
-
+        temp_logits = np.flatten(temp_logits)
         available_logits = temp_logits[available_action]
         index = U.argmax(available_logits, axis=-1)
         return available_action[np.array(index, dtype=np.int32)]
