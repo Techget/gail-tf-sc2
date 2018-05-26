@@ -4,6 +4,7 @@ import tensorflow as tf
 import gym
 from gailtf.baselines.common.distributions import make_pdtype
 import tensorflow.contrib.layers as layers
+import random
 
 class MlpPolicy(object):
     recurrent = False
@@ -142,12 +143,29 @@ class MlpPolicy(object):
         for i in range(0, len(available_act_one_hot)):
             if available_act_one_hot[i] == 1.0:
                 available_act.append(i)
-        # print('available_act int mlp_policy.py act function: ', available_act)
+
+    
         # try to get valid action id,
+        loop_count = 0
+
         ac1, vpred1 =  self._act(stochastic, ob)
+        actions_picked = [ac1[0]]
+        if available_act == []:
+            with open('act.log', 'a+') as f:
+                f.write('available_act is empty, return 0 as no_op')
+            return 0,vpred1[0] # no_op
+
         while ac1[0] not in available_act:
             # print('try to loop to get action in available_act: ', ac1[0])
             ac1, vpred1 =  self._act(True, ob) # have to use stochastic
+            if loop_count > 20:
+                rdm_choice = random.choice(available_act)
+                with open('act.log', 'a+') as f:
+                    f.write("Cannot pick proper action, actions picked: {}, use {} keep on training".format(','.join(actions_picked), rdm_choice))
+                return rdm_choice, vpred1[0]
+
+            loop_count += 1
+            actions_picked.append([ac1[0]])
 
         return ac1[0], vpred1[0]
     def get_variables(self):
