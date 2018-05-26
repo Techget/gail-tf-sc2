@@ -126,7 +126,9 @@ class CategoricalPd(Pd):
     def flatparam(self):
         return self.logits
     def mode(self, available_action):
-        available_logits = self.logits[available_action]
+        temp_logits = self.logits[0]
+
+        available_logits = temp_logits[available_action]
         index = U.argmax(available_logits, axis=-1)
         return available_action[np.array(index, dtype=np.int32)]
     def neglogp(self, x):
@@ -154,9 +156,12 @@ class CategoricalPd(Pd):
         return U.sum(p0 * (tf.log(z0) - a0), axis=-1)
     def sample(self,available_action):
         u = tf.random_uniform(tf.shape(self.logits))
-        print(u)
-        available_u = u[available_action]
-        available_logits = self.logits[available_action]
+        
+        temp_u = u[0]
+        available_u = temp_u[available_action]
+
+        temp_logits = self.logits[0]
+        available_logits = temp_logits[available_action]
 
         index = tf.argmax(available_logits - tf.log(-tf.log(available_u)), axis=-1)
         print(index)
