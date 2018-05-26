@@ -155,21 +155,18 @@ class CategoricalPd(Pd):
         p0 = ea0 / z0
         return U.sum(p0 * (tf.log(z0) - a0), axis=-1)
     def sample(self,available_action):
+        indexes = tf.argmax(available_action, axis=1)
+
         u = tf.random_uniform(tf.shape(self.logits))
+        u_available = u[indexes]
+
+        print(u_available.shape)
+
+        logits_available = self.logits[indexes]
+        # tf.argmax(self.logits - tf.log(-tf.log(u)), axis=-1)
+        index_for_availabe_action = tf.argmax(available_logits - tf.log(-tf.log(available_u)), axis=-1)
         
-        temp_u = u[0]
-        temp_u = np.array(temp_u, dtype=np.float64)
-        temp_u = temp_u.flatten()
-        available_u = temp_u[available_action]
-
-        temp_logits = self.logits[0]
-        temp_logits = np.array(temp_logits, dtype=np.float64)
-        temp_logits = temp_logits.flatten()
-        available_logits = temp_logits[available_action]
-
-        index = tf.argmax(available_logits - tf.log(-tf.log(available_u)), axis=-1)
-        print(index)
-        return available_action[np.array(index, dtype=np.int32)]
+        return available_action[index_for_availabe_action]
     @classmethod
     def fromflat(cls, flat):
         return cls(flat)
