@@ -158,7 +158,6 @@ class CategoricalPd(Pd):
         u = tf.random_uniform(tf.shape(self.logits))
         
         temp_u = u[0]
-        print(temp_u.shape())
         temp_u = np.array(temp_u, dtype=np.float64)
         temp_u = temp_u.flatten()
         available_u = temp_u[available_action]
