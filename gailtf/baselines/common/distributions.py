@@ -164,7 +164,7 @@ class CategoricalPd(Pd):
         available_logits = tf.gather(self.logits, available_act, axis=1)
         index_for_available_act = tf.argmax(available_logits - tf.log(-tf.log(available_u)), axis=-1)
         act = tf.gather(available_act, index_for_available_act, axis=-1)
-        # print(tf.shape(act))
+        
         return act
     @classmethod
     def fromflat(cls, flat):
