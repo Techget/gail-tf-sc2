@@ -66,6 +66,7 @@ class MlpPolicy(object):
             filters=20,
             kernel_size=[5, 5],
             padding="same",
+            kernel_initializer=U.normc_initializer(0.01),
             activation=tf.nn.relu,
             name="polmconv1")
         mpool1 = tf.layers.max_pooling2d(inputs=mconv1, pool_size=[2, 2], strides=2, name="polmpool1")
@@ -74,6 +75,7 @@ class MlpPolicy(object):
             filters=40,
             kernel_size=[5, 5],
             padding="same",
+            kernel_initializer=U.normc_initializer(0.01),
             activation=tf.nn.relu,
             name="polmconv2")
         mpool2 = tf.layers.max_pooling2d(inputs=mconv2, pool_size=[2, 2], strides=2, name="polmpool2")
@@ -84,6 +86,7 @@ class MlpPolicy(object):
             filters=30,
             kernel_size=[5, 5],
             padding="same",
+            kernel_initializer=U.normc_initializer(0.01),
             activation=tf.nn.relu,
             name="polsconv1")
         spool1 = tf.layers.max_pooling2d(inputs=sconv1, pool_size=[2, 2], strides=2, name="polspool1")
@@ -92,6 +95,7 @@ class MlpPolicy(object):
             filters=60,
             kernel_size=[5, 5],
             padding="same",
+            kernel_initializer=U.normc_initializer(0.01),
             activation=tf.nn.relu,
             name="polsconv2")
         spool2 = tf.layers.max_pooling2d(inputs=sconv2, pool_size=[2, 2], strides=2, name="poolspool2")
