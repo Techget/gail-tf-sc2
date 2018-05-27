@@ -134,10 +134,10 @@ class TransitionClassifier(object):
                    activation_fn=tf.tanh)
 
       # _input = tf.concat([obs, acs_ph], axis=1) # concatenate the two input -> form a transition
-      # acs_ph_temp = tf.identity(acs_ph)
-      # acs_ph_temp = tf.expand_dims(acs_ph_temp, 1)
-      print(tf.shape(acs_ph))
-      _input = tf.concat([mpool2_flat, spool2_flat, info_fc, aa_fc, acs_ph], axis=1)
+      acs_ph_temp = tf.identity(acs_ph)
+      acs_ph_temp = tf.expand_dims(acs_ph_temp, 1)
+      # print(tf.shape(acs_ph))
+      _input = tf.concat([mpool2_flat, spool2_flat, info_fc, aa_fc, acs_ph_temp], axis=1)
       p_h1 = tf.contrib.layers.fully_connected(_input, self.hidden_size, activation_fn=tf.nn.tanh)
       p_h2 = tf.contrib.layers.fully_connected(p_h1, self.hidden_size, activation_fn=tf.nn.tanh)
       logits = tf.contrib.layers.fully_connected(p_h2, 1, activation_fn=tf.identity)
