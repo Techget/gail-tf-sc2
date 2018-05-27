@@ -98,14 +98,14 @@ class TransitionClassifier(object):
         filters=20,
         kernel_size=[5, 5],
         padding="same",
-        activation=tf.nn.relu)
+        activation=tf.nn.leaky_relu)
       mpool1 = tf.layers.max_pooling2d(inputs=mconv1, pool_size=[2, 2], strides=2)
       mconv2 = tf.layers.conv2d(
         inputs=mpool1,
         filters=40,
         kernel_size=[5, 5],
         padding="same",
-        activation=tf.nn.relu)
+        activation=tf.nn.leaky_relu)
       mpool2 = tf.layers.max_pooling2d(inputs=mconv2, pool_size=[2, 2], strides=2)
       mpool2_flat = tf.reshape(mpool2, [-1, 16 * 16 * 40])
 
@@ -114,14 +114,14 @@ class TransitionClassifier(object):
         filters=30,
         kernel_size=[5, 5],
         padding="same",
-        activation=tf.nn.relu)
+        activation=tf.nn.leaky_relu)
       spool1 = tf.layers.max_pooling2d(inputs=sconv1, pool_size=[2, 2], strides=2)
       sconv2 = tf.layers.conv2d(
         inputs=spool1,
         filters=60,
         kernel_size=[5, 5],
         padding="same",
-        activation=tf.nn.relu)
+        activation=tf.nn.leaky_relu)
       spool2 = tf.layers.max_pooling2d(inputs=sconv2, pool_size=[2, 2], strides=2)
       spool2_flat = tf.reshape(spool2, [-1, 16 * 16 * 60])
 
@@ -134,9 +134,10 @@ class TransitionClassifier(object):
                    activation_fn=tf.tanh)
 
       # _input = tf.concat([obs, acs_ph], axis=1) # concatenate the two input -> form a transition
-      acs_ph_temp = tf.identity(acs_ph)
-      acs_ph_temp = tf.expand_dims(acs_ph_temp, 1)
-      _input = tf.concat([mpool2_flat, spool2_flat, info_fc, aa_fc, acs_ph_temp], axis=1)
+      # acs_ph_temp = tf.identity(acs_ph)
+      # acs_ph_temp = tf.expand_dims(acs_ph_temp, 1)
+      print(tf.shape(acs_ph))
+      _input = tf.concat([mpool2_flat, spool2_flat, info_fc, aa_fc, acs_ph], axis=1)
       p_h1 = tf.contrib.layers.fully_connected(_input, self.hidden_size, activation_fn=tf.nn.tanh)
       p_h2 = tf.contrib.layers.fully_connected(p_h1, self.hidden_size, activation_fn=tf.nn.tanh)
       logits = tf.contrib.layers.fully_connected(p_h2, 1, activation_fn=tf.identity)
@@ -156,8 +157,10 @@ class TransitionClassifier(object):
     feed_dict = {self.generator_obs_ph:obs, self.generator_acs_ph:acs}
     reward = sess.run(self.reward_op, feed_dict)
 
-    if should_discount:
-      reward = -abs(reward)/2 # discourage current policy
+    if should_discount and reward > 0:
+      reward = reward/4 # discourage current policy
+    elif should_discount and reward < 0:
+      reward *= 2
 
     return reward
 
