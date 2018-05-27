@@ -125,7 +125,7 @@ def main(args):
             trpo_mpi.learn(env, policy_fn, discriminator, dataset,
                 pretrained=args.pretrained, pretrained_weight=pretrained_weight,
                 g_step=args.g_step, d_step=args.d_step,
-                timesteps_per_batch=1000, 
+                timesteps_per_batch=64, 
                 max_kl=args.max_kl, cg_iters=10, cg_damping=0.1,
                 max_timesteps=args.num_timesteps, 
                 entcoeff=args.policy_entcoeff, gamma=0.995, lam=0.97, 
