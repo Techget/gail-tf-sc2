@@ -146,7 +146,6 @@ class MlpPolicy(object):
         print('available_act int mlp_policy.py act function: ', available_act)
         # try to get valid action id,
         ac1, vpred1 =  self._act(stochastic, ob)
-        print(ac1)
         print('ac get from policy: ', ac1[0])
         # while ac1[0] not in available_act:
         #     # print('try to loop to get action in available_act: ', ac1[0])
