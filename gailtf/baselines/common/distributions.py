@@ -157,7 +157,7 @@ class CategoricalPd(Pd):
         p0 = ea0 / z0
         return U.sum(p0 * (tf.log(z0) - a0), axis=-1)
     def sample(self,available_action):
-        available_act = tf.argmax(available_action, axis=1)
+        available_act = tf.argmax(available_action, axis=1) # decode one-hot vector
 
         u = tf.random_uniform(tf.shape(self.logits))
         available_u = tf.gather(u, available_act, axis=1)
