@@ -135,7 +135,7 @@ class CategoricalPd(Pd):
         # act = tf.gather(available_act, index_for_available_act, axis=-1)
         act = available_act[index_for_available_act][1]
 
-        return [act]
+        return act
     def neglogp(self, x):
         # return tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.logits, labels=x)
         # Note: we can't use sparse_softmax_cross_entropy_with_logits because
@@ -176,7 +176,7 @@ class CategoricalPd(Pd):
         
         # act = [act, available_act]
 
-        return [act]
+        return act
     @classmethod
     def fromflat(cls, flat):
         return cls(flat)

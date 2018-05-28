@@ -146,12 +146,12 @@ class MlpPolicy(object):
         print('available_act int mlp_policy.py act function: ', available_act)
         # try to get valid action id,
         ac1, vpred1 =  self._act(stochastic, ob)
-        print('ac get from policy: ', ac1[0])
+        print('ac get from policy: ', ac1)
         # while ac1[0] not in available_act:
         #     # print('try to loop to get action in available_act: ', ac1[0])
         #     ac1, vpred1 =  self._act(True, ob) # have to use stochastic
 
-        return ac1[0], vpred1[0]
+        return ac1, vpred1[0]
     def get_variables(self):
         return tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, self.scope)
     def get_trainable_variables(self):
