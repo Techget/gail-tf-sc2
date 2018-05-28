@@ -143,7 +143,7 @@ class MlpPolicy(object):
         for i in range(0, len(available_act_one_hot)):
             if available_act_one_hot[i] == 1.0:
                 available_act.append(i)
-        print('available_act int mlp_policy.py act function: ', available_act)
+        # print('available_act int mlp_policy.py act function: ', available_act)
         # try to get valid action id,
         ac1, vpred1 =  self._act(stochastic, ob)
         # count = 0
@@ -152,7 +152,7 @@ class MlpPolicy(object):
         #     ac1, vpred1 =  self._act(True, ob) # have to use stochastic
         #     count += 1
 
-        print('ac get from policy: ', ac1)
+        # print('ac get from policy: ', ac1)
         return ac1, vpred1[0]
     def get_variables(self):
         return tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, self.scope)

@@ -341,7 +341,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         timesteps_per_batch, # what to train on
         max_kl, cg_iters,
         gamma, lam, # advantage estimation
-        entcoeff=0.0,
+        entcoeff=0.001,
         cg_damping=1e-2,
         vf_stepsize=3e-4, d_stepsize=3e-4,
         vf_iters =3,

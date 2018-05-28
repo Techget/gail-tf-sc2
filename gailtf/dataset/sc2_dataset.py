@@ -87,8 +87,6 @@ class SC2Dataset(object):
 
         obs = []
         acs = []
-        obs = []
-        acs = []
         loaded_replay_state_length = len(self.loaded_replay['state'])
         random.seed(datetime.now())
         for i in range(self.loaded_replay_pointer, loaded_replay_state_length):
