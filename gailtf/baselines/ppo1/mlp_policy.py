@@ -23,12 +23,12 @@ class MlpPolicy(object):
 
         ob = U.get_placeholder(name="ob", dtype=tf.float32, shape=[sequence_length] + list(ob_space.shape))
 
-        with tf.variable_scope("obfilter"):
-            self.ob_rms = RunningMeanStd(shape=ob_space.shape)
+        # with tf.variable_scope("obfilter"):
+        #     self.ob_rms = RunningMeanStd(shape=ob_space.shape)
 
         # obz = tf.clip_by_value((ob - self.ob_rms.mean) / self.ob_rms.std, -20.0, 20.0)
-        obz = (ob - self.ob_rms.mean) / self.ob_rms.std
-        last_out = obz
+        # obz = (ob - self.ob_rms.mean) / self.ob_rms.std
+        # last_out = obz
         for i in range(num_hid_layers):
             last_out = tf.nn.tanh(U.dense(last_out, hid_size, "vffc%i"%(i+1), weight_init=U.normc_initializer(1.0)))
         self.vpred = U.dense(last_out, 1, "vffinal", weight_init=U.normc_initializer(1.0))[:,0]
@@ -38,13 +38,13 @@ class MlpPolicy(object):
         self.ssize = 64 
         self.isize = 11
         self.available_action_size = 524
-        minimap = obz[:, 0:5*self.msize*self.msize]
+        minimap = ob[:, 0:5*self.msize*self.msize]
         minimap /= 8
-        screen = obz[:, 5*self.msize*self.msize: 5*self.msize*self.msize+ 10*self.ssize*self.ssize]
+        screen = ob[:, 5*self.msize*self.msize: 5*self.msize*self.msize+ 10*self.ssize*self.ssize]
         screen /= 8
-        info = obz[:, (5*self.msize*self.msize+10*self.ssize*self.ssize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize)]
+        info = ob[:, (5*self.msize*self.msize+10*self.ssize*self.ssize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize)]
         info /= 10
-        available_action = obz[:, (5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize+self.available_action_size)]
+        available_action = ob[:, (5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize+self.available_action_size)]
 
         # last_out = obz
         # for i in range(num_hid_layers):
@@ -146,11 +146,13 @@ class MlpPolicy(object):
         print('available_act int mlp_policy.py act function: ', available_act)
         # try to get valid action id,
         ac1, vpred1 =  self._act(stochastic, ob)
-        print('ac get from policy: ', ac1)
+        # count = 0
         # while ac1[0] not in available_act:
         #     # print('try to loop to get action in available_act: ', ac1[0])
         #     ac1, vpred1 =  self._act(True, ob) # have to use stochastic
+        #     count += 1
 
+        print('ac get from policy: ', ac1)
         return ac1, vpred1[0]
     def get_variables(self):
         return tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, self.scope)
