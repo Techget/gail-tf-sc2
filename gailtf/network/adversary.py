@@ -157,13 +157,14 @@ class TransitionClassifier(object):
     acs = [acs]
 
     feed_dict = {self.generator_obs_ph:obs, self.generator_acs_ph:acs}
-    g_acc = sess.run(self.generator_acc, feed_dict)
-    reward = 0 
-    if g_acc > 0.95:
-      reward = 5 * np.log(1-g_acc+1e-8) # give negative reward 
-    else:
-      reward = sess.run(self.reward_op, feed_dict)
+    # g_acc = sess.run(self.generator_acc, feed_dict)
+    # reward = 0 
+    # if g_acc > 0.95:
+    #   reward = 5 * np.log(1-g_acc+1e-8) # give negative reward 
+    # else:
 
+    reward = sess.run(self.reward_op, feed_dict)
+    reward += 1
     if reward == 0:
       print('reward should not equal to 0!!!!!')
     return reward
