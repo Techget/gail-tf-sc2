@@ -299,6 +299,8 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
         timestep = env.step([ac_with_param])
         state_dict, ob = extract_observation(timestep[0])
         true_rew = timestep[0].reward
+        if true_rew == None:
+            true_rew = 0
         # if true_rew == None:
         #     true_rew = 0
         new = timestep[0].last() # check is Done.
