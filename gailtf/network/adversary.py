@@ -48,7 +48,9 @@ class TransitionClassifier(object):
     expert_logits = self.build_graph(self.expert_obs_ph, self.expert_acs_ph, reuse=True)
     # Build accuracy
     generator_acc = tf.reduce_mean(tf.to_float(tf.nn.sigmoid(generator_logits) < 0.5))
+    self.generator_acc = generator_acc
     expert_acc = tf.reduce_mean(tf.to_float(tf.nn.sigmoid(expert_logits) > 0.5))
+    self.expert_acc = expert_acc
     # Build regression loss
     # let x = logits, z = targets.
     # z * -log(sigmoid(x)) + (1 - z) * -log(1 - sigmoid(x))
@@ -153,7 +155,16 @@ class TransitionClassifier(object):
       acs = np.expand_dims(acs, 0)
 
     acs = [acs]
+
     feed_dict = {self.generator_obs_ph:obs, self.generator_acs_ph:acs}
-    reward = sess.run(self.reward_op, feed_dict)
+    g_acc = sess.run(self.generator_acc, feed_dict)
+    reward = 0 
+    if g_acc > 0.95:
+      reward = np.log(1-g_acc+1e-3) # give negative reward 
+    else:
+      reward = sess.run(self.reward_op, feed_dict)
+
+    if reward == 0:
+      print('reward should not equal to 0!!!!!')
     return reward
 
