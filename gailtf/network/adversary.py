@@ -67,7 +67,7 @@ class TransitionClassifier(object):
     self.loss_name = ["generator_loss", "expert_loss", "entropy", "entropy_loss", "generator_acc", "expert_acc"]
     self.total_loss = generator_loss + expert_loss + entropy_loss
     # Build Reward for policy
-    self.reward_op = 5 * (-tf.log(1-tf.nn.sigmoid(generator_logits)+1e-5)) # make it larger, the network is large, it may vanish if reward is small
+    self.reward_op = 5 * (-tf.log(1-tf.nn.sigmoid(generator_logits)+1e-8)) # make it larger, the network is large, it may vanish if reward is small
     var_list = self.get_trainable_variables()
     self.lossandgrad = U.function([self.generator_obs_ph, self.generator_acs_ph, self.expert_obs_ph, self.expert_acs_ph], 
                          self.losses + [U.flatgrad(self.total_loss, var_list)])
@@ -160,7 +160,7 @@ class TransitionClassifier(object):
     g_acc = sess.run(self.generator_acc, feed_dict)
     reward = 0 
     if g_acc > 0.95:
-      reward = np.log(1-g_acc+1e-3) # give negative reward 
+      reward = 5 * np.log(1-g_acc+1e-8) # give negative reward 
     else:
       reward = sess.run(self.reward_op, feed_dict)
 
