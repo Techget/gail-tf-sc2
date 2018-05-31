@@ -133,7 +133,7 @@ class TransitionClassifier(object):
 
 
       HIDDEN_SIZE = 524
-      l1_action = tf.layers.dense(flatten(available_action), 256, tf.nn.relu)
+      l1_action = tf.layers.dense(layers.flatten(available_action), 256, tf.nn.relu)
       input_to_rnn = tf.reshape(l1_action, [-1, 16, 16])
       action_lstm_cell = tf.nn.rnn_cell.BasicLSTMCell(num_units=HIDDEN_SIZE, forget_bias=1.0, state_is_tuple=True)
       inputs_rnn = tf.unstack(input_to_rnn, num=16, axis=1)
