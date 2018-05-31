@@ -131,9 +131,19 @@ class TransitionClassifier(object):
                    num_outputs=8,
                    activation_fn=tf.tanh)
 
-      aa_fc = layers.fully_connected(layers.flatten(available_action),
-                   num_outputs=32,
-                   activation_fn=tf.tanh)
+
+      HIDDEN_SIZE = 524
+      l1_action = tf.layers.dense(flatten(available_action), 256, tf.nn.relu)
+      input_to_rnn = tf.reshape(l1_action, [-1, 16, 16])
+      action_lstm_cell = tf.nn.rnn_cell.BasicLSTMCell(num_units=HIDDEN_SIZE, forget_bias=1.0, state_is_tuple=True)
+      inputs_rnn = tf.unstack(input_to_rnn, num=16, axis=1)
+      rnn_outputs,rnn_state= tf.contrib.rnn.static_rnn(action_lstm_cell,inputs_rnn,dtype=tf.float32)
+      l2_action = tf.layers.dense(rnn_state[-1], 128, tf.nn.tanh)          # hidden layer
+      aa_fc = tf.layers.dense(l2_action, 32, tf.nn.tanh)
+
+      # aa_fc = layers.fully_connected(layers.flatten(available_action),
+      #              num_outputs=32,
+      #              activation_fn=tf.tanh)
 
       # _input = tf.concat([obs, acs_ph], axis=1) # concatenate the two input -> form a transition
       acs_ph_temp = tf.identity(acs_ph)
