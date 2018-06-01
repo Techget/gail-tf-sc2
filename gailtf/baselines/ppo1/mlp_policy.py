@@ -28,11 +28,6 @@ class MlpPolicy(object):
 
         # obz = tf.clip_by_value((ob - self.ob_rms.mean) / self.ob_rms.std, -20.0, 20.0)
         # obz = (ob - self.ob_rms.mean) / self.ob_rms.std
-        last_out = ob
-        for i in range(num_hid_layers):
-            last_out = tf.nn.tanh(U.dense(last_out, hid_size, "vffc%i"%(i+1), weight_init=U.normc_initializer(1.0)))
-        self.vpred = U.dense(last_out, 1, "vffinal", weight_init=U.normc_initializer(1.0))[:,0]
-
 
         self.msize = 64 # change to 64 later
         self.ssize = 64 
@@ -45,6 +40,65 @@ class MlpPolicy(object):
         info = ob[:, (5*self.msize*self.msize+10*self.ssize*self.ssize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize)]
         info /= 10
         available_action = ob[:, (5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize+self.available_action_size)]
+
+
+        mconv1 = tf.layers.conv2d(
+            inputs=tf.reshape(minimap, [-1,self.msize,self.msize,5]),
+            filters=32,
+            kernel_size=[5, 5],
+            padding="same",
+            kernel_initializer=U.normc_initializer(0.01),
+            activation=tf.nn.leaky_relu,
+            name="vffcmconv1")
+        mpool1 = tf.layers.max_pooling2d(inputs=mconv1, pool_size=[2, 2], strides=2, name="vffcmpool1")
+        mconv2 = tf.layers.conv2d(
+            inputs=mpool1,
+            filters=64,
+            kernel_size=[5, 5],
+            padding="same",
+            kernel_initializer=U.normc_initializer(0.01),
+            activation=tf.nn.leaky_relu,
+            name="vffcmconv2")
+        mpool2 = tf.layers.max_pooling2d(inputs=mconv2, pool_size=[2, 2], strides=2, name="vffcmpool2")
+        mpool2_flat = tf.reshape(mpool2, [-1, 16 * 16 * 64])
+
+        sconv1 = tf.layers.conv2d(
+            inputs=tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
+            filters=48,
+            kernel_size=[5, 5],
+            padding="same",
+            kernel_initializer=U.normc_initializer(0.01),
+            activation=tf.nn.leaky_relu,
+            name="vffcsconv1")
+        spool1 = tf.layers.max_pooling2d(inputs=sconv1, pool_size=[2, 2], strides=2, name="vffcspool1")
+        sconv2 = tf.layers.conv2d(
+            inputs=spool1,
+            filters=80,
+            kernel_size=[5, 5],
+            padding="same",
+            kernel_initializer=U.normc_initializer(0.01),
+            activation=tf.nn.leaky_relu,
+            name="vffcsconv2")
+        spool2 = tf.layers.max_pooling2d(inputs=sconv2, pool_size=[2, 2], strides=2, name="poolspool2")
+        spool2_flat = tf.reshape(spool2, [-1, 16 * 16 * 80])
+
+        info_fc = tf.layers.dense(inputs=layers.flatten(info),
+                   units=8,
+                   activation=tf.tanh,
+                   name="vffcdense1")
+        
+        aa_fc = tf.layers.dense(inputs=layers.flatten(available_action),
+                   units=32,
+                   activation=tf.tanh,
+                   name="vffcdense2")
+
+        vf_last_out = tf.concat([mpool2_flat, spool2_flat, info_fc, aa_fc], axis=1, name="vffcconcat")
+
+        # last_out = ob
+        # for i in range(num_hid_layers):
+        #     last_out = tf.nn.tanh(U.dense(last_out, hid_size, "vffc%i"%(i+1), weight_init=U.normc_initializer(1.0)))
+        self.vpred = U.dense(vf_last_out, 1, "vffinal", weight_init=U.normc_initializer(1.0))[:,0]
+
 
         # last_out = ob
         # for i in range(num_hid_layers):
