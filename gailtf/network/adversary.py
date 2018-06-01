@@ -68,7 +68,7 @@ class TransitionClassifier(object):
     self.total_loss = generator_loss + expert_loss + entropy_loss
     # Build Reward for policy
     # make it larger, the network is large, it may vanish if reward is small
-    self.reward_op = 2 * (-tf.log(1-tf.nn.sigmoid(generator_logits)+1e-8)+(-tf.log(tf.nn.sigmoid(expert_logits)+1e-8)))
+    self.reward_op = 2 * (-tf.log(1-tf.nn.sigmoid(generator_logits)+1e-8))
     var_list = self.get_trainable_variables()
     self.lossandgrad = U.function([self.generator_obs_ph, self.generator_acs_ph, self.expert_obs_ph, self.expert_acs_ph], 
                          self.losses + [U.flatgrad(self.total_loss, var_list)])
@@ -132,24 +132,23 @@ class TransitionClassifier(object):
                    num_outputs=8,
                    activation_fn=tf.tanh)
 
+      aa_fc = layers.fully_connected(layers.flatten(available_action),
+                   num_outputs=32,
+                   activation_fn=tf.tanh)
 
-      HIDDEN_SIZE = 524
-      l1_action = tf.layers.dense(layers.flatten(available_action), 256, tf.nn.relu)
+      # _input = tf.concat([obs, acs_ph], axis=1) # concatenate the two input -> form a transition
+      acs_ph_temp = tf.identity(acs_ph)
+      acs_ph_temp = tf.expand_dims(acs_ph_temp, 1)
+      HIDDEN_SIZE = 128
+      l1_action = tf.layers.dense(layers.flatten(acs_ph_temp), 256, tf.nn.relu)
       input_to_rnn = tf.reshape(l1_action, [-1, 16, 16])
       action_lstm_cell = tf.nn.rnn_cell.BasicLSTMCell(num_units=HIDDEN_SIZE, forget_bias=1.0, state_is_tuple=True)
       inputs_rnn = tf.unstack(input_to_rnn, num=16, axis=1)
       rnn_outputs,rnn_state= tf.contrib.rnn.static_rnn(action_lstm_cell,inputs_rnn,dtype=tf.float32)
       l2_action = tf.layers.dense(rnn_state[-1], 128, tf.nn.tanh)          # hidden layer
-      aa_fc = tf.layers.dense(l2_action, 32, tf.nn.tanh)
+      acs_ph_lstm = tf.layers.dense(l2_action, 32, tf.nn.tanh)
 
-      # aa_fc = layers.fully_connected(layers.flatten(available_action),
-      #              num_outputs=32,
-      #              activation_fn=tf.tanh)
-
-      # _input = tf.concat([obs, acs_ph], axis=1) # concatenate the two input -> form a transition
-      acs_ph_temp = tf.identity(acs_ph)
-      acs_ph_temp = tf.expand_dims(acs_ph_temp, 1)
-      _input = tf.concat([mpool2_flat, spool2_flat, info_fc, aa_fc, acs_ph_temp], axis=1)
+      _input = tf.concat([mpool2_flat, spool2_flat, info_fc, aa_fc, acs_ph_lstm], axis=1)
       p_h1 = tf.contrib.layers.fully_connected(_input, self.hidden_size, activation_fn=tf.nn.tanh)
       p_h2 = tf.contrib.layers.fully_connected(p_h1, self.hidden_size, activation_fn=tf.nn.tanh)
       logits = tf.contrib.layers.fully_connected(p_h2, 1, activation_fn=tf.identity)
