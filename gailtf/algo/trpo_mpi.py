@@ -385,7 +385,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
 
     optimgain = surrgain + entbonus
     losses = [optimgain, meankl, entbonus, surrgain, meanent, ratio[0]]
-    loss_names = ["optimgain", "meankl", "entloss", "surrgain", "entropy", "ratio[0]"]
+    loss_names = ["optimgain", "meankl", "entloss", "surrgain", "entropy", "ratio"]
 
     dist = meankl
 
