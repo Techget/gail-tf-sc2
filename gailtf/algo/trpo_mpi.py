@@ -376,7 +376,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
     ent = pi.pd.entropy()
     meankl = U.mean(kloldnew)
     meanent = U.mean(ent)
-    entbonus = entcoeff * meanent 
+    entbonus = entcoeff * meanent * (-1)
 
     vferr = U.mean(tf.square(pi.vpred - ret))
 
@@ -495,6 +495,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
             ob, ac, atarg, tdlamret = seg["ob"], seg["ac"], seg["adv"], seg["tdlamret"]
             vpredbefore = seg["vpred"] # predicted value function before udpate
             atarg = (atarg - atarg.mean()) / atarg.std() # standardized advantage function estimate
+            logger.log("atarg value: ", atarg)
 
             if hasattr(pi, "ob_rms"): pi.ob_rms.update(ob) # update running mean/std for policy
 
