@@ -383,9 +383,11 @@ def learn(env, policy_func, discriminator, expert_dataset,
     ratio = tf.exp(pi.pd.logp(ac) - oldpi.pd.logp(ac)) # advantage * pnew / pold
     surrgain = U.mean(ratio * atarg)
 
+    ratio_mean = U.mean(ratio)
+
     optimgain = surrgain + entbonus
-    losses = [optimgain, meankl, entbonus, surrgain, meanent, ratio[0]]
-    loss_names = ["optimgain", "meankl", "entloss", "surrgain", "entropy", "ratio"]
+    losses = [optimgain, meankl, entbonus, surrgain, meanent, ratio_mean]
+    loss_names = ["optimgain", "meankl", "entloss", "surrgain", "entropy", "ratio_mean"]
 
     dist = meankl
 
