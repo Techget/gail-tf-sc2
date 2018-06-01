@@ -376,7 +376,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
     ent = pi.pd.entropy()
     meankl = U.mean(kloldnew)
     meanent = U.mean(ent)
-    entbonus = entcoeff * meanent * (-1)
+    entbonus = entcoeff * meanent
 
     vferr = U.mean(tf.square(pi.vpred - ret))
 
