@@ -384,8 +384,8 @@ def learn(env, policy_func, discriminator, expert_dataset,
     surrgain = U.mean(ratio * atarg)
 
     optimgain = surrgain + entbonus
-    losses = [optimgain, meankl, entbonus, surrgain, meanent]
-    loss_names = ["optimgain", "meankl", "entloss", "surrgain", "entropy"]
+    losses = [optimgain, meankl, entbonus, surrgain, meanent, ratio]
+    loss_names = ["optimgain", "meankl", "entloss", "surrgain", "entropy", "new_old_ratio"]
 
     dist = meankl
 
