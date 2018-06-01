@@ -175,7 +175,9 @@ class TransitionClassifier(object):
     # else:
 
     reward = sess.run(self.reward_op, feed_dict)
-    reward += 0.1
+
+    if reward < 1:
+      reward = 5 * np.log(1-g_acc+1e-8) # give negative reward
     # if reward == 0:
     #   print('reward should not equal to 0!!!!!')
     return reward
