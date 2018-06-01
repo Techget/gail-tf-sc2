@@ -93,7 +93,7 @@ class MlpPolicy(object):
                    name="vffcdense2")
 
         vf_last_out = tf.concat([mpool2_flat, spool2_flat, info_fc, aa_fc], axis=1, name="vffcconcat")
-        vf_last_out = tf.nn.tanh(U.dense(vf_last_out, hid_size, "vffc%i"%(i+1), weight_init=U.normc_initializer(1.0)))
+        vf_last_out = tf.nn.tanh(U.dense(vf_last_out, hid_size, "vffcfinaldense", weight_init=U.normc_initializer(1.0)))
 
         # last_out = ob
         # for i in range(num_hid_layers):
