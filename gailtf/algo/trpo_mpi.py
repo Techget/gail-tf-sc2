@@ -330,6 +330,7 @@ def add_vtarg_and_adv(seg, gamma, lam):
     T = len(seg["rew"])
     seg["adv"] = gaelam = np.empty(T, 'float32')
     rew = seg["rew"]
+    print("seg['rew']: ", seg["rew"])
     lastgaelam = 0
     for t in reversed(range(T)):
         nonterminal = 1-new[t+1]
@@ -494,7 +495,9 @@ def learn(env, policy_func, discriminator, expert_dataset,
             # ob, ac, atarg, ret, td1ret = map(np.concatenate, (obs, acs, atargs, rets, td1rets))
             ob, ac, atarg, tdlamret = seg["ob"], seg["ac"], seg["adv"], seg["tdlamret"]
             vpredbefore = seg["vpred"] # predicted value function before udpate
-            atarg = (atarg - atarg.mean()) / atarg.std() # standardized advantage function estimate
+            print("before standardize atarg value: ", atarg)
+            if atarg.std() != 0:
+                atarg = (atarg - atarg.mean()) / atarg.std() # standardized advantage function estimate
             print("atarg value: ", atarg)
 
             if hasattr(pi, "ob_rms"): pi.ob_rms.update(ob) # update running mean/std for policy
