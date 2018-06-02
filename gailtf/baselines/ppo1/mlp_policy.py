@@ -79,7 +79,7 @@ class MlpPolicy(object):
             kernel_initializer=U.normc_initializer(0.01),
             activation=tf.nn.leaky_relu,
             name="vffcsconv2")
-        spool2 = tf.layers.max_pooling2d(inputs=sconv2, pool_size=[2, 2], strides=2, name="poolspool2")
+        spool2 = tf.layers.max_pooling2d(inputs=sconv2, pool_size=[2, 2], strides=2, name="vffcspool2")
         spool2_flat = tf.reshape(spool2, [-1, 16 * 16 * 80])
 
         info_fc = tf.layers.dense(inputs=layers.flatten(info),
@@ -152,7 +152,7 @@ class MlpPolicy(object):
             kernel_initializer=U.normc_initializer(0.01),
             activation=tf.nn.leaky_relu,
             name="polsconv2")
-        spool2 = tf.layers.max_pooling2d(inputs=sconv2, pool_size=[2, 2], strides=2, name="poolspool2")
+        spool2 = tf.layers.max_pooling2d(inputs=sconv2, pool_size=[2, 2], strides=2, name="polspool2")
         spool2_flat = tf.reshape(spool2, [-1, 16 * 16 * 80])
 
         info_fc = tf.layers.dense(inputs=layers.flatten(info),
@@ -179,6 +179,7 @@ class MlpPolicy(object):
             logstd = tf.get_variable(name="logstd", shape=[1, pdtype.param_shape()[0]//2], initializer=tf.zeros_initializer())
             pdparam = U.concatenate([mean, mean * 0.0 + logstd], axis=1)
         else:
+            last_out = U.dense(last_out, (pdtype.param_shape()[0])*2, "polfinaldense", U.normc_initializer(0.01))
             pdparam = U.dense(last_out, pdtype.param_shape()[0], "polfinal", U.normc_initializer(0.01))
 
         self.pd = pdtype.pdfromflat(pdparam)
