@@ -107,6 +107,9 @@ def process_coordinates_param_nn_output(coordinate):
     coordinate[0] = int(coordinate[0])
     coordinate[1] = int(coordinate[1])
     # print(coordinate)
+
+    coordinate = np.clip(coordinate, 0, 64)
+
     return coordinate
 
 def flatten_param(param):
