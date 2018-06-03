@@ -30,7 +30,7 @@ import math
 
 
 LAST_EXPERT_LOSS = 0.0
-LAST_EXPERT_ACC = 0.0
+LAST_EXPERT_ACC = -1.0
 
 def extract_observation(time_step):
     state = {}
@@ -213,7 +213,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
         if LAST_EXPERT_LOSS > 0:
             rew[0][0] += LAST_EXPERT_LOSS
             LAST_EXPERT_LOSS -= 0.01 # decay
-        if LAST_EXPERT_ACC < 1.0 and LAST_EXPERT_ACC != 0.0:
+        if LAST_EXPERT_ACC < 1.0 and LAST_EXPERT_ACC != -1.0:
             rew[0][0] += 1 - LAST_EXPERT_ACC
             LAST_EXPERT_ACC += 0.01 # decay
 
