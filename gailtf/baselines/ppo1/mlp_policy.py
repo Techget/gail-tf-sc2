@@ -23,6 +23,8 @@ class MlpPolicy(object):
 
         ob = U.get_placeholder(name="ob", dtype=tf.float32, shape=[sequence_length] + list(ob_space.shape))
 
+        # last_action = tf.placeholder(shape=(None, 524), name="last_action")
+
         # with tf.variable_scope("obfilter"):
         #     self.ob_rms = RunningMeanStd(shape=ob_space.shape)
 
@@ -92,8 +94,24 @@ class MlpPolicy(object):
                    activation=tf.tanh,
                    name="vffcdense2")
 
-        vf_last_out = tf.concat([mpool2_flat, spool2_flat, info_fc, aa_fc], axis=1, name="vffcconcat")
-        vf_last_out = tf.nn.tanh(U.dense(vf_last_out, hid_size, "vffcfinaldense", weight_init=U.normc_initializer(1.0)))
+        # HIDDEN_SIZE = 128
+        # l1_action = tf.layers.dense(layers.flatten(last_action), 256, tf.nn.relu, name="vffclastactdense")
+        # input_to_rnn = tf.reshape(l1_action, [-1, 16, 16])
+        # action_lstm_cell = tf.nn.rnn_cell.BasicLSTMCell(num_units=HIDDEN_SIZE, 
+        #     forget_bias=1.0, state_is_tuple=True, name="vffclstmcell")
+        # inputs_rnn = tf.unstack(input_to_rnn, num=16, axis=1, name="vffcunstack")
+        # rnn_outputs,rnn_state= tf.contrib.rnn.static_rnn(action_lstm_cell,
+        #     inputs_rnn, dtype=tf.float32)
+        # l2_action = tf.layers.dense(rnn_state[-1], 
+        #     128, tf.nn.tanh, name="vffclstmdense2")          # hidden layer
+        # last_acs_ph_lstm = tf.layers.dense(l2_action, 
+        #     32, tf.nn.tanh, name="vffclstmdense3")
+        # last_acs_ph_lstm
+
+        vf_last_out = tf.concat([mpool2_flat, spool2_flat, info_fc, aa_fc], 
+            axis=1, name="vffcconcat")
+        vf_last_out = tf.nn.tanh(U.dense(vf_last_out, hid_size, 
+            "vffcfinaldense", weight_init=U.normc_initializer(1.0)))
 
         # last_out = ob
         # for i in range(num_hid_layers):
@@ -165,7 +183,22 @@ class MlpPolicy(object):
                    activation=tf.tanh,
                    name="poldense2")
 
-        last_out = tf.concat([mpool2_flat, spool2_flat, info_fc, aa_fc], axis=1, name="polconcat")
+        # HIDDEN_SIZE = 128
+        # l1_action = tf.layers.dense(layers.flatten(last_action), 256, tf.nn.relu, name="pollastactdense")
+        # input_to_rnn = tf.reshape(l1_action, [-1, 16, 16])
+        # action_lstm_cell = tf.nn.rnn_cell.BasicLSTMCell(num_units=HIDDEN_SIZE, 
+        #     forget_bias=1.0, state_is_tuple=True, name="pollstmcell")
+        # inputs_rnn = tf.unstack(input_to_rnn, num=16, axis=1, name="polunstack")
+        # rnn_outputs,rnn_state= tf.contrib.rnn.static_rnn(action_lstm_cell,
+        #     inputs_rnn, dtype=tf.float32)
+        # l2_action = tf.layers.dense(rnn_state[-1], 
+        #     128, tf.nn.tanh, name="pollstmdense2")          # hidden layer
+        # last_acs_ph_lstm = tf.layers.dense(l2_action, 
+        #     32, tf.nn.tanh, name="pollstmdense3")
+        # last_acs_ph_lstm
+        
+        last_out = tf.concat([mpool2_flat, spool2_flat, info_fc, aa_fc], 
+            axis=1, name="polconcat")
 
         # self.state_in = []
         # self.state_out = []

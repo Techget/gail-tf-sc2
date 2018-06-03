@@ -160,10 +160,14 @@ class TransitionClassifier(object):
 
   def get_reward(self, obs, acs):
     sess = U.get_session()
-    if len(obs.shape) == 1:
-      obs = np.expand_dims(obs, 0)
-    if len(acs.shape) == 1:
-      acs = np.expand_dims(acs, 0)
+    # if len(obs.shape) == 1:
+    #   obs = np.expand_dims(obs, 0)
+    # if len(acs.shape) == 1:
+    #   acs = np.expand_dims(acs, 0)
+
+    # NOTICE, ASSUMPTION, only 1 action input
+    one_hot_acs = np.zeros(524)
+    one_hot_acs[acs] = 1
 
     acs = [acs]
 
