@@ -28,6 +28,10 @@ from gailtf.baselines.common.mpi_moments import mpi_moments
 
 import math
 
+
+LAST_EXPERT_LOSS = 0.0
+LAST_EXPERT_ACC = 0.0
+
 def extract_observation(time_step):
     state = {}
 
