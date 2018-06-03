@@ -23,8 +23,8 @@ from pysc2.lib import FUNCTIONS
 # from pysc2.lib import static_data
 from gym import spaces
 
-from baselines.common.mpi_adam import MpiAdam
-from baselines.common.mpi_moments import mpi_moments
+# from baselines.common.mpi_adam import MpiAdam
+from gailtf.baselines.common.mpi_moments import mpi_moments
 
 import math
 
