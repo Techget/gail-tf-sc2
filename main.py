@@ -129,7 +129,7 @@ def main(args):
                 max_kl=args.max_kl, cg_iters=10, cg_damping=0.1,
                 max_timesteps=args.num_timesteps, 
                 entcoeff=args.policy_entcoeff, gamma=0.995, lam=0.97, 
-                vf_iters=5, vf_stepsize=1e-3,
+                vf_iters=3, vf_stepsize=5e-4,
                 ckpt_dir=args.checkpoint_dir, log_dir=args.log_dir,
                 save_per_iter=args.save_per_iter, load_model_path=args.load_model_path,
                 task_name=task_name)
