@@ -647,7 +647,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
             *newlosses, g = discriminator.lossandgrad(ob_batch, ac_batch, ob_expert, ac_expert)
             LAST_EXPERT_ACC = newlosses[5]
             LAST_EXPERT_LOSS = newlosses[1]
-            print('LAST_EXPERT_LOSS, LAST_EXPERT_ACC:', LAST_EXPERT_LOSS, LAST_EXPERT_ACC)
+            # print('LAST_EXPERT_LOSS, LAST_EXPERT_ACC:', LAST_EXPERT_LOSS, LAST_EXPERT_ACC)
 
             d_adam.update(allmean(g), d_stepsize)
             d_losses.append(newlosses)
