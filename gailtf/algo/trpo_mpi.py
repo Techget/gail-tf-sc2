@@ -208,8 +208,15 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
         # ob_expert, ac_expert = expert_dataset.get_next_batch(1) # only need one, since ob and ac is also 1
 
         rew = discriminator.get_reward(ob, ac)
-        rew += LAST_EXPERT_LOSS
-        rew += 1 - LAST_EXPERT_ACC
+
+        global LAST_EXPERT_ACC,LAST_EXPERT_LOSS
+        if LAST_EXPERT_LOSS > 0:
+            rew[0][0] += LAST_EXPERT_LOSS
+            LAST_EXPERT_LOSS -= 0.01 # decay
+        if LAST_EXPERT_ACC < 1.0:
+            rew[0][0] += 1 - LAST_EXPERT_ACC
+            LAST_EXPERT_ACC += 0.01 # decay
+
         print("in traj_segment_generator rew: ", rew, LAST_EXPERT_LOSS, LAST_EXPERT_ACC)
         # rew += np.log(1 - LAST_EXPERT_ACC + 1e-8)
 
@@ -646,6 +653,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
             # update running mean/std for discriminator
             if hasattr(discriminator, "obs_rms"): discriminator.obs_rms.update(np.concatenate((ob_batch, ob_expert), 0))
             *newlosses, g = discriminator.lossandgrad(ob_batch, ac_batch, ob_expert, ac_expert)
+            global LAST_EXPERT_ACC,LAST_EXPERT_LOSS
             LAST_EXPERT_ACC = newlosses[5]
             LAST_EXPERT_LOSS = newlosses[1]
             # print('LAST_EXPERT_LOSS, LAST_EXPERT_ACC:', LAST_EXPERT_LOSS, LAST_EXPERT_ACC)
