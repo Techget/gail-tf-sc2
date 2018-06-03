@@ -388,7 +388,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
     meanent = U.mean(ent)
     # entbonus = entcoeff * meanent
     pol_entpen = (-entcoeff) * meanent
-    
+
     ratio = tf.exp(pi.pd.logp(ac) - oldpi.pd.logp(ac)) # pnew / pold
     surr1 = ratio * atarg # surrogate from conservative policy iteration
     surr2 = tf.clip_by_value(ratio, 1.0 - clip_param, 1.0 + clip_param) * atarg #
@@ -406,8 +406,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         for (oldv, newv) in zipsame(oldpi.get_variables(), pi.get_variables())])
     compute_losses = U.function([ob, ac, atarg, ret, lrmult], losses)
 
-    U.initialize()
-    adam.sync()
+    # U.initialize()
 
     # vferr = U.mean(tf.square(pi.vpred - ret))
 
@@ -471,6 +470,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
     th_init = get_flat()
     MPI.COMM_WORLD.Bcast(th_init, root=0)
     set_from_flat(th_init)
+    adam.sync()
     d_adam.sync()
     vfadam.sync()
     print("Init param sum", th_init.sum(), flush=True)
