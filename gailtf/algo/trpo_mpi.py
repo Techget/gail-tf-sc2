@@ -210,7 +210,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
         rew = discriminator.get_reward(ob, ac)
         rew += LAST_EXPERT_LOSS
         rew += 1 - LAST_EXPERT_ACC
-        print("in traj_segment_generator rew: ", rew)
+        print("in traj_segment_generator rew: ", rew, LAST_EXPERT_LOSS, LAST_EXPERT_ACC)
         # rew += np.log(1 - LAST_EXPERT_ACC + 1e-8)
 
         # print('in traj_segment_generator, ac:', ac)
