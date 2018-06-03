@@ -400,7 +400,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
 
     var_list = pi.get_trainable_variables()
     lossandgrad = U.function([ob, ac, atarg, ret, lrmult], losses + [U.flatgrad(total_loss, var_list)])
-    adam = MpiAdam(var_list, epsilon=adam_epsilon)
+    g_adam = MpiAdam(var_list, epsilon=adam_epsilon)
 
     assign_old_eq_new = U.function([],[], updates=[tf.assign(oldv, newv)
         for (oldv, newv) in zipsame(oldpi.get_variables(), pi.get_variables())])
@@ -470,7 +470,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
     th_init = get_flat()
     MPI.COMM_WORLD.Bcast(th_init, root=0)
     set_from_flat(th_init)
-    adam.sync()
+    g_adam.sync()
     d_adam.sync()
     vfadam.sync()
     print("Init param sum", th_init.sum(), flush=True)
@@ -539,7 +539,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
 
             d = Dataset(dict(ob=ob, ac=ac, atarg=atarg, vtarg=tdlamret), shuffle=not pi.recurrent)
             optim_batchsize = optim_batchsize or ob.shape[0]
-            print("optim_batchsize: ", optim_batchsize)
+            # print("optim_batchsize: ", optim_batchsize)
 
             if hasattr(pi, "ob_rms"): pi.ob_rms.update(ob) # update running mean/std for policy
 
@@ -551,7 +551,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
                 losses = [] # list of tuples, each of which gives the loss for a minibatch
                 for batch in d.iterate_once(optim_batchsize):
                     *newlosses, g = lossandgrad(batch["ob"], batch["ac"], batch["atarg"], batch["vtarg"], cur_lrmult)
-                    adam.update(g, optim_stepsize * cur_lrmult)
+                    g_adam.update(g, optim_stepsize * cur_lrmult)
                     losses.append(newlosses)
                 logger.log(fmt_row(13, np.mean(losses, axis=0)))
 
@@ -561,6 +561,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
                 newlosses = compute_losses(batch["ob"], batch["ac"], batch["atarg"], batch["vtarg"], cur_lrmult)
                 losses.append(newlosses)
             meanlosses,_,_ = mpi_moments(losses, axis=0)
+            g_losses = meanlosses
             for (lossval, name) in zipsame(meanlosses, loss_names):
                 logger.record_tabular("loss_"+name, lossval)
             logger.record_tabular("ev_tdlam_before", explained_variance(vpredbefore, tdlamret))
