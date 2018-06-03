@@ -539,7 +539,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
 
             d = Dataset(dict(ob=ob, ac=ac, atarg=atarg, vtarg=tdlamret), shuffle=not pi.recurrent)
             optim_batchsize = optim_batchsize or ob.shape[0]
-            print("optim_batchsize: ", optim_batchsizei)
+            print("optim_batchsize: ", optim_batchsize)
 
             if hasattr(pi, "ob_rms"): pi.ob_rms.update(ob) # update running mean/std for policy
 
