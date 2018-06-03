@@ -356,7 +356,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         save_per_iter=100, ckpt_dir=None, log_dir=None, 
         load_model_path=None, task_name=None,
         timesteps_per_actorbatch=32,
-        clip_param=0.2, adam_epsilon=3e-5,
+        clip_param=0.3, adam_epsilon=3e-5,
         optim_epochs=2, optim_stepsize=3e-4, optim_batchsize=32,schedule='linear'
         ):
     nworkers = MPI.COMM_WORLD.Get_size()
@@ -547,6 +547,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
             # fvpargs = [arr[::5] for arr in args]
 
             assign_old_eq_new() # set old parameter values to new parameter values
+            logger.log(fmt_row(13, loss_names))
             for _ in range(optim_epochs):
                 losses = [] # list of tuples, each of which gives the loss for a minibatch
                 for batch in d.iterate_once(optim_batchsize):
@@ -555,16 +556,17 @@ def learn(env, policy_func, discriminator, expert_dataset,
                     losses.append(newlosses)
                 logger.log(fmt_row(13, np.mean(losses, axis=0)))
 
-            logger.log("Evaluating losses...")
+            # logger.log("Evaluating losses...")
             losses = []
             for batch in d.iterate_once(optim_batchsize):
                 newlosses = compute_losses(batch["ob"], batch["ac"], batch["atarg"], batch["vtarg"], cur_lrmult)
                 losses.append(newlosses)
             meanlosses,_,_ = mpi_moments(losses, axis=0)
-            g_losses = meanlosses
-            for (lossval, name) in zipsame(meanlosses, loss_names):
-                logger.record_tabular("loss_"+name, lossval)
-            logger.record_tabular("ev_tdlam_before", explained_variance(vpredbefore, tdlamret))
+
+        g_losses = meanlosses
+        for (lossval, name) in zipsame(meanlosses, loss_names):
+            logger.record_tabular("loss_"+name, lossval)
+        logger.record_tabular("ev_tdlam_before", explained_variance(vpredbefore, tdlamret))
         #     with timed("computegrad"):
         #         *lossbefore, g = compute_lossandgrad(*args)
         #     lossbefore = allmean(np.array(lossbefore))
