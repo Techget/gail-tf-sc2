@@ -357,7 +357,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         load_model_path=None, task_name=None,
         timesteps_per_actorbatch=32,
         clip_param=0.2, 
-        optim_epochs=5, optim_stepsize=3e-4, optim_batchsize=32,schedule='linear',
+        optim_epochs=5, optim_stepsize=3e-4, optim_batchsize=32,schedule='linear'
         ):
     nworkers = MPI.COMM_WORLD.Get_size()
     print("##### nworkers: ",nworkers)
