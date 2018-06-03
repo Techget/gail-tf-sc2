@@ -388,7 +388,8 @@ def learn(env, policy_func, discriminator, expert_dataset,
     meanent = U.mean(ent)
     # entbonus = entcoeff * meanent
     pol_entpen = (-entcoeff) * meanent
-
+    
+    ratio = tf.exp(pi.pd.logp(ac) - oldpi.pd.logp(ac)) # pnew / pold
     surr1 = ratio * atarg # surrogate from conservative policy iteration
     surr2 = tf.clip_by_value(ratio, 1.0 - clip_param, 1.0 + clip_param) * atarg #
     pol_surr = - tf.reduce_mean(tf.minimum(surr1, surr2)) # PPO's pessimistic surrogate (L^CLIP)
