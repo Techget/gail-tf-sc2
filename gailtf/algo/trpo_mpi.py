@@ -357,7 +357,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         load_model_path=None, task_name=None,
         timesteps_per_actorbatch=32,
         clip_param=0.2, adam_epsilon=3e-5,
-        optim_epochs=5, optim_stepsize=3e-4, optim_batchsize=32,schedule='linear'
+        optim_epochs=2, optim_stepsize=3e-4, optim_batchsize=32,schedule='linear'
         ):
     nworkers = MPI.COMM_WORLD.Get_size()
     print("##### nworkers: ",nworkers)
@@ -532,10 +532,10 @@ def learn(env, policy_func, discriminator, expert_dataset,
             # ob, ac, atarg, ret, td1ret = map(np.concatenate, (obs, acs, atargs, rets, td1rets))
             ob, ac, atarg, tdlamret = seg["ob"], seg["ac"], seg["adv"], seg["tdlamret"]
             vpredbefore = seg["vpred"] # predicted value function before udpate
-            print("before standardize atarg value: ", atarg)
+            # print("before standardize atarg value: ", atarg)
             if atarg.std() != 0:
                 atarg = (atarg - atarg.mean()) / atarg.std() # standardized advantage function estimate
-            print("atarg value: ", atarg)
+            # print("atarg value: ", atarg)
 
             d = Dataset(dict(ob=ob, ac=ac, atarg=atarg, vtarg=tdlamret), shuffle=not pi.recurrent)
             optim_batchsize = optim_batchsize or ob.shape[0]
