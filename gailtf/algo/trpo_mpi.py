@@ -208,7 +208,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
         # ob_expert, ac_expert = expert_dataset.get_next_batch(1) # only need one, since ob and ac is also 1
 
         rew = discriminator.get_reward(ob, ac)
-        print("in traj_segment_generator rew: ", rew)
+        # print("in traj_segment_generator rew: ", rew)
         global LAST_EXPERT_ACC,LAST_EXPERT_LOSS
         if LAST_EXPERT_LOSS > 0:
             rew[0][0] += LAST_EXPERT_LOSS
@@ -217,7 +217,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
             rew[0][0] += 1 - LAST_EXPERT_ACC
             LAST_EXPERT_ACC += 0.01 # decay
 
-        print("in traj_segment_generator rew: ", rew, LAST_EXPERT_LOSS, LAST_EXPERT_ACC)
+        # print("in traj_segment_generator rew: ", rew, LAST_EXPERT_LOSS, LAST_EXPERT_ACC)
         # rew += np.log(1 - LAST_EXPERT_ACC + 1e-8)
 
         # print('in traj_segment_generator, ac:', ac)
