@@ -110,7 +110,7 @@ def flatten_param(param):
     param = param.flatten()
     return param
 
-def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
+def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stochastic):
     # Initialize state variables
     t = 0
     # ac = env.action_space.sample()
@@ -199,6 +199,9 @@ def traj_segment_generator(pi, env, discriminator, horizon, stochastic):
         news[i] = new
         acs[i] = ac
         prevacs[i] = prevac
+
+        # it is not accurate, since everytime, randomly use one, the loss is variant
+        # ob_expert, ac_expert = expert_dataset.get_next_batch(1) # only need one, since ob and ac is also 1
 
         rew = discriminator.get_reward(ob, ac)
 
@@ -477,7 +480,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
 
     # Prepare for rollouts
     # ----------------------------------------
-    seg_gen = traj_segment_generator(pi, env, discriminator, timesteps_per_batch, stochastic=True)
+    seg_gen = traj_segment_generator(pi, env, discriminator, timesteps_per_batch, expert_dataset, stochastic=True)
 
     episodes_so_far = 0
     timesteps_so_far = 0
