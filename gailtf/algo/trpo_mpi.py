@@ -87,7 +87,8 @@ def extract_observation(time_step, last_action=None):
         
     state["available_actions"] = np.zeros(len(sc_action.FUNCTIONS))
     for i in time_step.observation["available_actions"]:
-        state["available_actions"][i] = 1.0
+        if i != last_action:
+            state["available_actions"][i] = 1.0
 
     output_ob = []
     for x in state["minimap"]:
@@ -96,10 +97,11 @@ def extract_observation(time_step, last_action=None):
         output_ob.extend(list(x.flatten()))
     output_ob.extend(list(state['player']))
 
-    aa_list = list(state['available_actions'])
-    if last_action != None and sum(aa_list) > 1:
-        aa_list[last_action] = 0
-    output_ob.extend(aa_list)
+    # aa_list = list(state['available_actions'])
+    # if last_action != None and sum(aa_list) > 1:
+    #     aa_list[last_action] = 0
+    # output_ob.extend(aa_list)
+    output_ob.extend(list(state['available_actions']))
 
     output_ob = [output_ob]
     output_ob = np.array(output_ob)
