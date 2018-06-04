@@ -23,7 +23,7 @@ class MlpPolicy(object):
 
         ob = U.get_placeholder(name="ob", dtype=tf.float32, shape=[sequence_length] + list(ob_space.shape))
 
-        last_action = tf.placeholder(shape=(None, 524), dtype=tf.int32, name="last_action_one_hot")
+        last_action = tf.placeholder(shape=(None, 524), dtype=tf.float32, name="last_action_one_hot")
 
         # with tf.variable_scope("obfilter"):
         #     self.ob_rms = RunningMeanStd(shape=ob_space.shape)
