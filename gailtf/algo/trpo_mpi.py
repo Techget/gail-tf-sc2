@@ -330,7 +330,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
         # print(ac_args)
         ac_with_param = sc_action.FunctionCall(ac, ac_args)
         timestep = env.step([ac_with_param])
-        state_dict, ob = extract_observation(timestep[0], prevac) # remove last action from available action
+        state_dict, ob = extract_observation(timestep[0], ac) # remove last action from available action
         true_rew = timestep[0].reward
         if true_rew == None:
             true_rew = 0
@@ -781,7 +781,7 @@ def evaluate(env, policy_func, load_model_path, timesteps_per_batch, number_traj
         print('take action with param: ', ac_with_param)
         timesteps = env.step([ac_with_param])
         print('env reward: ', timesteps[0].reward)
-        state_dict, ob = extract_observation(timesteps[0], prevac)
+        state_dict, ob = extract_observation(timesteps[0], ac)
         is_done = timesteps[0].last()
 
 
