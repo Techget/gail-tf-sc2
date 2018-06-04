@@ -23,7 +23,7 @@ class MlpPolicy(object):
 
         ob = U.get_placeholder(name="ob", dtype=tf.float32, shape=[sequence_length] + list(ob_space.shape))
 
-        # last_action = tf.placeholder(shape=(None, 524), name="last_action")
+        last_action = tf.placeholder(shape=(None, 524), name="last_action_one_hot")
 
         # with tf.variable_scope("obfilter"):
         #     self.ob_rms = RunningMeanStd(shape=ob_space.shape)
@@ -43,7 +43,7 @@ class MlpPolicy(object):
         info /= 10
         available_action = ob[:, (5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize+self.available_action_size)]
 
-
+        # get value prediction, crtic
         mconv1 = tf.layers.conv2d(
             inputs=tf.reshape(minimap, [-1,self.msize,self.msize,5]),
             filters=32,
@@ -94,21 +94,20 @@ class MlpPolicy(object):
                    activation=tf.tanh,
                    name="vffcdense2")
 
-        # HIDDEN_SIZE = 128
-        # l1_action = tf.layers.dense(layers.flatten(last_action), 256, tf.nn.relu, name="vffclastactdense")
-        # input_to_rnn = tf.reshape(l1_action, [-1, 16, 16])
-        # action_lstm_cell = tf.nn.rnn_cell.BasicLSTMCell(num_units=HIDDEN_SIZE, 
-        #     forget_bias=1.0, state_is_tuple=True, name="vffclstmcell")
-        # inputs_rnn = tf.unstack(input_to_rnn, num=16, axis=1, name="vffcunstack")
-        # rnn_outputs,rnn_state= tf.contrib.rnn.static_rnn(action_lstm_cell,
-        #     inputs_rnn, dtype=tf.float32)
-        # l2_action = tf.layers.dense(rnn_state[-1], 
-        #     128, tf.nn.tanh, name="vffclstmdense2")          # hidden layer
-        # last_acs_ph_lstm = tf.layers.dense(l2_action, 
-        #     32, tf.nn.tanh, name="vffclstmdense3")
-        # last_acs_ph_lstm
+        HIDDEN_SIZE = 128
+        l1_action = tf.layers.dense(layers.flatten(last_action), 256, tf.nn.relu, name="vffclastactdense")
+        input_to_rnn = tf.reshape(l1_action, [-1, 16, 16])
+        action_lstm_cell = tf.nn.rnn_cell.BasicLSTMCell(num_units=HIDDEN_SIZE, 
+            forget_bias=1.0, state_is_tuple=True, name="vffclstmcell")
+        inputs_rnn = tf.unstack(input_to_rnn, num=16, axis=1, name="vffcunstack")
+        rnn_outputs,rnn_state= tf.contrib.rnn.static_rnn(action_lstm_cell,
+            inputs_rnn, dtype=tf.float32)
+        l2_action = tf.layers.dense(rnn_state[-1], 
+            128, tf.nn.tanh, name="vffclstmdense2")          # hidden layer
+        last_acs_ph_lstm = tf.layers.dense(l2_action, 
+            32, tf.nn.tanh, name="vffclstmdense3")
 
-        vf_last_out = tf.concat([mpool2_flat, spool2_flat, info_fc, aa_fc], 
+        vf_last_out = tf.concat([mpool2_flat, spool2_flat, info_fc, aa_fc, last_acs_ph_lstm], 
             axis=1, name="vffcconcat")
         vf_last_out = tf.nn.tanh(U.dense(vf_last_out, hid_size, 
             "vffcfinaldense", weight_init=U.normc_initializer(1.0)))
@@ -118,21 +117,7 @@ class MlpPolicy(object):
         #     last_out = tf.nn.tanh(U.dense(last_out, hid_size, "vffc%i"%(i+1), weight_init=U.normc_initializer(1.0)))
         self.vpred = U.dense(vf_last_out, 1, "vffinal", weight_init=U.normc_initializer(1.0))[:,0]
 
-
-        # last_out = ob
-        # for i in range(num_hid_layers):
-        #     last_out = tf.nn.tanh(U.dense(last_out, hid_size, "polfc%i"%(i+1), weight_init=U.normc_initializer(1.0)))
-        # last_out_minimap = tf.nn.relu(U.conv2d(tf.reshape(minimap, [-1,self.msize,self.msize,5]),
-        #     8, "l1-minimap", [8, 8], [4, 4], pad="VALID"))
-        # last_out_minimap = U.flattenallbut0(last_out_minimap)
-        # last_out_minimap = tf.nn.relu(U.dense(last_out_minimap, 128, 'lin-minimap', U.normc_initializer(1.0)))
-
-        # last_out_screen = tf.nn.relu(U.conv2d(tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
-        #     16, "l1-screen", [8, 8], [4, 4], pad="VALID"))
-        # last_out_screen = U.flattenallbut0(last_out_screen)
-        # last_out_screen = tf.nn.relu(U.dense(last_out_screen, 350, 'lin-screen', U.normc_initializer(1.0)))
-
-
+        # get action id
         mconv1 = tf.layers.conv2d(
             inputs=tf.reshape(minimap, [-1,self.msize,self.msize,5]),
             filters=32,
@@ -183,29 +168,21 @@ class MlpPolicy(object):
                    activation=tf.tanh,
                    name="poldense2")
 
-        # HIDDEN_SIZE = 128
-        # l1_action = tf.layers.dense(layers.flatten(last_action), 256, tf.nn.relu, name="pollastactdense")
-        # input_to_rnn = tf.reshape(l1_action, [-1, 16, 16])
-        # action_lstm_cell = tf.nn.rnn_cell.BasicLSTMCell(num_units=HIDDEN_SIZE, 
-        #     forget_bias=1.0, state_is_tuple=True, name="pollstmcell")
-        # inputs_rnn = tf.unstack(input_to_rnn, num=16, axis=1, name="polunstack")
-        # rnn_outputs,rnn_state= tf.contrib.rnn.static_rnn(action_lstm_cell,
-        #     inputs_rnn, dtype=tf.float32)
-        # l2_action = tf.layers.dense(rnn_state[-1], 
-        #     128, tf.nn.tanh, name="pollstmdense2")          # hidden layer
-        # last_acs_ph_lstm = tf.layers.dense(l2_action, 
-        #     32, tf.nn.tanh, name="pollstmdense3")
-        # last_acs_ph_lstm
+        HIDDEN_SIZE = 128
+        l1_action = tf.layers.dense(layers.flatten(last_action), 256, tf.nn.relu, name="pollastactdense")
+        input_to_rnn = tf.reshape(l1_action, [-1, 16, 16])
+        action_lstm_cell = tf.nn.rnn_cell.BasicLSTMCell(num_units=HIDDEN_SIZE, 
+            forget_bias=1.0, state_is_tuple=True, name="pollstmcell")
+        inputs_rnn = tf.unstack(input_to_rnn, num=16, axis=1, name="polunstack")
+        rnn_outputs,rnn_state= tf.contrib.rnn.static_rnn(action_lstm_cell,
+            inputs_rnn, dtype=tf.float32)
+        l2_action = tf.layers.dense(rnn_state[-1], 
+            128, tf.nn.tanh, name="pollstmdense2")          # hidden layer
+        last_acs_ph_lstm = tf.layers.dense(l2_action, 
+            32, tf.nn.tanh, name="pollstmdense3")
         
-        last_out = tf.concat([mpool2_flat, spool2_flat, info_fc, aa_fc], 
+        last_out = tf.concat([mpool2_flat, spool2_flat, info_fc, aa_fc, last_acs_ph_lstm], 
             axis=1, name="polconcat")
-
-        # self.state_in = []
-        # self.state_out = []
-
-        # stochastic = tf.placeholder(dtype=tf.bool, shape=())
-        # ac = self.pd.sample() # XXX
-        # self._act = U.function([stochastic, ob], [ac, self.vpred])
 
         if gaussian_fixed_var and isinstance(ac_space, gym.spaces.Box):
             mean = U.dense(last_out, pdtype.param_shape()[0]//2, "polfinal", U.normc_initializer(0.01))
@@ -225,27 +202,29 @@ class MlpPolicy(object):
         stochastic = U.get_placeholder(name="stochastic", dtype=tf.bool, shape=())
         ac = U.switch(stochastic, self.pd.sample(available_action), self.pd.mode(available_action))
         self.ac = ac
-        self._act = U.function([stochastic, ob], [ac, self.vpred])
+        self._act = U.function([stochastic, ob, last_action], [ac, self.vpred])
 
-    def act(self, stochastic, ob):
-        # print('~~~~',ob)
+    def act(self, stochastic, ob, last_action):
+        # input last_action is a number, convert to one-hot
+        one_hot_last_action = []
+        if type(last_action) is np.ndarray:
+          depth = last_action.size
+          one_hot_last_action = np.zeros((depth, 524))
+          one_hot_last_action[np.arange(depth), last_action] = 1
+        else:
+          # one_hot_acs = tf.one_hot(indices, depth)
+          one_hot_last_action = np.zeros(524)
+          one_hot_last_action[last_action] = 1
+          one_hot_last_action = [one_hot_last_action]
 
-        available_act_one_hot = ob[0][-524:]
-        # print(available_act_one_hot)
-        available_act = []
-        for i in range(0, len(available_act_one_hot)):
-            if available_act_one_hot[i] == 1.0:
-                available_act.append(i)
-        # print('available_act int mlp_policy.py act function: ', available_act)
-        # try to get valid action id,
-        ac1, vpred1 =  self._act(stochastic, ob)
-        # count = 0
-        # while ac1[0] not in available_act:
-        #     # print('try to loop to get action in available_act: ', ac1[0])
-        #     ac1, vpred1 =  self._act(True, ob) # have to use stochastic
-        #     count += 1
+        # available_act_one_hot = ob[0][-524:]
+        # available_act = []
+        # for i in range(0, len(available_act_one_hot)):
+        #     if available_act_one_hot[i] == 1.0:
+        #         available_act.append(i)
 
-        # print('ac get from policy: ', ac1)
+        # last action should be one host
+        ac1, vpred1 =  self._act(stochastic, ob, one_hot_last_action)
         return ac1, vpred1[0]
     def get_variables(self):
         return tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, self.scope)

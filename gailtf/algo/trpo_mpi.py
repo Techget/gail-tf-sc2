@@ -31,6 +31,7 @@ import math
 
 LAST_EXPERT_LOSS = 0.0
 LAST_EXPERT_ACC = -1.0
+# LAST_ACTION = 0
 
 def extract_observation(time_step):
     state = {}
@@ -124,7 +125,8 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
     from gym import spaces
     ob_space = spaces.Box(low=-1000, high=10000, shape=(5*64*64 + 10*64*64 + 11 + 524,))
     ac_space = spaces.Discrete(524)
-    ac = ac_space.sample()
+    # ac = ac_space.sample()
+    ac = 0
 
     new = True
     rew = 0.0
@@ -186,7 +188,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
 
     while True:
         prevac = ac
-        ac, vpred = pi.act(stochastic, ob)
+        ac, vpred = pi.act(stochastic, ob, prevac)
         # Slight weirdness here because we need value function at time T
         # before returning segment [0, T-1] so we get the correct
         # terminal value
@@ -194,7 +196,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
             yield {"ob" : obs, "rew" : rews, "vpred" : vpreds, "new" : news,
                     "ac" : acs, "prevac" : prevacs, "nextvpred": vpred * (1 - new),
                     "ep_rets" : ep_rets, "ep_lens" : ep_lens, "ep_true_rets": ep_true_rets}
-            _, vpred = pi.act(stochastic, ob)
+            _, vpred = pi.act(stochastic, ob, prevac)
             # Be careful!!! if you change the downstream algorithm to aggregate
             # several of these batches, then be sure to do a deepcopy
             ep_rets = []
@@ -328,7 +330,6 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
         # if true_rew == None:
         #     true_rew = 0
         new = timestep[0].last() # check is Done.
-        # ob, true_rew, new, _ = 
         rews[i] = rew
         true_rews[i] = true_rew
 
@@ -346,6 +347,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
             cur_ep_len = 0
             timestep = env.reset()
             state_dict, ob = extract_observation(timestep[0])
+            ac = 0 # in order to refresh last action
         t += 1
 
 def add_vtarg_and_adv(seg, gamma, lam):
@@ -653,9 +655,11 @@ def evaluate(env, policy_func, load_model_path, timesteps_per_batch, number_traj
     timesteps = env.reset()
     state_dict, ob = extract_observation(timesteps[0])
     is_done = False
+    ac = 0
 
     while is_done == False:
-        ac, vpred = pi.act(stochastic_policy, ob)
+        prevac = ac
+        ac, vpred = pi.act(stochastic_policy, ob, prevac)
         function_type = sc_action.FUNCTIONS[ac].function_type.__name__
         one_hot_ac = np.zeros((1, 524)) # shape will be 1*254
         one_hot_ac[np.arange(1), [ac]] = 1
