@@ -165,11 +165,14 @@ class TransitionClassifier(object):
     # if len(acs.shape) == 1:
     #   acs = np.expand_dims(acs, 0)
 
-    # NOTICE, ASSUMPTION, only 1 action input
-    one_hot_acs = np.zeros(524)
-    one_hot_acs[acs] = 1
+    depth = len(acs)
+    one_hot_acs = np.zeros((depth, 524))
+    one_hot_acs[np.arange(depth), acs] = 1
 
-    acs = [acs]
+    # one_hot_acs = tf.one_hot(indices, depth)
+    # one_hot_acs = np.zeros(524)
+    # one_hot_acs[acs] = 1
+    # acs = [acs]
 
     feed_dict = {self.generator_obs_ph:obs, self.generator_acs_ph:acs}
     # g_acc = sess.run(self.generator_acc, feed_dict)

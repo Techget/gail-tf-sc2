@@ -427,21 +427,6 @@ def learn(env, policy_func, discriminator, expert_dataset,
         for (oldv, newv) in zipsame(oldpi.get_variables(), pi.get_variables())])
     compute_losses = U.function([ob, ac, atarg, ret, lrmult], losses)
 
-    # U.initialize()
-
-    # vferr = U.mean(tf.square(pi.vpred - ret))
-
-    # ratio = tf.exp(pi.pd.logp(ac) - oldpi.pd.logp(ac)) # advantage * pnew / pold
-    # surrgain = U.mean(ratio * atarg)
-
-    # ratio_mean = U.mean(ratio)
-
-    # optimgain = surrgain + entbonus
-    # losses = [optimgain, meankl, entbonus, surrgain, meanent, ratio_mean]
-    # loss_names = ["optimgain", "meankl", "entloss", "surrgain", "entropy", "ratio_mean"]
-
-    # dist = meankl
-
     all_var_list = pi.get_trainable_variables()
     var_list = [v for v in all_var_list if v.name.split("/")[1].startswith("pol")]
     vf_var_list = [v for v in all_var_list if v.name.split("/")[1].startswith("vf")]
@@ -450,24 +435,6 @@ def learn(env, policy_func, discriminator, expert_dataset,
 
     get_flat = U.GetFlat(var_list)
     set_from_flat = U.SetFromFlat(var_list)
-    # klgrads = tf.gradients(dist, var_list)
-    # flat_tangent = tf.placeholder(dtype=tf.float32, shape=[None], name="flat_tan")
-    # shapes = [var.get_shape().as_list() for var in var_list]
-    # start = 0
-    # tangents = []
-    # for shape in shapes:
-    #     sz = U.intprod(shape)
-    #     tangents.append(tf.reshape(flat_tangent[start:start+sz], shape))
-    #     start += sz
-    # gvp = tf.add_n([U.sum(g*tangent) for (g, tangent) in zipsame(klgrads, tangents)]) #pylint: disable=E1111
-    # fvp = U.flatgrad(gvp, var_list)
-
-    # assign_old_eq_new = U.function([],[], updates=[tf.assign(oldv, newv)
-    #     for (oldv, newv) in zipsame(oldpi.get_variables(), pi.get_variables())])
-    # compute_losses = U.function([ob, ac, atarg], losses)
-    # compute_lossandgrad = U.function([ob, ac, atarg], losses + [U.flatgrad(optimgain, var_list)])
-    # compute_fvp = U.function([flat_tangent, ob, ac, atarg], fvp)
-    # compute_vflossandgrad = U.function([ob, ret], U.flatgrad(vferr, vf_var_list))
 
     @contextmanager
     def timed(msg):
@@ -564,9 +531,6 @@ def learn(env, policy_func, discriminator, expert_dataset,
 
             if hasattr(pi, "ob_rms"): pi.ob_rms.update(ob) # update running mean/std for policy
 
-            # args = seg["ob"], seg["ac"], atarg
-            # fvpargs = [arr[::5] for arr in args]
-
             assign_old_eq_new() # set old parameter values to new parameter values
             logger.log(fmt_row(13, loss_names))
             for _ in range(optim_epochs):
@@ -588,61 +552,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         for (lossval, name) in zipsame(meanlosses, loss_names):
             logger.record_tabular("loss_"+name, lossval)
         logger.record_tabular("ev_tdlam_before", explained_variance(vpredbefore, tdlamret))
-        #     with timed("computegrad"):
-        #         *lossbefore, g = compute_lossandgrad(*args)
-        #     lossbefore = allmean(np.array(lossbefore))
-        #     g = allmean(g)
-        #     if np.allclose(g, 0):
-        #         logger.log("Got zero gradient. not updating")
-        #     else:
-        #         with timed("cg"):
-        #             stepdir = cg(fisher_vector_product, g, cg_iters=cg_iters, verbose=rank==0)
-        #         assert np.isfinite(stepdir).all()
-        #         shs = .5*stepdir.dot(fisher_vector_product(stepdir))
-        #         lm = np.sqrt(shs / max_kl)
-        #         # logger.log("lagrange multiplier:", lm, "gnorm:", np.linalg.norm(g))
-        #         fullstep = stepdir / lm
-        #         expectedimprove = g.dot(fullstep)
-        #         surrbefore = lossbefore[0]
-        #         stepsize = 1.0
-        #         thbefore = get_flat()
-        #         for _ in range(10):
-        #             thnew = thbefore + fullstep * stepsize
-        #             set_from_flat(thnew)
-        #             meanlosses = surr, kl, *_ = allmean(np.array(compute_losses(*args)))
-        #             improve = surr - surrbefore
-        #             logger.log("Expected: %.3f Actual: %.3f"%(expectedimprove, improve))
-        #             if not np.isfinite(meanlosses).all():
-        #                 logger.log("Got non-finite value of losses -- bad!")
-        #             elif kl > max_kl * 1.5:
-        #                 logger.log("violated KL constraint. shrinking step.")
-        #             elif improve < 0:
-        #                 logger.log("surrogate didn't improve. shrinking step.")
-        #             else:
-        #                 logger.log("Stepsize OK!")
-        #                 break
-        #             stepsize *= .5
-        #             if np.allclose(stepsize, 0):
-        #                 logger.log("stepsize close to 0, increasing step")
-        #                 stepsize *= 2
-        #         else:
-        #             logger.log("couldn't compute a good step")
-        #             set_from_flat(thbefore)
-        #         if nworkers > 1 and iters_so_far % 20 == 0:
-        #             paramsums = MPI.COMM_WORLD.allgather((thnew.sum(), vfadam.getflat().sum())) # list of tuples
-        #             assert all(np.allclose(ps, paramsums[0]) for ps in paramsums[1:])
-        #     with timed("vf"):
-        #         for _ in range(vf_iters):
-        #             for (mbob, mbret) in dataset.iterbatches((seg["ob"], seg["tdlamret"]),
-        #             include_final_partial_batch=False, batch_size=32):
-        #                 if hasattr(pi, "ob_rms"): pi.ob_rms.update(mbob) # update running mean/std for policy
-        #                 g = allmean(compute_vflossandgrad(mbob, mbret))
-        #                 vfadam.update(g, vf_stepsize)
-
-        # g_losses = meanlosses
-        # for (lossname, lossval) in zip(loss_names, meanlosses):
-        #     logger.record_tabular(lossname, lossval)
-        # logger.record_tabular("ev_tdlam_before", explained_variance(vpredbefore, tdlamret))
+       
         # ------------------ Update D ------------------
         logger.log("Optimizing Discriminator...")
         logger.log(fmt_row(13, discriminator.loss_name))
@@ -655,7 +565,16 @@ def learn(env, policy_func, discriminator, expert_dataset,
             ob_expert, ac_expert = expert_dataset.get_next_batch(len(ob_batch))
             # update running mean/std for discriminator
             if hasattr(discriminator, "obs_rms"): discriminator.obs_rms.update(np.concatenate((ob_batch, ob_expert), 0))
-            *newlosses, g = discriminator.lossandgrad(ob_batch, ac_batch, ob_expert, ac_expert)
+            
+            depth = len(ac_batch)
+            one_hot_ac_batch = np.zeros((depth, 524))
+            one_hot_ac_batch[np.arange(depth), ac_batch] = 1
+
+            depth = len(ac_expert)
+            one_hot_ac_expert = np.zeros((depth, 524))
+            one_hot_ac_expert[np.arange(depth), ac_expert] = 1
+
+            *newlosses, g = discriminator.lossandgrad(ob_batch, one_hot_ac_batch, ob_expert, one_hot_ac_expert)
             global LAST_EXPERT_ACC,LAST_EXPERT_LOSS
             LAST_EXPERT_ACC = newlosses[5]
             LAST_EXPERT_LOSS = newlosses[1]
