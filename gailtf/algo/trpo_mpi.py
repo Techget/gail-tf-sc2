@@ -404,6 +404,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
     ob = U.get_placeholder_cached(name="ob")
     # ob = U.get_placeholder(name="ob", dtype=tf.float32, shape=(None, ob_space[0]))
     ac = pi.pdtype.sample_placeholder([None])
+    prevac = pi.pdtype.sample_placeholder([None])
 
     kloldnew = oldpi.pd.kl(pi.pd)
     ent = pi.pd.entropy()
@@ -422,12 +423,12 @@ def learn(env, policy_func, discriminator, expert_dataset,
     loss_names = ["pol_surr", "pol_entpen", "vf_loss", "kl", "ent"]
 
     var_list = pi.get_trainable_variables()
-    lossandgrad = U.function([ob, ac, atarg, ret, lrmult], losses + [U.flatgrad(total_loss, var_list)])
+    lossandgrad = U.function([ob, ac, prevac, atarg, ret, lrmult], losses + [U.flatgrad(total_loss, var_list)])
     g_adam = MpiAdam(var_list, epsilon=adam_epsilon)
 
     assign_old_eq_new = U.function([],[], updates=[tf.assign(oldv, newv)
         for (oldv, newv) in zipsame(oldpi.get_variables(), pi.get_variables())])
-    compute_losses = U.function([ob, ac, atarg, ret, lrmult], losses)
+    compute_losses = U.function([ob, ac, prevac, atarg, ret, lrmult], losses)
 
     all_var_list = pi.get_trainable_variables()
     var_list = [v for v in all_var_list if v.name.split("/")[1].startswith("pol")]
@@ -520,14 +521,15 @@ def learn(env, policy_func, discriminator, expert_dataset,
                 seg = seg_gen.__next__()
             add_vtarg_and_adv(seg, gamma, lam)
             # ob, ac, atarg, ret, td1ret = map(np.concatenate, (obs, acs, atargs, rets, td1rets))
-            ob, ac, atarg, tdlamret = seg["ob"], seg["ac"], seg["adv"], seg["tdlamret"]
+            ob, ac, prevac, atarg, tdlamret = seg["ob"], seg["ac"], seg["prevac"], seg["adv"], seg["tdlamret"]
             vpredbefore = seg["vpred"] # predicted value function before udpate
             # print("before standardize atarg value: ", atarg)
             if atarg.std() != 0:
                 atarg = (atarg - atarg.mean()) / atarg.std() # standardized advantage function estimate
             # print("atarg value: ", atarg)
 
-            d = Dataset(dict(ob=ob, ac=ac, atarg=atarg, vtarg=tdlamret), shuffle=not pi.recurrent)
+            d = Dataset(dict(ob=ob, ac=ac, prevac=prevac, atarg=atarg, vtarg=tdlamret), 
+                shuffle=not pi.recurrent)
             optim_batchsize = optim_batchsize or ob.shape[0]
             # print("optim_batchsize: ", optim_batchsize)
 
@@ -538,7 +540,8 @@ def learn(env, policy_func, discriminator, expert_dataset,
             for _ in range(optim_epochs):
                 losses = [] # list of tuples, each of which gives the loss for a minibatch
                 for batch in d.iterate_once(optim_batchsize):
-                    *newlosses, g = lossandgrad(batch["ob"], batch["ac"], batch["atarg"], batch["vtarg"], cur_lrmult)
+                    *newlosses, g = lossandgrad(batch["ob"], 
+                        batch["ac"], batch['prevac'], batch["atarg"], batch["vtarg"], cur_lrmult)
                     g_adam.update(g, optim_stepsize * cur_lrmult)
                     losses.append(newlosses)
                 logger.log(fmt_row(13, np.mean(losses, axis=0)))
@@ -546,7 +549,8 @@ def learn(env, policy_func, discriminator, expert_dataset,
             # logger.log("Evaluating losses...")
             losses = []
             for batch in d.iterate_once(optim_batchsize):
-                newlosses = compute_losses(batch["ob"], batch["ac"], batch["atarg"], batch["vtarg"], cur_lrmult)
+                newlosses = compute_losses(batch["ob"], batch["ac"], batch["prevac"],
+                    batch["atarg"], batch["vtarg"], cur_lrmult)
                 losses.append(newlosses)
             meanlosses,_,_ = mpi_moments(losses, axis=0)
 
