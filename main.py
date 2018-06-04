@@ -55,7 +55,7 @@ def get_task_name(args):
         if args.traj_limitation != np.inf: task_name += "traj_limitation_%d."%args.traj_limitation
         task_name += args.env_id.split("-")[0]
     else:
-        task_name = args.algo + "_ppo_gail."
+        task_name = args.algo + "_ppo_modify_available_action_gail."
         if args.pretrained: task_name += "with_pretrained."
         if args.traj_limitation != np.inf: task_name += "traj_limitation_%d."%args.traj_limitation
         task_name += args.env_id.split("-")[0]
