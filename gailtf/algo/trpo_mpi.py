@@ -199,9 +199,9 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
             _, vpred = pi.act(stochastic, ob, prevac)
             # Be careful!!! if you change the downstream algorithm to aggregate
             # several of these batches, then be sure to do a deepcopy
-            ep_rets = []
-            ep_true_rets = []
-            ep_lens = []
+            # ep_rets = []
+            # ep_true_rets = []
+            # ep_lens = []
         i = t % horizon
         obs[i] = ob[0] # change shape from (32, 1, 61975) to (32, 61975)
         vpreds[i] = vpred
