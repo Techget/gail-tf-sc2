@@ -174,7 +174,7 @@ class TransitionClassifier(object):
       # one_hot_acs = tf.one_hot(indices, depth)
       one_hot_acs = np.zeros(524)
       one_hot_acs[acs] = 1
-      # acs = [acs]
+      one_hot_acs = [one_hot_acs]
 
 
     feed_dict = {self.generator_obs_ph:obs, self.generator_acs_ph:one_hot_acs}
