@@ -404,7 +404,8 @@ def learn(env, policy_func, discriminator, expert_dataset,
     ob = U.get_placeholder_cached(name="ob")
     # ob = U.get_placeholder(name="ob", dtype=tf.float32, shape=(None, ob_space[0]))
     ac = pi.pdtype.sample_placeholder([None])
-    prevac = pi.pdtype.sample_placeholder([None])
+    # prevac = pi.pdtype.sample_placeholder([None])
+    prevac_placeholder = tf.placeholder(shape=(None, 524), dtype=tf.float32, name="prevac_one_hot_ph")
 
     kloldnew = oldpi.pd.kl(pi.pd)
     ent = pi.pd.entropy()
@@ -423,18 +424,18 @@ def learn(env, policy_func, discriminator, expert_dataset,
     loss_names = ["pol_surr", "pol_entpen", "vf_loss", "kl", "ent"]
 
     var_list = pi.get_trainable_variables()
-    lossandgrad = U.function([ob, ac, prevac, atarg, ret, lrmult], losses + [U.flatgrad(total_loss, var_list)])
+    lossandgrad = U.function([ob, ac, prevac_placeholder, atarg, ret, lrmult], losses + [U.flatgrad(total_loss, var_list)])
     g_adam = MpiAdam(var_list, epsilon=adam_epsilon)
 
     assign_old_eq_new = U.function([],[], updates=[tf.assign(oldv, newv)
         for (oldv, newv) in zipsame(oldpi.get_variables(), pi.get_variables())])
-    compute_losses = U.function([ob, ac, prevac, atarg, ret, lrmult], losses)
+    compute_losses = U.function([ob, ac, prevac_placeholder, atarg, ret, lrmult], losses)
 
     all_var_list = pi.get_trainable_variables()
     var_list = [v for v in all_var_list if v.name.split("/")[1].startswith("pol")]
-    vf_var_list = [v for v in all_var_list if v.name.split("/")[1].startswith("vf")]
+    # vf_var_list = [v for v in all_var_list if v.name.split("/")[1].startswith("vf")]
     d_adam = MpiAdam(discriminator.get_trainable_variables())
-    vfadam = MpiAdam(vf_var_list)
+    # vfadam = MpiAdam(vf_var_list)
 
     get_flat = U.GetFlat(var_list)
     set_from_flat = U.SetFromFlat(var_list)
@@ -463,7 +464,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
     set_from_flat(th_init)
     g_adam.sync()
     d_adam.sync()
-    vfadam.sync()
+    # vfadam.sync()
     print("Init param sum", th_init.sum(), flush=True)
 
     # Prepare for rollouts
@@ -528,6 +529,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
                 atarg = (atarg - atarg.mean()) / atarg.std() # standardized advantage function estimate
             # print("atarg value: ", atarg)
 
+            # convert prevac to one hot
             one_hot_prevac = []
             if type(prevac) is np.ndarray:
               depth = prevac.size
