@@ -405,7 +405,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
     # ob = U.get_placeholder(name="ob", dtype=tf.float32, shape=(None, ob_space[0]))
     ac = pi.pdtype.sample_placeholder([None])
     # prevac = pi.pdtype.sample_placeholder([None])
-    prevac_placeholder = tf.placeholder(shape=(None, 524), dtype=tf.float32, name="prevac_one_hot_ph")
+    prevac_placeholder = U.get_placeholder_cached(name="last_action_one_hot")
 
     kloldnew = oldpi.pd.kl(pi.pd)
     ent = pi.pd.entropy()
