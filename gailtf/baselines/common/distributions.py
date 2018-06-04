@@ -174,6 +174,7 @@ class CategoricalPd(Pd):
         #act = tf.gather(available_act, index_for_available_act, axis=-1)
         # act = available_act[index_for_available_act][1]
         available_logits = tf.expand_dims(available_logits, 0)
+        available_logits = tf.nn.softmax(available_logits)
         index_for_available_act = tf.reshape(tf.multinomial(available_logits, 1), [])
         act = available_act[index_for_available_act][1]
         
