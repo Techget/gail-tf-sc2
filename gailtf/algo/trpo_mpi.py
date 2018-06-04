@@ -528,6 +528,17 @@ def learn(env, policy_func, discriminator, expert_dataset,
                 atarg = (atarg - atarg.mean()) / atarg.std() # standardized advantage function estimate
             # print("atarg value: ", atarg)
 
+            one_hot_prevac = []
+            if type(prevac) is np.ndarray:
+              depth = prevac.size
+              one_hot_prevac = np.zeros((depth, 524))
+              one_hot_prevac[np.arange(depth), prevac] = 1
+            else:
+              one_hot_prevac = np.zeros(524)
+              one_hot_prevac[prevac] = 1
+              one_hot_prevac = [one_hot_prevac]
+            prevac = one_hot_prevac
+
             d = Dataset(dict(ob=ob, ac=ac, prevac=prevac, atarg=atarg, vtarg=tdlamret), 
                 shuffle=not pi.recurrent)
             optim_batchsize = optim_batchsize or ob.shape[0]
