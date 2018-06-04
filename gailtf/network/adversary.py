@@ -76,9 +76,9 @@ class TransitionClassifier(object):
 
   def build_ph(self):
     self.generator_obs_ph = tf.placeholder(tf.float32, (None, ) + self.observation_shape, name="observations_ph")
-    self.generator_acs_ph = tf.placeholder(tf.float32, (None, ) + self.actions_shape, name="actions_ph")
+    self.generator_acs_ph = tf.placeholder(tf.float32, (None, 524), name="actions_ph")
     self.expert_obs_ph = tf.placeholder(tf.float32, (None, ) + self.observation_shape, name="expert_observations_ph")
-    self.expert_acs_ph = tf.placeholder(tf.float32, (None, ) + self.actions_shape, name="expert_actions_ph")
+    self.expert_acs_ph = tf.placeholder(tf.float32, (None, 524), name="expert_actions_ph") #self.actions_shape
 
   def build_graph(self, obs_ph, acs_ph, reuse=False):
     with tf.variable_scope(self.scope):
