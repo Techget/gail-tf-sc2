@@ -167,11 +167,11 @@ class TransitionClassifier(object):
 
     one_hot_acs = []
     if type(acs) is np.ndarray:
-      depth = len(acs)
+      depth = acs.size
       one_hot_acs = np.zeros((depth, 524))
       one_hot_acs[np.arange(depth), acs] = 1
     else:
-      one_hot_acs = tf.one_hot(indices, depth)
+      # one_hot_acs = tf.one_hot(indices, depth)
       one_hot_acs = np.zeros(524)
       one_hot_acs[acs] = 1
       # acs = [acs]
