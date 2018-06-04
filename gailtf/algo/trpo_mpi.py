@@ -33,7 +33,8 @@ LAST_EXPERT_LOSS = 0.0
 LAST_EXPERT_ACC = -1.0
 # LAST_ACTION = 0
 
-def extract_observation(time_step):
+# NOTICE remove action did last time from available action
+def extract_observation(time_step, last_action=None):
     state = {}
 
     state["minimap"] = [
@@ -94,7 +95,11 @@ def extract_observation(time_step):
     for x in state["screen"]:
         output_ob.extend(list(x.flatten()))
     output_ob.extend(list(state['player']))
-    output_ob.extend(list(state['available_actions']))
+
+    aa_list = list(state['available_actions'])
+    if last_action != None and sum(aa_list) > 1:
+        aa_list[last_action] = 0
+    output_ob.extend(aa_list)
 
     output_ob = [output_ob]
     output_ob = np.array(output_ob)
@@ -323,7 +328,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
         # print(ac_args)
         ac_with_param = sc_action.FunctionCall(ac, ac_args)
         timestep = env.step([ac_with_param])
-        state_dict, ob = extract_observation(timestep[0])
+        state_dict, ob = extract_observation(timestep[0], prevac) # remove last action from available action
         true_rew = timestep[0].reward
         if true_rew == None:
             true_rew = 0
@@ -774,7 +779,7 @@ def evaluate(env, policy_func, load_model_path, timesteps_per_batch, number_traj
         print('take action with param: ', ac_with_param)
         timesteps = env.step([ac_with_param])
         print('env reward: ', timesteps[0].reward)
-        state_dict, ob = extract_observation(timesteps[0])
+        state_dict, ob = extract_observation(timesteps[0], prevac)
         is_done = timesteps[0].last()
 
 
