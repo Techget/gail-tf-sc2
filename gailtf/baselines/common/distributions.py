@@ -167,11 +167,14 @@ class CategoricalPd(Pd):
         where = tf.not_equal(available_action, zero)
         available_act = tf.where(where)
 
-        u = tf.random_uniform(tf.shape(self.logits))
-        available_u = tf.gather_nd(u, available_act)
+        # u = tf.random_uniform(tf.shape(self.logits))
+        # available_u = tf.gather_nd(u, available_act)
         available_logits = tf.gather_nd(self.logits, available_act)
-        index_for_available_act = tf.argmax(available_logits - tf.log(-tf.log(available_u)), axis=-1)
+        # index_for_available_act = tf.argmax(available_logits - tf.log(-tf.log(available_u)), axis=-1)
         #act = tf.gather(available_act, index_for_available_act, axis=-1)
+        # act = available_act[index_for_available_act][1]
+
+        index_for_available_act = tf.reshape(tf.multinomial(available_logits, 1), [])
         act = available_act[index_for_available_act][1]
         
         # act = [act, available_act]
