@@ -349,9 +349,9 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
             ep_rets.append(cur_ep_ret)
             ep_true_rets.append(cur_ep_true_ret)
             ep_lens.append(cur_ep_len)
-            if cur_ep_true_ret == 1:
+            if cur_ep_true_ret != -1:
                 with open("win.txt", "a+") as f:
-                    f.write('win!!!!!!!')
+                    f.write('win!!!!!!! {}'.format(cur_ep_true_ret))
             cur_ep_ret = 0
             cur_ep_true_ret = 0
             cur_ep_len = 0
