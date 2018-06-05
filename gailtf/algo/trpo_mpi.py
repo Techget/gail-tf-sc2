@@ -348,6 +348,9 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
             ep_rets.append(cur_ep_ret)
             ep_true_rets.append(cur_ep_true_ret)
             ep_lens.append(cur_ep_len)
+            if cur_ep_true_ret == 1:
+                with open("win.txt", "a+") as f:
+                    f.write('win!!!!!!!')
             cur_ep_ret = 0
             cur_ep_true_ret = 0
             cur_ep_len = 0
@@ -620,9 +623,9 @@ def learn(env, policy_func, discriminator, expert_dataset,
         logger.record_tabular("EpLenMean", np.mean(lenbuffer))
         logger.record_tabular("EpRewMean", np.mean(rewbuffer))
         logger.record_tabular("EpTrueRewMean", np.mean(true_rewbuffer))
-        logger.record_tabular("EpThisIter", len(lens))
-        episodes_so_far += len(lens)
-        timesteps_so_far += sum(lens)
+        # logger.record_tabular("EpThisIter", len(lens))
+        episodes_so_far = len(lens)
+        timesteps_so_far = sum(lens) 
         iters_so_far += 1
 
         logger.record_tabular("EpisodesSoFar", episodes_so_far)
@@ -635,6 +638,10 @@ def learn(env, policy_func, discriminator, expert_dataset,
             d_loss_stats.add_all_summary(writer, np.mean(d_losses, axis=0), iters_so_far)
             ep_stats.add_all_summary(writer, [np.mean(true_rewbuffer), np.mean(rewbuffer),
                            np.mean(lenbuffer)], iters_so_far)
+
+        # log ac picked
+        with open('ac.txt','a+') as f:
+            print(ac, file=f)
 
 
 def evaluate(env, policy_func, load_model_path, timesteps_per_batch, number_trajs=10, 
