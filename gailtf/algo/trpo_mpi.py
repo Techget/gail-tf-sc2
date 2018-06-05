@@ -31,6 +31,7 @@ import math
 
 LAST_EXPERT_LOSS = 0.0
 LAST_EXPERT_ACC = -1.0
+LAST_EXPERT_COEFF = 0.1
 # LAST_ACTION = 0
 
 # NOTICE remove action did last time from available action
@@ -222,10 +223,10 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
         # print("in traj_segment_generator rew: ", rew)
         global LAST_EXPERT_ACC,LAST_EXPERT_LOSS
         if LAST_EXPERT_LOSS > 0:
-            rew[0][0] += LAST_EXPERT_LOSS
+            rew[0][0] += LAST_EXPERT_LOSS * LAST_EXPERT_COEFF
             LAST_EXPERT_LOSS -= 0.01 # decay
         if LAST_EXPERT_ACC < 1.0 and LAST_EXPERT_ACC != -1.0:
-            rew[0][0] += 1 - LAST_EXPERT_ACC
+            rew[0][0] += (1 - LAST_EXPERT_ACC) * LAST_EXPERT_COEFF
             LAST_EXPERT_ACC += 0.01 # decay
 
         # print("in traj_segment_generator rew: ", rew, LAST_EXPERT_LOSS, LAST_EXPERT_ACC)
@@ -381,7 +382,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         gamma, lam, # advantage estimation
         entcoeff=0.001,
         cg_damping=1e-2,
-        vf_stepsize=3e-4, d_stepsize=2e-4,
+        vf_stepsize=3e-4, d_stepsize=1e-4,
         vf_iters =3,
         max_timesteps=0, max_episodes=0, max_iters=0, max_seconds=0,  # time constraint
         callback=None,
@@ -389,7 +390,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         load_model_path=None, task_name=None,
         timesteps_per_actorbatch=32,
         clip_param=0.3, adam_epsilon=3e-5,
-        optim_epochs=2, optim_stepsize=2e-4, optim_batchsize=32,schedule='linear'
+        optim_epochs=2, optim_stepsize=1e-4, optim_batchsize=32,schedule='linear'
         ):
     nworkers = MPI.COMM_WORLD.Get_size()
     print("##### nworkers: ",nworkers)
