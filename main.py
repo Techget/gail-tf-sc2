@@ -98,7 +98,7 @@ def main(args):
     args.checkpoint_dir = osp.join(args.checkpoint_dir, task_name)
     args.log_dir = osp.join(args.log_dir, task_name)
     # dataset = Mujoco_Dset(expert_path=args.expert_path, ret_threshold=args.ret_threshold, traj_limitation=args.traj_limitation)
-    dataset = SC2Dataset(expert_path=args.expert_path)
+    # dataset = SC2Dataset(expert_path=args.expert_path)
     pretrained_weight = None
     # if (args.pretrained and args.task == 'train') or args.algo == 'bc':
     #     # Pretrain with behavior cloning
@@ -142,7 +142,7 @@ def main(args):
             #     number_trajs=10, stochastic_policy=args.stochastic_policy)
 
             trpo_mpi.evaluate(env, policy_fn, 
-                'checkpoint/trpo_gail.sc2.g_step_10.d_step_1.policy_entcoeff_0.01.adversary_entcoeff_0.001-300', 
+                'checkpoint/trpo_ppo_modify_available_action_gail.Tue_Jun__5_17_02_08_2018sc2.g_step_5.d_step_1.policy_entcoeff_0.005.adversary_entcoeff_0.001-100', 
                 timesteps_per_batch=1024,
                 number_trajs=10, 
                 stochastic_policy=False) #args.stochastic_policy
