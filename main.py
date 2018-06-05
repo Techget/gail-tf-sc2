@@ -56,8 +56,9 @@ def get_task_name(args):
         task_name += args.env_id.split("-")[0]
     else:
         import time
-        task_name = args.algo + "_ppo_modify_available_action_gail." + time.strftime("%c")
-        task_name = task_name.replace(' ','_')
+        t = time.strftime("%c")
+        t = t.replace(' ','_')
+        task_name = args.algo + "_ppo_modify_available_action_gail." + t
         if args.pretrained: task_name += "with_pretrained."
         if args.traj_limitation != np.inf: task_name += "traj_limitation_%d."%args.traj_limitation
         task_name += args.env_id.split("-")[0]
