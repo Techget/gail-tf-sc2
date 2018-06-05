@@ -36,11 +36,11 @@ class MlpPolicy(object):
         self.isize = 11
         self.available_action_size = 524
         minimap = ob[:, 0:5*self.msize*self.msize]
-        minimap /= 8
+        minimap /= 2
         screen = ob[:, 5*self.msize*self.msize: 5*self.msize*self.msize+ 10*self.ssize*self.ssize]
-        screen /= 8
+        screen /= 2
         info = ob[:, (5*self.msize*self.msize+10*self.ssize*self.ssize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize)]
-        info /= 10
+        info /= 2
         available_action = ob[:, (5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize+self.available_action_size)]
 
         # get value prediction, crtic
