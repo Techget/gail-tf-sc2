@@ -442,7 +442,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
     compute_losses = U.function([ob, ac, prevac_placeholder, atarg, ret, lrmult], losses)
 
     all_var_list = pi.get_trainable_variables()
-    var_list = [v for v in all_var_list if v.name.split("/")[1].startswith("pol")]
+    # var_list = [v for v in all_var_list if v.name.split("/")[1].startswith("pol")]
     # vf_var_list = [v for v in all_var_list if v.name.split("/")[1].startswith("vf")]
     d_adam = MpiAdam(discriminator.get_trainable_variables())
     # vfadam = MpiAdam(vf_var_list)
