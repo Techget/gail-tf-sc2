@@ -133,7 +133,7 @@ class CategoricalPd(Pd):
         # index_for_available_act = U.argmax(available_logits, axis=1)
         index_for_available_act = tf.argmax(available_logits, axis=-1)
         # act = tf.gather(available_act, index_for_available_act, axis=-1)
-        print(available_act, index_for_available_act)
+        # print(available_act, index_for_available_act)
         act = available_act[index_for_available_act][1]
 
         return act
