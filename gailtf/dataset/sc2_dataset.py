@@ -123,7 +123,13 @@ class SC2Dataset(object):
                     if a_in_this_state_counter==0 and j==0:
                         prevacs.append(0)
                     elif a_in_this_state_counter==0 and j>0:
-                        prevacs.append(self.loaded_replay['state'][j-1]['actions'][-1][0])
+                        i = 1
+                        while i < j and len(self.loaded_replay['state'][j-i]['actions']) == 0:
+                            i += 1
+                        if i >= j:
+                            prevacs.append(0)
+                        else:
+                            prevacs.append(self.loaded_replay['state'][j-i]['actions'][-1][0])
                     elif a_in_this_state_counter > 0:
                         prevacs.append(acs[-1])
                     else:
