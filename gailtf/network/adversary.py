@@ -22,30 +22,15 @@ class TransitionClassifier(object):
     self.ac_space = spaces.Discrete(self.available_action_size) 
     self.observation_shape = self.ob_space.shape
     self.actions_shape = self.ac_space.shape
-    # self.actions_shape = (1,)
-    # self.observation_shape = np.array([5*self.msize*self.msize + 10*self.ssize*self.ssize + self.isize + self.available_action_size,]) # minimap, screen, info, available_actions
-    # self.actions_shape = np.array([1,]) # actions argument, one value, range in (0, 524)
-
-    # self.input_shape = tuple([o+a for o,a in zip(self.observation_shape, self.actions_shape)])
-    # self.input_shape = tuple(list(self.observation_shape).extend(self.action_space))
-
-    # self.num_actions = env.action_space.shape[0]
     self.hidden_size = hidden_size
 
-    self.build_ph()
-
-    
-    # self.minimap = tf.placeholder(tf.float32, [None, 5, self.msize, self.msize], name='minimap')
-    # self.screen = tf.placeholder(tf.float32, [None, 10, self.ssize, self.ssize], name='screen')
-    # self.info = tf.placeholder(tf.float32, [None, self.isize], name='info')
-    # self.available_action = tf.placeholder(tf.float32, [None, self.available_action_size], name='available_action')
-
-    # self.minimap = 
-
+    self.build_ph() 
 
     # Build grpah
-    generator_logits = self.build_graph(self.generator_obs_ph, self.generator_acs_ph, reuse=False)
-    expert_logits = self.build_graph(self.expert_obs_ph, self.expert_acs_ph, reuse=True)
+    generator_logits = self.build_graph(self.generator_obs_ph, 
+      self.generator_acs_ph, self.generator_last_action_ph, reuse=False)
+    expert_logits = self.build_graph(self.expert_obs_ph, 
+      self.expert_acs_ph, self.expert_last_action_ph, reuse=True)
     # Build accuracy
     generator_acc = tf.reduce_mean(tf.to_float(tf.nn.sigmoid(generator_logits) < 0.5))
     self.generator_acc = generator_acc
@@ -71,16 +56,18 @@ class TransitionClassifier(object):
     # take generator_loss into consideration, since logits = 0.4 and logits equal to 0.1 are considered same otherwise
     self.reward_op = 2 * (-tf.log(1-tf.nn.sigmoid(generator_logits)+1e-8)+2*generator_loss)
     var_list = self.get_trainable_variables()
-    self.lossandgrad = U.function([self.generator_obs_ph, self.generator_acs_ph, self.expert_obs_ph, self.expert_acs_ph], 
+    self.lossandgrad = U.function([self.generator_obs_ph, self.generator_acs_ph, self.generator_last_action_ph, self.expert_obs_ph, self.expert_acs_ph, self.expert_last_action_ph], 
                          self.losses + [U.flatgrad(self.total_loss, var_list)])
 
   def build_ph(self):
     self.generator_obs_ph = tf.placeholder(tf.float32, (None, ) + self.observation_shape, name="observations_ph")
     self.generator_acs_ph = tf.placeholder(tf.float32, (None, 524), name="actions_ph")
+    self.generator_last_action_ph = tf.placeholder(tf.float32, (None, 524), name="last_actions_ph")
     self.expert_obs_ph = tf.placeholder(tf.float32, (None, ) + self.observation_shape, name="expert_observations_ph")
     self.expert_acs_ph = tf.placeholder(tf.float32, (None, 524), name="expert_actions_ph") #self.actions_shape
+    self.expert_last_action_ph = tf.placeholder(tf.float32, (None, 524), name="expert_last_actions_ph")
 
-  def build_graph(self, obs_ph, acs_ph, reuse=False):
+  def build_graph(self, obs_ph, acs_ph, last_acs_ph, reuse=False):
     with tf.variable_scope(self.scope):
       if reuse:
         tf.get_variable_scope().reuse_variables()
@@ -140,16 +127,26 @@ class TransitionClassifier(object):
       # _input = tf.concat([obs, acs_ph], axis=1) # concatenate the two input -> form a transition
       acs_ph_temp = tf.identity(acs_ph)
       acs_ph_temp = tf.expand_dims(acs_ph_temp, 1)
-      HIDDEN_SIZE = 128
-      l1_action = tf.layers.dense(layers.flatten(acs_ph_temp), 256, tf.nn.relu)
-      input_to_rnn = tf.reshape(l1_action, [-1, 16, 16])
-      action_lstm_cell = tf.nn.rnn_cell.BasicLSTMCell(num_units=HIDDEN_SIZE, forget_bias=1.0, state_is_tuple=True)
-      inputs_rnn = tf.unstack(input_to_rnn, num=16, axis=1)
-      rnn_outputs,rnn_state= tf.contrib.rnn.static_rnn(action_lstm_cell,inputs_rnn,dtype=tf.float32)
-      l2_action = tf.layers.dense(rnn_state[-1], 128, tf.nn.tanh)          # hidden layer
-      acs_ph_lstm = tf.layers.dense(l2_action, 32, tf.nn.tanh)
+      # HIDDEN_SIZE = 128
+      # l1_action = tf.layers.dense(layers.flatten(acs_ph_temp), 256, tf.nn.relu)
+      # input_to_rnn = tf.reshape(l1_action, [-1, 16, 16])
+      # action_lstm_cell = tf.nn.rnn_cell.BasicLSTMCell(num_units=HIDDEN_SIZE, forget_bias=1.0, state_is_tuple=True)
+      # inputs_rnn = tf.unstack(input_to_rnn, num=16, axis=1)
+      # rnn_outputs,rnn_state= tf.contrib.rnn.static_rnn(action_lstm_cell,inputs_rnn,dtype=tf.float32)
+      # l2_action = tf.layers.dense(rnn_state[-1], 128, tf.nn.tanh)          # hidden layer
+      # acs_ph_lstm = tf.layers.dense(l2_action, 32, tf.nn.tanh)
+      acs_ph_dense_output = layers.fully_connected(layers.flatten(acs_ph_temp),
+                   num_outputs=32,
+                   activation_fn=tf.tanh)
 
-      _input = tf.concat([mpool2_flat, spool2_flat, info_fc, aa_fc, acs_ph_lstm], axis=1)
+      last_acs_ph_temp = tf.identity(last_acs_ph)
+      last_acs_ph_temp = tf.expand_dims(last_acs_ph_temp, 1)
+      last_acs_ph_dense_output = layers.fully_connected(layers.flatten(last_acs_ph_temp),
+                   num_outputs=32,
+                   activation_fn=tf.tanh)
+
+      _input = tf.concat([mpool2_flat, spool2_flat, info_fc, aa_fc, acs_ph_dense_output, last_acs_ph_dense_output],
+        axis=1)
       p_h1 = tf.contrib.layers.fully_connected(_input, self.hidden_size, activation_fn=tf.nn.tanh)
       p_h2 = tf.contrib.layers.fully_connected(p_h1, self.hidden_size, activation_fn=tf.nn.tanh)
       logits = tf.contrib.layers.fully_connected(p_h2, 1, activation_fn=tf.identity)
@@ -158,7 +155,7 @@ class TransitionClassifier(object):
   def get_trainable_variables(self):
     return tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, self.scope)
 
-  def get_reward(self, obs, acs):
+  def get_reward(self, obs, acs, last_acs):
     sess = U.get_session()
     # if len(obs.shape) == 1:
     #   obs = np.expand_dims(obs, 0)
@@ -176,8 +173,19 @@ class TransitionClassifier(object):
       one_hot_acs[acs] = 1
       one_hot_acs = [one_hot_acs]
 
+    one_hot_last_acs = []
+    if type(last_acs) is np.ndarray:
+      depth = last_acs.size
+      one_hot_last_acs = np.zeros((depth, 524))
+      one_hot_last_acs[np.arange(depth), last_acs] = 1
+    else:
+      one_hot_last_acs = np.zeros(524)
+      one_hot_last_acs[last_acs] = 1
+      one_hot_last_acs = [one_hot_last_acs]
 
-    feed_dict = {self.generator_obs_ph:obs, self.generator_acs_ph:one_hot_acs}
+
+    feed_dict = {self.generator_obs_ph:obs, 
+      self.generator_acs_ph:one_hot_acs, self.generator_last_action_ph:one_hot_last_acs}
     # g_acc = sess.run(self.generator_acc, feed_dict)
     # reward = 0 
     # if g_acc > 0.99:

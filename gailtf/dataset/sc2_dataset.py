@@ -87,6 +87,7 @@ class SC2Dataset(object):
 
         obs = []
         acs = []
+        prevacs = []
         loaded_replay_state_length = len(self.loaded_replay['state'])
         random.seed(datetime.now())
         for i in range(self.loaded_replay_pointer, loaded_replay_state_length):
@@ -95,6 +96,7 @@ class SC2Dataset(object):
             self.loaded_replay_pointer += 1
             temp_obs = []
             temp_acs = []
+            temp_prevacs = []
 
             j = random.randint(0, loaded_replay_state_length-1)
 
@@ -111,11 +113,23 @@ class SC2Dataset(object):
                 temp_obs.extend(list(self.loaded_replay['state'][j]['player']))
                 temp_obs.extend(list(self.loaded_replay['state'][j]['available_actions']))
 
+                a_in_this_state_counter = 0
                 for a in self.loaded_replay['state'][j]['actions']:
                     # one captured state, may have multiple actions, so output should be the
                     # same observation with different action ids
                     obs.append(temp_obs)
                     acs.append(a[0])
+
+                    if a_in_this_state_counter==0 and j==0:
+                        prevacs.append(0)
+                    elif a_in_this_state_counter==0 and j>0:
+                        prevacs.append(self.loaded_replay['state'][j-1]['actions'][-1][0])
+                    elif a_in_this_state_counter > 0:
+                        prevacs.append(acs[-1])
+                    else:
+                        print("sc2 sc2_dataset wrong,:", a_in_this_state_counter, j)
+                        exit(1)
+                    a_in_this_state_counter +=1
 
         # print("sc2_dataset finish preparing obs and acs, lengthes: ", len(obs), " ",len(acs))
 
@@ -124,13 +138,13 @@ class SC2Dataset(object):
             self.loaded_replay_pointer = 0
             self.win_player_id = None
 
-        if obs == [] or acs ==[]:
+        if obs==[] or acs==[] or prevacs==[]:
             self.loaded_replay = None
             self.loaded_replay_pointer = 0
             self.win_player_id = None
             return self.get_next_batch(batch_size, split)
 
-        return obs, acs
+        return obs, acs, prevacs
 
 
 

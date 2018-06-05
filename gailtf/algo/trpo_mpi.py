@@ -218,7 +218,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
         # it is not accurate, since everytime, randomly use one, the loss is variant
         # ob_expert, ac_expert = expert_dataset.get_next_batch(1) # only need one, since ob and ac is also 1
 
-        rew = discriminator.get_reward(ob, ac)
+        rew = discriminator.get_reward(ob, ac, prevac)
         # print("in traj_segment_generator rew: ", rew)
         global LAST_EXPERT_ACC,LAST_EXPERT_LOSS
         if LAST_EXPERT_LOSS > 0:
@@ -584,13 +584,13 @@ def learn(env, policy_func, discriminator, expert_dataset,
         # ------------------ Update D ------------------
         logger.log("Optimizing Discriminator...")
         logger.log(fmt_row(13, discriminator.loss_name))
-        ob_expert, ac_expert = expert_dataset.get_next_batch(len(ob))
+        ob_expert, ac_expert, prevac_expert = expert_dataset.get_next_batch(len(ob))
         batch_size = len(ob) // d_step
         d_losses = [] # list of tuples, each of which gives the loss for a minibatch
-        for ob_batch, ac_batch in dataset.iterbatches((ob, ac), 
+        for ob_batch, ac_batch, prevac_batch in dataset.iterbatches((ob, ac, prevac), 
                include_final_partial_batch=False, batch_size=batch_size):
             # print("###### len(ob_batch): ", len(ob_batch))
-            ob_expert, ac_expert = expert_dataset.get_next_batch(len(ob_batch))
+            ob_expert, ac_expert, prevac_expert = expert_dataset.get_next_batch(len(ob_batch))
             # update running mean/std for discriminator
             if hasattr(discriminator, "obs_rms"): discriminator.obs_rms.update(np.concatenate((ob_batch, ob_expert), 0))
             
@@ -598,11 +598,19 @@ def learn(env, policy_func, discriminator, expert_dataset,
             one_hot_ac_batch = np.zeros((depth, 524))
             one_hot_ac_batch[np.arange(depth), ac_batch] = 1
 
+            depth = len(prevac_batch)
+            one_hot_prevac_batch = np.zeros((depth, 524))
+            one_hot_prevac_batch[np.arange(depth), prevac_batch] = 1
+
             depth = len(ac_expert)
             one_hot_ac_expert = np.zeros((depth, 524))
             one_hot_ac_expert[np.arange(depth), ac_expert] = 1
 
-            *newlosses, g = discriminator.lossandgrad(ob_batch, one_hot_ac_batch, ob_expert, one_hot_ac_expert)
+            depth = len(prevac_expert)
+            one_hot_prevac_expert = np.zeros((depth, 524))
+            one_hot_prevac_expert[np.arange(depth), prevac_expert] = 1
+
+            *newlosses, g = discriminator.lossandgrad(ob_batch, one_hot_ac_batch, one_hot_prevac_batch, ob_expert, one_hot_ac_expert, one_hot_prevac_expert)
             global LAST_EXPERT_ACC,LAST_EXPERT_LOSS
             LAST_EXPERT_ACC = newlosses[5]
             LAST_EXPERT_LOSS = newlosses[1]
