@@ -598,9 +598,9 @@ def learn(env, policy_func, discriminator, expert_dataset,
             one_hot_ac_batch = np.zeros((depth, 524))
             one_hot_ac_batch[np.arange(depth), ac_batch] = 1
 
-            depth = len(prevac_batch)
-            one_hot_prevac_batch = np.zeros((depth, 524))
-            one_hot_prevac_batch[np.arange(depth), prevac_batch] = 1
+            # depth = len(prevac_batch)
+            # one_hot_prevac_batch = np.zeros((depth, 524))
+            # one_hot_prevac_batch[np.arange(depth), prevac_batch] = 1
 
             depth = len(ac_expert)
             one_hot_ac_expert = np.zeros((depth, 524))
@@ -610,7 +610,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
             one_hot_prevac_expert = np.zeros((depth, 524))
             one_hot_prevac_expert[np.arange(depth), prevac_expert] = 1
 
-            *newlosses, g = discriminator.lossandgrad(ob_batch, one_hot_ac_batch, one_hot_prevac_batch, ob_expert, one_hot_ac_expert, one_hot_prevac_expert)
+            *newlosses, g = discriminator.lossandgrad(ob_batch, one_hot_ac_batch, prevac_batch, ob_expert, one_hot_ac_expert, one_hot_prevac_expert)
             global LAST_EXPERT_ACC,LAST_EXPERT_LOSS
             LAST_EXPERT_ACC = newlosses[5]
             LAST_EXPERT_LOSS = newlosses[1]
