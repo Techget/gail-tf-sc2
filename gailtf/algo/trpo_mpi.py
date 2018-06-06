@@ -98,8 +98,8 @@ def extract_observation(time_step, last_action=None):
     output_ob.extend(list(state['player']))
 
     aa_list = list(state['available_actions'])
-    # if last_action != None and sum(aa_list) > 1:
-    #     aa_list[last_action] = 0
+    if last_action != None and sum(aa_list) > 1:
+        aa_list[last_action] = 0
     output_ob.extend(aa_list)
     # output_ob.extend(list(state['available_actions']))
 
@@ -382,7 +382,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         gamma, lam, # advantage estimation
         entcoeff=0.001,
         cg_damping=1e-2,
-        vf_stepsize=3e-4, d_stepsize=3e-4,
+        vf_stepsize=3e-4, d_stepsize=1e-3,
         vf_iters =3,
         max_timesteps=0, max_episodes=0, max_iters=0, max_seconds=0,  # time constraint
         callback=None,
@@ -390,7 +390,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         load_model_path=None, task_name=None,
         timesteps_per_actorbatch=32,
         clip_param=0.3, adam_epsilon=3e-4,
-        optim_epochs=1, optim_stepsize=3e-4, optim_batchsize=32,schedule='linear'
+        optim_epochs=1, optim_stepsize=5e-3, optim_batchsize=32,schedule='linear'
         ):
     nworkers = MPI.COMM_WORLD.Get_size()
     print("##### nworkers: ",nworkers)
@@ -441,7 +441,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         for (oldv, newv) in zipsame(oldpi.get_variables(), pi.get_variables())])
     compute_losses = U.function([ob, ac, prevac_placeholder, atarg, ret, lrmult], losses)
 
-    all_var_list = pi.get_trainable_variables()
+    # all_var_list = pi.get_trainable_variables()
     # var_list = [v for v in all_var_list if v.name.split("/")[1].startswith("pol")]
     # vf_var_list = [v for v in all_var_list if v.name.split("/")[1].startswith("vf")]
     d_adam = MpiAdam(discriminator.get_trainable_variables())
@@ -565,7 +565,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
                 for batch in d.iterate_once(optim_batchsize):
                     *newlosses, g = lossandgrad(batch["ob"], 
                         batch["ac"], batch['prevac'], batch["atarg"], batch["vtarg"], cur_lrmult)
-                    g_adam.update(g, optim_stepsize * cur_lrmult)
+                    g_adam.update(allmean(g), optim_stepsize * cur_lrmult)
                     losses.append(newlosses)
                 logger.log(fmt_row(13, np.mean(losses, axis=0)))
 
