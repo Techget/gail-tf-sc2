@@ -24,7 +24,10 @@ class MlpPolicy(object):
         ob = U.get_placeholder(name="ob", dtype=tf.float32, shape=[sequence_length] + list(ob_space.shape))
 
         last_action = U.get_placeholder(shape=(None, 524), dtype=tf.float32, name="last_action_one_hot")
-
+        self.msize = 64 # change to 64 later
+        self.ssize = 64 
+        self.isize = 11
+        self.available_action_size = 524
 
         available_action = ob[:, (5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize+self.available_action_size)]
         with tf.variable_scope("obfilter"):
@@ -33,10 +36,6 @@ class MlpPolicy(object):
         # obz = tf.clip_by_value((ob - self.ob_rms.mean) / self.ob_rms.std, -20.0, 20.0)
         obz = (ob - self.ob_rms.mean) / self.ob_rms.std
 
-        self.msize = 64 # change to 64 later
-        self.ssize = 64 
-        self.isize = 11
-        self.available_action_size = 524
         minimap = obz[:, 0:5*self.msize*self.msize]
         # minimap /= 2
         screen = obz[:, 5*self.msize*self.msize: 5*self.msize*self.msize+ 10*self.ssize*self.ssize]
