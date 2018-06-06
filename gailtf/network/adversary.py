@@ -74,7 +74,7 @@ class TransitionClassifier(object):
 
 
       available_action = obs_ph[:, (5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize+self.available_action_size)]
-      obs_ph = [:, :-524]
+      obs_ph = obs_ph[:, :-524]
 
       with tf.variable_scope("obfilter"):
           self.obs_rms = RunningMeanStd(shape=self.observation_shape)
