@@ -25,23 +25,25 @@ class MlpPolicy(object):
 
         last_action = U.get_placeholder(shape=(None, 524), dtype=tf.float32, name="last_action_one_hot")
 
-        # with tf.variable_scope("obfilter"):
-        #     self.ob_rms = RunningMeanStd(shape=ob_space.shape)
+
+        available_action = ob[:, (5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize+self.available_action_size)]
+        with tf.variable_scope("obfilter"):
+            self.ob_rms = RunningMeanStd(shape=ob_space.shape)
 
         # obz = tf.clip_by_value((ob - self.ob_rms.mean) / self.ob_rms.std, -20.0, 20.0)
-        # obz = (ob - self.ob_rms.mean) / self.ob_rms.std
+        obz = (ob - self.ob_rms.mean) / self.ob_rms.std
 
         self.msize = 64 # change to 64 later
         self.ssize = 64 
         self.isize = 11
         self.available_action_size = 524
-        minimap = ob[:, 0:5*self.msize*self.msize]
-        minimap /= 2
-        screen = ob[:, 5*self.msize*self.msize: 5*self.msize*self.msize+ 10*self.ssize*self.ssize]
-        screen /= 2
-        info = ob[:, (5*self.msize*self.msize+10*self.ssize*self.ssize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize)]
-        info /= 2
-        available_action = ob[:, (5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize+self.available_action_size)]
+        minimap = obz[:, 0:5*self.msize*self.msize]
+        # minimap /= 2
+        screen = obz[:, 5*self.msize*self.msize: 5*self.msize*self.msize+ 10*self.ssize*self.ssize]
+        # screen /= 2
+        info = obz[:, (5*self.msize*self.msize+10*self.ssize*self.ssize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize)]
+        # info /= 2
+
 
         # get value prediction, crtic
         mconv1 = tf.layers.conv2d(
