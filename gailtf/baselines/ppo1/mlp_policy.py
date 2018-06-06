@@ -30,6 +30,8 @@ class MlpPolicy(object):
         self.available_action_size = 524
 
         available_action = ob[:, (5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize+self.available_action_size)]
+        ob = ob[:,:-(self.available_action_size)]
+
         with tf.variable_scope("obfilter"):
             self.ob_rms = RunningMeanStd(shape=ob_space.shape)
 
