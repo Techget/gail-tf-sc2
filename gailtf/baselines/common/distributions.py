@@ -159,6 +159,9 @@ class CategoricalPd(Pd):
         z0 = U.sum(ea0, axis=-1, keepdims=True)
         p0 = ea0 / z0
         return U.sum(p0 * (tf.log(z0) - a0), axis=-1)
+
+    def entropy_usual(self):
+        return tf.reduce_sum(-tf.nn.softmax(self.logits) * tf.nn.log_softmax(self.logits), -1)
     def sample(self,available_action):
         # available_act = tf.argmax(available_action, axis=1) # decode one-hot vector
         # print(tf.rank(available_act))

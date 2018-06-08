@@ -418,7 +418,8 @@ def learn(env, policy_func, discriminator, expert_dataset,
     prevac_placeholder = U.get_placeholder_cached(name="last_action_one_hot")
 
     kloldnew = oldpi.pd.kl(pi.pd)
-    ent = pi.pd.entropy()
+    # ent = pi.pd.entropy()
+    ent = pi.pd.entropy_usual() # see how it works
     meankl = U.mean(kloldnew)
     meanent = U.mean(ent)
     # entbonus = entcoeff * meanent
