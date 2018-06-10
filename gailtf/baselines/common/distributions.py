@@ -185,10 +185,10 @@ class CategoricalPd(Pd):
         # if np.allclose(ent, 0):
         #     random.seed(datetime.now())
         #     # index_for_available_act = random.randint(0, )
-        def f1(): return tf.reduce_sum(tf.reshape(tf.multinomial(available_logits, 1), []))
+        def f1(): return tf.reshape(tf.multinomial(available_logits, 1), [])
         def f2(): 
             random.seed(datetime.now())
-            return tf.reduce_sum(random.randint(0, available_logits.get_shape()[1] - 1))
+            return tf.reshape(tf.reduce_sum(random.randint(0, available_logits.get_shape()[1] - 1)), [])
 
         index_for_available_act = tf.cond(tf.equal(self.entropy(), tf.constant(0.0)), 
             f1, f2)
