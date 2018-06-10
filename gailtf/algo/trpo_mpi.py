@@ -389,7 +389,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         save_per_iter=100, ckpt_dir=None, log_dir=None, 
         load_model_path=None, task_name=None,
         timesteps_per_actorbatch=32,
-        clip_param=0.3, adam_epsilon=3e-4,
+        clip_param=0.15, adam_epsilon=3e-4,
         optim_epochs=2, optim_stepsize=5e-4, optim_batchsize=32,schedule='linear'
         ):
     nworkers = MPI.COMM_WORLD.Get_size()
@@ -418,8 +418,8 @@ def learn(env, policy_func, discriminator, expert_dataset,
     prevac_placeholder = U.get_placeholder_cached(name="last_action_one_hot")
 
     kloldnew = oldpi.pd.kl(pi.pd)
-    # ent = pi.pd.entropy()
-    ent = pi.pd.entropy_usual() # see how it works
+    ent = pi.pd.entropy()
+    # ent = pi.pd.entropy_usual() # see how it works, the value is the same
     meankl = U.mean(kloldnew)
     meanent = U.mean(ent)
     # entbonus = entcoeff * meanent
