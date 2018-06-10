@@ -33,7 +33,6 @@ LAST_EXPERT_LOSS = 0.0
 LAST_EXPERT_ACC = -1.0
 LAST_EXPERT_COEFF = 0.1
 # LAST_ACTION = 0
-
 # NOTICE remove action did last time from available action
 def extract_observation(time_step, last_action=None):
     state = {}
