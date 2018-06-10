@@ -188,7 +188,7 @@ class CategoricalPd(Pd):
         def f1(): return tf.reshape(tf.multinomial(available_logits, 1), [])
         def f2(): 
             random.seed(datetime.now())
-            return tf.reshape(tf.reduce_sum(random.randint(0, tf.shape(available_logits)[1] - 1)), [])
+            return tf.reshape(tf.reduce_sum(random.randint(0, tf.count_nonzero(available_action) - 1)), [])
 
         ent = tf.reshape(self.entropy(), [])
         index_for_available_act = tf.cond(
