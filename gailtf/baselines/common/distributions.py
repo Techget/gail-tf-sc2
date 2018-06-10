@@ -3,6 +3,8 @@ import numpy as np
 import gailtf.baselines.common.tf_util as U
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import nn
+from datetime import datetime
+import random
 
 class Pd(object):
     """
@@ -178,7 +180,14 @@ class CategoricalPd(Pd):
         # act = available_act[index_for_available_act][1]
         available_logits = tf.expand_dims(available_logits, 0)
         available_logits = tf.nn.softmax(available_logits)
-        index_for_available_act = tf.reshape(tf.multinomial(available_logits, 1), [])
+
+        print(available_logits.get_shape())
+        if np.allclose(self.entropy(), 0):
+            random.seed(datetime.now())
+            # index_for_available_act = random.randint(0, )
+
+        else:
+            index_for_available_act = tf.reshape(tf.multinomial(available_logits, 1), [])
         act = available_act[index_for_available_act][1]
         
         # act = [act, available_act]
