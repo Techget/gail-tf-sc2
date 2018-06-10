@@ -192,7 +192,7 @@ class CategoricalPd(Pd):
 
         ent = tf.reshape(self.entropy(), [])
         index_for_available_act = tf.cond(
-            tf.equal(ent, tf.constant(0.0)),
+            tf.equal(tf.cast(ent, tf.float32), tf.constant(0.0)),
             f1, f2)
 
         # else:
