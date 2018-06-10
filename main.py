@@ -31,7 +31,7 @@ def argsparser():
     parser.add_argument('--ret_threshold', help='the return threshold for the expert trajectories', type=int, default=0)
     parser.add_argument('--traj_limitation', type=int, default=np.inf)
     # Optimization Configuration
-    parser.add_argument('--g_step', help='number of steps to train policy in each epoch', type=int, default=5)
+    parser.add_argument('--g_step', help='number of steps to train policy in each epoch', type=int, default=3)
     parser.add_argument('--d_step', help='number of steps to train discriminator in each epoch', type=int, default=1)
     # Network Configuration (Using MLP Policy)
     parser.add_argument('--policy_hidden_size', type=int, default=100)
