@@ -228,7 +228,7 @@ class MlpPolicy(object):
 
         # last action should be one host
         ac1, vpred1 =  self._act(stochastic, ob, one_hot_last_action)
-        print(ac1)
+        # print(ac1)
         return ac1, vpred1[0]
     def get_variables(self):
         return tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, self.scope)
