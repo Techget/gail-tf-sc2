@@ -165,6 +165,7 @@ class CategoricalPd(Pd):
     def entropy_usual(self):
         return tf.reduce_sum(-tf.nn.softmax(self.logits) * tf.nn.log_softmax(self.logits), -1)
     def sample(self,available_action):
+        # assume inputs is only one available action
         # available_act = tf.argmax(available_action, axis=1) # decode one-hot vector
         # print(tf.rank(available_act))
         # print(tf.shape())
