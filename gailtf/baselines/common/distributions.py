@@ -181,7 +181,7 @@ class CategoricalPd(Pd):
         available_logits = tf.expand_dims(available_logits, 0)
         available_logits = tf.nn.softmax(available_logits)
 
-        print(tf.shape(available_logits))
+        # print(tf.shape(available_logits))
         # if np.allclose(ent, 0):
         #     random.seed(datetime.now())
         #     # index_for_available_act = random.randint(0, )
@@ -193,7 +193,7 @@ class CategoricalPd(Pd):
         ent = tf.reshape(self.entropy(), [])
         index_for_available_act = tf.cond(
             tf.equal(ent, tf.constant(0.0)),
-            f1, f2)
+            f2, f1)
 
         # else:
         # index_for_available_act = tf.reshape(tf.multinomial(available_logits, 1), [])
