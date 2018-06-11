@@ -211,6 +211,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
 
     while True:
         prevac = ac
+        print(type(ep_lens), len(ep_lens), type(prevac))
         ac, vpred = pi.act(stochastic, ob, prevac, len(ep_lens))
         # Slight weirdness here because we need value function at time T
         # before returning segment [0, T-1] so we get the correct

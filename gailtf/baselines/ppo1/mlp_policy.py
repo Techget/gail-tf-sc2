@@ -214,15 +214,16 @@ class MlpPolicy(object):
         # input last_action is a number, convert to one-hot
         one_hot_last_action = []
         if type(last_action) is np.ndarray:
-          depth = last_action.size
-          one_hot_last_action = np.zeros((depth, 524))
-          one_hot_last_action[np.arange(depth), last_action] = 1
+            depth = last_action.size
+            one_hot_last_action = np.zeros((depth, 524))
+            one_hot_last_action[np.arange(depth), last_action] = 1
         else:
-          # one_hot_acs = tf.one_hot(indices, depth)
-          one_hot_last_action = np.zeros(524)
-          one_hot_last_action[last_action] = 1
-          one_hot_last_action = [one_hot_last_action]
+            # one_hot_acs = tf.one_hot(indices, depth)
+            one_hot_last_action = np.zeros(524)
+            one_hot_last_action[last_action] = 1
+            one_hot_last_action = [one_hot_last_action]
 
+        # assume one available action
         available_act_one_hot = ob[0][-524:]
         available_act = []
         for i in range(0, len(available_act_one_hot)):
