@@ -209,7 +209,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
 
     while True:
         prevac = ac
-        ac, vpred = pi.act(stochastic, ob, prevac)
+        ac, vpred = pi.act(stochastic, ob, prevac, len(ep_lens))
         # Slight weirdness here because we need value function at time T
         # before returning segment [0, T-1] so we get the correct
         # terminal value
@@ -217,7 +217,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
             yield {"ob" : obs, "rew" : rews, "vpred" : vpreds, "new" : news,
                     "ac" : acs, "prevac" : prevacs, "nextvpred": vpred * (1 - new),
                     "ep_rets" : ep_rets, "ep_lens" : ep_lens, "ep_true_rets": ep_true_rets}
-            _, vpred = pi.act(stochastic, ob, prevac)
+            _, vpred = pi.act(stochastic, ob, prevac, len(ep_lens))
             # Be careful!!! if you change the downstream algorithm to aggregate
             # several of these batches, then be sure to do a deepcopy
             # ep_rets = []
@@ -363,9 +363,9 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
             ep_rets.append(cur_ep_ret)
             ep_true_rets.append(cur_ep_true_ret)
             ep_lens.append(cur_ep_len)
-            if cur_ep_true_ret == 1:
+            if cur_ep_true_ret != -1:
                 with open("win.txt", "a+") as f:
-                    f.write('win!!!!!!!')
+                    f.write('win!!!!!!! {}'.format(cur_ep_true_ret))
             cur_ep_ret = 0
             cur_ep_true_ret = 0
             cur_ep_len = 0
@@ -442,7 +442,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
     surr1 = ratio * atarg # surrogate from conservative policy iteration
     surr2 = tf.clip_by_value(ratio, 1.0 - clip_param, 1.0 + clip_param) * atarg #
     pol_surr = - tf.reduce_mean(tf.minimum(surr1, surr2)) # PPO's pessimistic surrogate (L^CLIP)
-    vf_loss = tf.reduce_mean(tf.square(pi.vpred - ret))
+    vf_loss = tf.reduce_mean(tf.abs(pi.vpred - ret))
     total_loss = pol_surr + pol_entpen + vf_loss
     losses = [pol_surr, pol_entpen, vf_loss, meankl, meanent]
     loss_names = ["pol_surr", "pol_entpen", "vf_loss", "kl", "ent"]
@@ -455,8 +455,8 @@ def learn(env, policy_func, discriminator, expert_dataset,
         for (oldv, newv) in zipsame(oldpi.get_variables(), pi.get_variables())])
     compute_losses = U.function([ob, ac, prevac_placeholder, atarg, ret, lrmult], losses)
 
-    all_var_list = pi.get_trainable_variables()
-    var_list = [v for v in all_var_list if v.name.split("/")[1].startswith("pol")]
+    # all_var_list = pi.get_trainable_variables()
+    # var_list = [v for v in all_var_list if v.name.split("/")[1].startswith("pol")]
     # vf_var_list = [v for v in all_var_list if v.name.split("/")[1].startswith("vf")]
     d_adam = MpiAdam(discriminator.get_trainable_variables())
     # vfadam = MpiAdam(vf_var_list)
@@ -579,17 +579,17 @@ def learn(env, policy_func, discriminator, expert_dataset,
                 for batch in d.iterate_once(optim_batchsize):
                     *newlosses, g = lossandgrad(batch["ob"], 
                         batch["ac"], batch['prevac'], batch["atarg"], batch["vtarg"], cur_lrmult)
-                    g_adam.update(g, optim_stepsize * cur_lrmult)
+                    g_adam.update(allmean(g), optim_stepsize * cur_lrmult)
                     losses.append(newlosses)
                 logger.log(fmt_row(13, np.mean(losses, axis=0)))
 
-            # logger.log("Evaluating losses...")
-            losses = []
-            for batch in d.iterate_once(optim_batchsize):
-                newlosses = compute_losses(batch["ob"], batch["ac"], batch["prevac"],
-                    batch["atarg"], batch["vtarg"], cur_lrmult)
-                losses.append(newlosses)
-            meanlosses,_,_ = mpi_moments(losses, axis=0)
+        # logger.log("Evaluating losses...")
+        losses = []
+        for batch in d.iterate_once(optim_batchsize):
+            newlosses = compute_losses(batch["ob"], batch["ac"], batch["prevac"],
+                batch["atarg"], batch["vtarg"], cur_lrmult)
+            losses.append(newlosses)
+        meanlosses,_,_ = mpi_moments(losses, axis=0)
 
         g_losses = meanlosses
         for (lossval, name) in zipsame(meanlosses, loss_names):

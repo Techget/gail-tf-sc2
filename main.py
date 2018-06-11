@@ -142,7 +142,7 @@ def main(args):
             #     number_trajs=10, stochastic_policy=args.stochastic_policy)
 
             trpo_mpi.evaluate(env, policy_fn, 
-                'checkpoint/trpo_ppo_modify_available_action_gail.Wed_Jun__6_21_32_26_2018sc2.g_step_5.d_step_1.policy_entcoeff_0.adversary_entcoeff_0.001-7400', 
+                'checkpoint/trpo_ppo_modify_available_action_gail.Mon_Jun_11_17_57_30_2018sc2.g_step_3.d_step_1.policy_entcoeff_0.0015.adversary_entcoeff_0.001-700', 
                 timesteps_per_batch=1024,
                 number_trajs=10, 
                 stochastic_policy=False) #args.stochastic_policy
