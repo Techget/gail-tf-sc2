@@ -211,7 +211,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
 
     while True:
         prevac = ac
-        ac, vpred = pi.act(stochastic, ob, prevac, len(ep_true_rets))
+        ac, vpred = pi.act(stochastic, ob, prevac, len(ep_lens))
         # Slight weirdness here because we need value function at time T
         # before returning segment [0, T-1] so we get the correct
         # terminal value
@@ -219,7 +219,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
             yield {"ob" : obs, "rew" : rews, "vpred" : vpreds, "new" : news,
                     "ac" : acs, "prevac" : prevacs, "nextvpred": vpred * (1 - new),
                     "ep_rets" : ep_rets, "ep_lens" : ep_lens, "ep_true_rets": ep_true_rets}
-            _, vpred = pi.act(stochastic, ob, prevac, len(ep_true_rets))
+            _, vpred = pi.act(stochastic, ob, prevac, len(ep_lens))
             # Be careful!!! if you change the downstream algorithm to aggregate
             # several of these batches, then be sure to do a deepcopy
             # ep_rets = []
