@@ -64,6 +64,7 @@ def extract_observation(time_step, last_action=None):
             return 0
     vfunc = np.vectorize(unit_type_process)
     unit_type_compressed = vfunc(time_step.observation["screen"][6])
+    print(unit_type_compressed)
 
     # hit_points = time_step.observation["screen"][8]
     # hit_points_logged = np.zeros(hit_points.shape, dtype=np.float)
