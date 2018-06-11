@@ -223,21 +223,21 @@ class MlpPolicy(object):
             one_hot_last_action[last_action] = 1
             one_hot_last_action = [one_hot_last_action]
 
-        # assume one available action
-        available_act_one_hot = ob[0][-524:]
-        available_act = []
-        for i in range(0, len(available_act_one_hot)):
-            if available_act_one_hot[i] == 1.0:
-                available_act.append(i)
+        # last action should be one host
+        ac1, vpred1 =  self._act(stochastic, ob, one_hot_last_action)
 
         # epsilon greedy search
         random.seed(datetime.now())
         # increase 1500 can make the epsilon decay slower
         if stochastic and random.random() < (0.3 * math.exp(-train_length/1500)):
-            return random.choice(available_act)
-
-        # last action should be one host
-        ac1, vpred1 =  self._act(stochastic, ob, one_hot_last_action)
+            assume one available action
+            available_act_one_hot = ob[0][-524:]
+            available_act = []
+            for i in range(0, len(available_act_one_hot)):
+                if available_act_one_hot[i] == 1.0:
+                    available_act.append(i)
+            ac1 = random.choice(available_act)
+            
         # print(ac1)
         return ac1, vpred1[0]
     def get_variables(self):
