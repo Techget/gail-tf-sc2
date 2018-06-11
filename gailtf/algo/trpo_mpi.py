@@ -59,12 +59,12 @@ def extract_observation(time_step, last_action=None):
 
     def unit_type_process(t):
         if t > 0 and t in static_data.UNIT_TYPES:
-            return static_data.UNIT_TYPES.index(t) / len(static_data.UNIT_TYPES)
+            return float(static_data.UNIT_TYPES.index(t)) / float(len(static_data.UNIT_TYPES))
         else:
             return 0
     vfunc = np.vectorize(unit_type_process)
     unit_type_compressed = vfunc(time_step.observation["screen"][6])
-    # print(unit_type_compressed)
+    print(unit_type_compressed)
 
     # hit_points = time_step.observation["screen"][8]
     # hit_points_logged = np.zeros(hit_points.shape, dtype=np.float)
