@@ -5,6 +5,9 @@ import gym
 from gailtf.baselines.common.distributions import make_pdtype
 import tensorflow.contrib.layers as layers
 import numpy as np
+from datetime import datetime
+import random
+import math
 
 class MlpPolicy(object):
     recurrent = False
@@ -207,7 +210,7 @@ class MlpPolicy(object):
         self.ac = ac
         self._act = U.function([stochastic, ob, last_action], [ac, self.vpred])
 
-    def act(self, stochastic, ob, last_action):
+    def act(self, stochastic, ob, last_action, train_length):
         # input last_action is a number, convert to one-hot
         one_hot_last_action = []
         if type(last_action) is np.ndarray:
@@ -220,11 +223,17 @@ class MlpPolicy(object):
           one_hot_last_action[last_action] = 1
           one_hot_last_action = [one_hot_last_action]
 
-        # available_act_one_hot = ob[0][-524:]
-        # available_act = []
-        # for i in range(0, len(available_act_one_hot)):
-        #     if available_act_one_hot[i] == 1.0:
-        #         available_act.append(i)
+        available_act_one_hot = ob[0][-524:]
+        available_act = []
+        for i in range(0, len(available_act_one_hot)):
+            if available_act_one_hot[i] == 1.0:
+                available_act.append(i)
+
+        # epsilon greedy search
+        random.seed(datetime.now())
+        # increase 1500 can make the epsilon decay slower
+        if random.random() < (0.3 * math.exp(-train_length/1500)):
+            return random.choice(available_act)
 
         # last action should be one host
         ac1, vpred1 =  self._act(stochastic, ob, one_hot_last_action)

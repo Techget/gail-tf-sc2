@@ -125,6 +125,8 @@ class BernoulliPdType(PdType):
 class CategoricalPd(Pd):
     def __init__(self, logits):
         self.logits = logits
+        # self.epsilon = 0.3
+        # self.steps = 0
     def flatparam(self):
         return self.logits
     def mode(self, available_action):
@@ -193,7 +195,7 @@ class CategoricalPd(Pd):
 
         ent = tf.reshape(self.entropy(), [])
         index_for_available_act = tf.cond(
-            tf.less(ent, tf.constant(1e-8)),
+            tf.less(ent, tf.constant(1e-1)),
             f2, f1)
 
         # else:
@@ -201,7 +203,6 @@ class CategoricalPd(Pd):
         act = available_act[index_for_available_act][1]
         
         # act = [act, available_act]
-
         return act
     @classmethod
     def fromflat(cls, flat):

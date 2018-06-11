@@ -211,7 +211,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
 
     while True:
         prevac = ac
-        ac, vpred = pi.act(stochastic, ob, prevac)
+        ac, vpred = pi.act(stochastic, ob, prevac, len(ep_true_rets))
         # Slight weirdness here because we need value function at time T
         # before returning segment [0, T-1] so we get the correct
         # terminal value
@@ -235,7 +235,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
         # it is not accurate, since everytime, randomly use one, the loss is variant
         # ob_expert, ac_expert = expert_dataset.get_next_batch(1) # only need one, since ob and ac is also 1
 
-        rew = discriminator.get_reward(ob, ac, prevac)
+        rew = discriminator.get_reward(ob, ac, prevac, len(ep_true_rets))
         # print("in traj_segment_generator rew: ", rew)
         global LAST_EXPERT_ACC,LAST_EXPERT_LOSS
         if LAST_EXPERT_LOSS > 0:
