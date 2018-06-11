@@ -76,7 +76,7 @@ def extract_observation(time_step, last_action=None):
         if t > 0:
             return math.log(t) / 4
         else:
-            return t
+            return 0
     vfunc = np.vectorize(hit_points_process)
     hit_points_logged = vfunc(time_step.observation["screen"][8])
 
