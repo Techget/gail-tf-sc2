@@ -7,6 +7,7 @@ import tensorflow.contrib.layers as layers
 import numpy as np
 from datetime import datetime
 import random
+import math
 
 class MlpPolicy(object):
     recurrent = False
@@ -228,16 +229,16 @@ class MlpPolicy(object):
         ac1, vpred1 = self._act(stochastic, ob, one_hot_last_action)
 
         # epsilon greedy search
-        random.seed(datetime.now())
-        # increase 1500 can make the epsilon decay slower
-        if stochastic and random.random() < (0.3 * math.exp(-train_length/1500)):
-            # assume one available action
-            available_act_one_hot = ob[0][-524:]
-            available_act = []
-            for i in range(0, len(available_act_one_hot)):
-                if available_act_one_hot[i] == 1.0:
-                    available_act.append(i)
-            ac1 = random.choice(available_act)
+        # random.seed(datetime.now())
+        # # increase 1500 can make the epsilon decay slower
+        # if stochastic and random.random() < (0.1 * math.exp(-train_length/1500)):
+        #     # assume one available action
+        #     available_act_one_hot = ob[0][-524:]
+        #     available_act = []
+        #     for i in range(0, len(available_act_one_hot)):
+        #         if available_act_one_hot[i] == 1.0:
+        #             available_act.append(i)
+        #     ac1 = random.choice(available_act)
         
         return ac1, vpred1[0]
     def get_variables(self):
