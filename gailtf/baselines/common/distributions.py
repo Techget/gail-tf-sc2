@@ -194,9 +194,9 @@ class CategoricalPd(Pd):
             return tf.cast(tf.reshape(tf.random_uniform([], maxval=tf.count_nonzero(available_action, dtype=tf.float32)-1), []), tf.int64)
 
         ent = tf.reshape(self.entropy(), [])
-        ent_print = tf.Print(ent, [ent])
+        # ent_print = tf.Print(ent, [ent])
         index_for_available_act = tf.cond(
-            tf.less(ent_print, tf.constant(1e-1)),
+            tf.less(ent, tf.constant(1e-1)),
             f2, f1)
 
         # else:
