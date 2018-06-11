@@ -557,7 +557,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
                 atarg = (atarg - atarg.mean()) / atarg.std() # standardized advantage function estimate
             else:
                 with open("debug.txt", "a+") as f:
-                    print("atarg.std() is equal to 0", atarg)
+                    print("atarg.std() is equal to 0", atarg, file=f)
             # print("atarg value: ", atarg)
 
             # convert prevac to one hot
