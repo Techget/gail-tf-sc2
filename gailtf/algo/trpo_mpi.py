@@ -439,7 +439,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
     meankl = U.mean(kloldnew)
     meanent = U.mean(ent)
     # entbonus = entcoeff * meanent
-    entcoeff = entcoeff * lrmult + 1e-5
+    # entcoeff = entcoeff * lrmult + 1e-5
     pol_entpen = (-entcoeff) * meanent
 
     ratio = tf.exp(pi.pd.logp(ac) - oldpi.pd.logp(ac)) # pnew / pold
