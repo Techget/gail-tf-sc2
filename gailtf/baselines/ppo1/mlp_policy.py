@@ -5,6 +5,8 @@ import gym
 from gailtf.baselines.common.distributions import make_pdtype
 import tensorflow.contrib.layers as layers
 import numpy as np
+from datetime import datetime
+import random
 
 class MlpPolicy(object):
     recurrent = False
@@ -25,23 +27,28 @@ class MlpPolicy(object):
 
         last_action = U.get_placeholder(shape=(None, 524), dtype=tf.float32, name="last_action_one_hot")
 
+        self.msize = 64 # change to 64 later
+        self.ssize = 64 
+        self.isize = 11
+        self.available_action_size = 524
         # with tf.variable_scope("obfilter"):
         #     self.ob_rms = RunningMeanStd(shape=ob_space.shape)
 
         # obz = tf.clip_by_value((ob - self.ob_rms.mean) / self.ob_rms.std, -20.0, 20.0)
         # obz = (ob - self.ob_rms.mean) / self.ob_rms.std
-
-        self.msize = 64 # change to 64 later
-        self.ssize = 64 
-        self.isize = 11
-        self.available_action_size = 524
-        minimap = ob[:, 0:5*self.msize*self.msize]
-        minimap /= 2
-        screen = ob[:, 5*self.msize*self.msize: 5*self.msize*self.msize+ 10*self.ssize*self.ssize]
-        screen /= 2
-        info = ob[:, (5*self.msize*self.msize+10*self.ssize*self.ssize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize)]
-        info /= 2
         available_action = ob[:, (5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize+self.available_action_size)]
+        with tf.variable_scope("obfilter"):
+            self.ob_rms = RunningMeanStd(shape=ob_space.shape)
+
+        # obz = tf.clip_by_value((ob - self.ob_rms.mean) / self.ob_rms.std, -20.0, 20.0)
+        obz = (ob - self.ob_rms.mean) / self.ob_rms.std
+
+        minimap = obz[:, 0:5*self.msize*self.msize]
+        # minimap /= 2
+        screen = obz[:, 5*self.msize*self.msize: 5*self.msize*self.msize+ 10*self.ssize*self.ssize]
+        # screen /= 2
+        info = obz[:, (5*self.msize*self.msize+10*self.ssize*self.ssize):(5*self.msize*self.msize+10*self.ssize*self.ssize+self.isize)]
+        # info /= 2
 
         # get value prediction, crtic
         mconv1 = tf.layers.conv2d(
@@ -204,27 +211,34 @@ class MlpPolicy(object):
         self.ac = ac
         self._act = U.function([stochastic, ob, last_action], [ac, self.vpred])
 
-    def act(self, stochastic, ob, last_action):
+    def act(self, stochastic, ob, last_action, train_length=0):
         # input last_action is a number, convert to one-hot
         one_hot_last_action = []
         if type(last_action) is np.ndarray:
-          depth = last_action.size
-          one_hot_last_action = np.zeros((depth, 524))
-          one_hot_last_action[np.arange(depth), last_action] = 1
+            depth = last_action.size
+            one_hot_last_action = np.zeros((depth, 524))
+            one_hot_last_action[np.arange(depth), last_action] = 1
         else:
-          # one_hot_acs = tf.one_hot(indices, depth)
-          one_hot_last_action = np.zeros(524)
-          one_hot_last_action[last_action] = 1
-          one_hot_last_action = [one_hot_last_action]
-
-        # available_act_one_hot = ob[0][-524:]
-        # available_act = []
-        # for i in range(0, len(available_act_one_hot)):
-        #     if available_act_one_hot[i] == 1.0:
-        #         available_act.append(i)
+            # one_hot_acs = tf.one_hot(indices, depth)
+            one_hot_last_action = np.zeros(524)
+            one_hot_last_action[last_action] = 1
+            one_hot_last_action = [one_hot_last_action]
 
         # last action should be one host
-        ac1, vpred1 =  self._act(stochastic, ob, one_hot_last_action)
+        ac1, vpred1 = self._act(stochastic, ob, one_hot_last_action)
+
+        # epsilon greedy search
+        random.seed(datetime.now())
+        # increase 1500 can make the epsilon decay slower
+        if stochastic and random.random() < (0.3 * math.exp(-train_length/1500)):
+            # assume one available action
+            available_act_one_hot = ob[0][-524:]
+            available_act = []
+            for i in range(0, len(available_act_one_hot)):
+                if available_act_one_hot[i] == 1.0:
+                    available_act.append(i)
+            ac1 = random.choice(available_act)
+        
         return ac1, vpred1[0]
     def get_variables(self):
         return tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, self.scope)

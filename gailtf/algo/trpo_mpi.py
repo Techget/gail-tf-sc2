@@ -50,19 +50,34 @@ def extract_observation(time_step, last_action=None):
 
     # print(np.array(state['minimap'][0]).shape)
 
-    unit_type = time_step.observation["screen"][6]
-    unit_type_compressed = np.zeros(unit_type.shape, dtype=np.float)
-    for y in range(len(unit_type)):
-        for x in range(len(unit_type[y])):
-            if unit_type[y][x] > 0 and unit_type[y][x] in static_data.UNIT_TYPES:
-                unit_type_compressed[y][x] = static_data.UNIT_TYPES.index(unit_type[y][x]) / len(static_data.UNIT_TYPES)
+    # unit_type = time_step.observation["screen"][6]
+    # unit_type_compressed = np.zeros(unit_type.shape, dtype=np.float)
+    # for y in range(len(unit_type)):
+    #     for x in range(len(unit_type[y])):
+    #         if unit_type[y][x] > 0 and unit_type[y][x] in static_data.UNIT_TYPES:
+    #             unit_type_compressed[y][x] = static_data.UNIT_TYPES.index(unit_type[y][x]) / len(static_data.UNIT_TYPES)
 
-    hit_points = time_step.observation["screen"][8]
-    hit_points_logged = np.zeros(hit_points.shape, dtype=np.float)
-    for y in range(len(hit_points)):
-        for x in range(len(hit_points[y])):
-            if hit_points[y][x] > 0:
-                hit_points_logged[y][x] = math.log(hit_points[y][x]) / 4
+    def unit_type_process(t):
+        if t > 0 and t in static_data.UNIT_TYPES:
+            return static_data.UNIT_TYPES.index(t) / len(static_data.UNIT_TYPES) # float(, NOTICE!!!
+        else:
+            return 0
+    vfunc = np.vectorize(unit_type_process)
+    unit_type_compressed = vfunc(time_step.observation["screen"][6])
+
+    # hit_points = time_step.observation["screen"][8]
+    # hit_points_logged = np.zeros(hit_points.shape, dtype=np.float)
+    # for y in range(len(hit_points)):
+    #     for x in range(len(hit_points[y])):
+    #         if hit_points[y][x] > 0:
+    #             hit_points_logged[y][x] = math.log(hit_points[y][x]) / 4
+    def hit_points_process(t):
+        if t > 0:
+            return math.log(t) / 4
+        else:
+            return 0
+    vfunc = np.vectorize(hit_points_process)
+    hit_points_logged = vfunc(time_step.observation["screen"][8])
 
     state["screen"] = [
         time_step.observation["screen"][0] / 255,               # height_map
