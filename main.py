@@ -81,7 +81,7 @@ def main(args):
         map_name= 'AscensiontoAiur',
         agent_race="T", #Terran
         bot_race="T",
-        difficulty=1,
+        difficulty=5, # 1
         step_mul=8,
         screen_size_px=(64,64), # will change to (64,64)
         minimap_size_px=(64,64),
