@@ -197,8 +197,12 @@ class TransitionClassifier(object):
     # else:
     reward = sess.run(self.reward_op, feed_dict)
 
-    if np.allclose(reward, 0):
-      reward = -1
+    if reward < 0.01:
+      # give negative reward
+      reward = -100 * reward - 2
+
+    # if np.allclose(reward, 0):
+    #   reward = -1
     # if reward == 0:
     #   print('reward should not equal to 0!!!!!')
     return reward
