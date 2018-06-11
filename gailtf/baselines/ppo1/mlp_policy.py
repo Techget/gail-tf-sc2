@@ -230,7 +230,7 @@ class MlpPolicy(object):
         random.seed(datetime.now())
         # increase 1500 can make the epsilon decay slower
         if stochastic and random.random() < (0.3 * math.exp(-train_length/1500)):
-            assume one available action
+            # assume one available action
             available_act_one_hot = ob[0][-524:]
             available_act = []
             for i in range(0, len(available_act_one_hot)):
