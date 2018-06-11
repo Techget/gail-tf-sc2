@@ -210,7 +210,7 @@ class MlpPolicy(object):
         self.ac = ac
         self._act = U.function([stochastic, ob, last_action], [ac, self.vpred])
 
-    def act(self, stochastic, ob, last_action, train_length):
+    def act(self, stochastic, ob, last_action, train_length=0):
         # input last_action is a number, convert to one-hot
         one_hot_last_action = []
         if type(last_action) is np.ndarray:
@@ -232,7 +232,7 @@ class MlpPolicy(object):
         # epsilon greedy search
         random.seed(datetime.now())
         # increase 1500 can make the epsilon decay slower
-        if random.random() < (0.3 * math.exp(-train_length/1500)):
+        if stochastic and random.random() < (0.3 * math.exp(-train_length/1500)):
             return random.choice(available_act)
 
         # last action should be one host

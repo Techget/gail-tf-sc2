@@ -219,7 +219,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
             yield {"ob" : obs, "rew" : rews, "vpred" : vpreds, "new" : news,
                     "ac" : acs, "prevac" : prevacs, "nextvpred": vpred * (1 - new),
                     "ep_rets" : ep_rets, "ep_lens" : ep_lens, "ep_true_rets": ep_true_rets}
-            _, vpred = pi.act(stochastic, ob, prevac)
+            _, vpred = pi.act(stochastic, ob, prevac, len(ep_true_rets))
             # Be careful!!! if you change the downstream algorithm to aggregate
             # several of these batches, then be sure to do a deepcopy
             # ep_rets = []
@@ -235,7 +235,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
         # it is not accurate, since everytime, randomly use one, the loss is variant
         # ob_expert, ac_expert = expert_dataset.get_next_batch(1) # only need one, since ob and ac is also 1
 
-        rew = discriminator.get_reward(ob, ac, prevac, len(ep_true_rets))
+        rew = discriminator.get_reward(ob, ac, prevac)
         # print("in traj_segment_generator rew: ", rew)
         global LAST_EXPERT_ACC,LAST_EXPERT_LOSS
         if LAST_EXPERT_LOSS > 0:
