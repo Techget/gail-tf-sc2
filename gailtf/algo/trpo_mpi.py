@@ -398,7 +398,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         gamma, lam, # advantage estimation
         entcoeff=0.001,
         cg_damping=1e-2,
-        vf_stepsize=3e-4, d_stepsize=5e-4,
+        vf_stepsize=3e-4, d_stepsize=3e-4,
         vf_iters =3,
         max_timesteps=0, max_episodes=0, max_iters=0, max_seconds=0,  # time constraint
         callback=None,
