@@ -518,7 +518,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
     # # if provieded model path
     # if load_model_path is not None:
     #     U.load_state(load_model_path)
-    fh = open('ac.txt','a+') 
+    
     while True:        
         if callback: callback(locals(), globals())
         if max_timesteps and timesteps_so_far >= max_timesteps:
@@ -667,7 +667,8 @@ def learn(env, policy_func, discriminator, expert_dataset,
                            np.mean(lenbuffer)], iters_so_far)
 
         # log ac picked
-        print(ac, file=fh)
+        with open('ac.txt','a+') as fh
+            print(ac, file=fh)
 
 
 def evaluate(env, policy_func, load_model_path, timesteps_per_batch, number_trajs=10, 
