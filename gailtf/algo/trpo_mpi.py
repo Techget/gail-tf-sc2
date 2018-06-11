@@ -667,7 +667,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
                            np.mean(lenbuffer)], iters_so_far)
 
         # log ac picked
-        with open('ac.txt','a+') as fh
+        with open('ac.txt','a+') as fh:
             print(ac, file=fh)
 
 
