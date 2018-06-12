@@ -405,8 +405,8 @@ def learn(env, policy_func, discriminator, expert_dataset,
         save_per_iter=100, ckpt_dir=None, log_dir=None, 
         load_model_path=None, task_name=None,
         timesteps_per_actorbatch=32,
-        clip_param=0.15, adam_epsilon=3e-4,
-        optim_epochs=1, optim_stepsize=5e-4, optim_batchsize=32,schedule='linear'
+        clip_param=0.1, adam_epsilon=3e-4,
+        optim_epochs=0.08, optim_stepsize=5e-4, optim_batchsize=32,schedule='linear'
         ):
     nworkers = MPI.COMM_WORLD.Get_size()
     print("##### nworkers: ",nworkers)
@@ -531,7 +531,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         if schedule == 'constant':
             cur_lrmult = 1.0
         elif schedule == 'linear':
-            cur_lrmult =  max(1.0 - float(timesteps_so_far) / max_timesteps, 0)
+            cur_lrmult =  max(1.0 - float(timesteps_so_far) / max_timesteps, 0.1) # make the smallest number as 0.1 instead of 0
         else:
             raise NotImplementedError
 
