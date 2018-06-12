@@ -110,7 +110,8 @@ class MlpPolicy(object):
 
         last_out = tf.concat([mpool2_flat, spool2_flat, info_fc, aa_fc, last_acs_ph_lstm], 
             axis=1)
-        vf_last_out = tf.nn.tanh(U.dense(last_out, hid_size, weight_init=U.normc_initializer(1.0)))
+        vf_last_out = tf.nn.tanh(U.dense(last_out, hid_size, 'vf_last_out',
+            weight_init=U.normc_initializer(1.0)))
 
         # last_out = ob
         # for i in range(num_hid_layers):
