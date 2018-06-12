@@ -558,7 +558,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
             else:
                 with open("debug.txt", "a+") as f:
                     print("atarg.std() is equal to 0", atarg, file=f)
-            print("atarg value: ", atarg)
+            # print("atarg value: ", atarg)
 
             # convert prevac to one hot
             one_hot_prevac = []
