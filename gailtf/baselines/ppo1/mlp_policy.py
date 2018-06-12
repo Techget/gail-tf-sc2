@@ -114,78 +114,7 @@ class MlpPolicy(object):
             weight_init=U.normc_initializer(1.0)))
         vf_last_out_2 = tf.nn.tanh(U.dense(last_out, 128, 'vf_last_out_2',
             weight_init=U.normc_initializer(1.0)))
-
-        # last_out = ob
-        # for i in range(num_hid_layers):
-        #     last_out = tf.nn.tanh(U.dense(last_out, hid_size, "vffc%i"%(i+1), weight_init=U.normc_initializer(1.0)))
         self.vpred = U.dense(vf_last_out_2, 1, "vffinal", weight_init=U.normc_initializer(1.0))[:,0]
-
-        # # get action id
-        # mconv1 = tf.layers.conv2d(
-        #     inputs=tf.reshape(minimap, [-1,self.msize,self.msize,5]),
-        #     filters=32,
-        #     kernel_size=[5, 5],
-        #     padding="same",
-        #     kernel_initializer=U.normc_initializer(0.01),
-        #     activation=tf.nn.leaky_relu,
-        #     name="polmconv1")
-        # mpool1 = tf.layers.max_pooling2d(inputs=mconv1, pool_size=[2, 2], strides=2, name="polmpool1")
-        # mconv2 = tf.layers.conv2d(
-        #     inputs=mpool1,
-        #     filters=64,
-        #     kernel_size=[5, 5],
-        #     padding="same",
-        #     kernel_initializer=U.normc_initializer(0.01),
-        #     activation=tf.nn.leaky_relu,
-        #     name="polmconv2")
-        # mpool2 = tf.layers.max_pooling2d(inputs=mconv2, pool_size=[2, 2], strides=2, name="polmpool2")
-        # mpool2_flat = tf.reshape(mpool2, [-1, 16 * 16 * 64])
-
-        # sconv1 = tf.layers.conv2d(
-        #     inputs=tf.reshape(screen, [-1,self.ssize, self.ssize,10]),
-        #     filters=48,
-        #     kernel_size=[5, 5],
-        #     padding="same",
-        #     kernel_initializer=U.normc_initializer(0.01),
-        #     activation=tf.nn.leaky_relu,
-        #     name="polsconv1")
-        # spool1 = tf.layers.max_pooling2d(inputs=sconv1, pool_size=[2, 2], strides=2, name="polspool1")
-        # sconv2 = tf.layers.conv2d(
-        #     inputs=spool1,
-        #     filters=80,
-        #     kernel_size=[5, 5],
-        #     padding="same",
-        #     kernel_initializer=U.normc_initializer(0.01),
-        #     activation=tf.nn.leaky_relu,
-        #     name="polsconv2")
-        # spool2 = tf.layers.max_pooling2d(inputs=sconv2, pool_size=[2, 2], strides=2, name="polspool2")
-        # spool2_flat = tf.reshape(spool2, [-1, 16 * 16 * 80])
-
-        # info_fc = tf.layers.dense(inputs=layers.flatten(info),
-        #            units=8,
-        #            activation=tf.tanh,
-        #            name="poldense1")
-        
-        # aa_fc = tf.layers.dense(inputs=layers.flatten(available_action),
-        #            units=32,
-        #            activation=tf.tanh,
-        #            name="poldense2")
-
-        # HIDDEN_SIZE = 128
-        # l1_action = tf.layers.dense(layers.flatten(last_action), 256, tf.nn.relu, name="pollastactdense")
-        # input_to_rnn = tf.reshape(l1_action, [-1, 16, 16])
-        # action_lstm_cell = tf.nn.rnn_cell.BasicLSTMCell(num_units=HIDDEN_SIZE, 
-        #     forget_bias=1.0, state_is_tuple=True, name="pollstmcell")
-        # inputs_rnn = tf.unstack(input_to_rnn, num=16, axis=1, name="polunstack")
-        # rnn_outputs,rnn_state= tf.contrib.rnn.static_rnn(action_lstm_cell,
-        #     inputs_rnn, dtype=tf.float32)
-        # l2_action = tf.layers.dense(rnn_state[-1], 
-        #     128, tf.nn.tanh, name="pollstmdense2")          # hidden layer
-        # last_acs_ph_lstm = tf.layers.dense(l2_action, 
-        #     32, tf.nn.tanh, name="pollstmdense3")
-        
-        # last_out = tf.concat([mpool2_flat, spool2_flat, info_fc, aa_fc, last_acs_ph_lstm], 
-        #     axis=1, name="polconcat")
 
         if gaussian_fixed_var and isinstance(ac_space, gym.spaces.Box):
             mean = U.dense(last_out, pdtype.param_shape()[0]//2, "polfinal", U.normc_initializer(0.01))
