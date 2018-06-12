@@ -33,6 +33,9 @@ LAST_EXPERT_LOSS = 0.0
 LAST_EXPERT_ACC = -1.0
 LAST_EXPERT_COEFF = 0.1
 # LAST_ACTION = 0
+
+UP_TO_STEP = 200 # have it learn to play in the very beginning
+
 # NOTICE remove action did last time from available action
 def extract_observation(time_step, last_action=None):
     state = {}
@@ -361,11 +364,12 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
         cur_ep_len += 1
         # print('######new, cur_ep_len, rew, true_rew:', new, cur_ep_len, rew, true_rew)
 
-        if new:
+        global UP_TO_STEP
+        if new or cur_ep_len >= UP_TO_STEP:
             ep_rets.append(cur_ep_ret)
             ep_true_rets.append(cur_ep_true_ret)
             ep_lens.append(cur_ep_len)
-            if cur_ep_true_ret != -1:
+            if cur_ep_true_ret >= 1:
                 with open("win.txt", "a+") as f:
                     f.write('win!!!!!!! {}'.format(cur_ep_true_ret))
             cur_ep_ret = 0
@@ -374,6 +378,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
             timestep = env.reset()
             state_dict, ob = extract_observation(timestep[0])
             ac = 0 # in order to refresh last action
+            UP_TO_STEP += 5
         t += 1
 
 def add_vtarg_and_adv(seg, gamma, lam):
