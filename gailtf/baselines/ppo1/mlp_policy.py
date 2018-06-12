@@ -110,9 +110,9 @@ class MlpPolicy(object):
 
         last_out = tf.concat([mpool2_flat, spool2_flat, info_fc, aa_fc, last_acs_ph_lstm], 
             axis=1)
-        vf_last_out = tf.nn.tanh(U.dense(last_out, 2048, 'vf_last_out',
+        vf_last_out = tf.nn.tanh(U.dense(last_out, 1024, 'vf_last_out',
             weight_init=U.normc_initializer(1.0)))
-        vf_last_out_2 = tf.nn.tanh(U.dense(last_out, 256, 'vf_last_out_2',
+        vf_last_out_2 = tf.nn.tanh(U.dense(last_out, 128, 'vf_last_out_2',
             weight_init=U.normc_initializer(1.0)))
 
         # last_out = ob
@@ -192,7 +192,7 @@ class MlpPolicy(object):
             logstd = tf.get_variable(name="logstd", shape=[1, pdtype.param_shape()[0]//2], initializer=tf.zeros_initializer())
             pdparam = U.concatenate([mean, mean * 0.0 + logstd], axis=1)
         else:
-            pol_last_out = U.dense(last_out, (pdtype.param_shape()[0])*8, "polfinaldense", U.normc_initializer(0.01))
+            pol_last_out = U.dense(last_out, (pdtype.param_shape()[0])*6, "polfinaldense", U.normc_initializer(0.01))
             pol_last_out2 = U.dense(pol_last_out, (pdtype.param_shape()[0])*2, "polfinaldense2", U.normc_initializer(0.01))
             pdparam = U.dense(pol_last_out2, pdtype.param_shape()[0], "polfinal", U.normc_initializer(0.01))
 
