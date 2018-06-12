@@ -112,7 +112,7 @@ class MlpPolicy(object):
             axis=1)
         vf_last_out = tf.nn.tanh(U.dense(last_out, 1024, 'vf_last_out',
             weight_init=U.normc_initializer(1.0)))
-        vf_last_out_2 = tf.nn.tanh(U.dense(last_out, 64, 'vf_last_out_2',
+        vf_last_out_2 = tf.nn.tanh(U.dense(vf_last_out, 64, 'vf_last_out_2',
             weight_init=U.normc_initializer(1.0)))
         self.vpred = U.dense(vf_last_out_2, 1, "vffinal", weight_init=U.normc_initializer(1.0))[:,0]
 
