@@ -110,13 +110,15 @@ class MlpPolicy(object):
 
         last_out = tf.concat([mpool2_flat, spool2_flat, info_fc, aa_fc, last_acs_ph_lstm], 
             axis=1)
-        vf_last_out = tf.nn.tanh(U.dense(last_out, hid_size, 'vf_last_out',
+        vf_last_out = tf.nn.tanh(U.dense(last_out, 2048, 'vf_last_out',
+            weight_init=U.normc_initializer(1.0)))
+        vf_last_out_2 = tf.nn.tanh(U.dense(last_out, 256, 'vf_last_out_2',
             weight_init=U.normc_initializer(1.0)))
 
         # last_out = ob
         # for i in range(num_hid_layers):
         #     last_out = tf.nn.tanh(U.dense(last_out, hid_size, "vffc%i"%(i+1), weight_init=U.normc_initializer(1.0)))
-        self.vpred = U.dense(vf_last_out, 1, "vffinal", weight_init=U.normc_initializer(1.0))[:,0]
+        self.vpred = U.dense(vf_last_out_2, 1, "vffinal", weight_init=U.normc_initializer(1.0))[:,0]
 
         # # get action id
         # mconv1 = tf.layers.conv2d(
@@ -190,8 +192,9 @@ class MlpPolicy(object):
             logstd = tf.get_variable(name="logstd", shape=[1, pdtype.param_shape()[0]//2], initializer=tf.zeros_initializer())
             pdparam = U.concatenate([mean, mean * 0.0 + logstd], axis=1)
         else:
-            pol_last_out = U.dense(last_out, (pdtype.param_shape()[0])*2, "polfinaldense", U.normc_initializer(0.01))
-            pdparam = U.dense(pol_last_out, pdtype.param_shape()[0], "polfinal", U.normc_initializer(0.01))
+            pol_last_out = U.dense(last_out, (pdtype.param_shape()[0])*8, "polfinaldense", U.normc_initializer(0.01))
+            pol_last_out2 = U.dense(pol_last_out, (pdtype.param_shape()[0])*2, "polfinaldense2", U.normc_initializer(0.01))
+            pdparam = U.dense(pol_last_out2, pdtype.param_shape()[0], "polfinal", U.normc_initializer(0.01))
 
         self.pd = pdtype.pdfromflat(pdparam)
 
@@ -224,7 +227,7 @@ class MlpPolicy(object):
         # epsilon greedy search
         random.seed(datetime.now())
         # increase 1500 can make the epsilon decay slower
-        if stochastic and random.random() < (0.3 * math.exp(-train_length/1500)):
+        if stochastic and random.random() < (0.3 * math.exp(-train_length/1000)):
             # assume one available action
             available_act_one_hot = ob[0][-524:]
             available_act = []
