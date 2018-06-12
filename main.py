@@ -39,7 +39,7 @@ def argsparser():
     # Algorithms Configuration
     parser.add_argument('--algo', type=str, choices=['bc', 'trpo', 'ppo'], default='trpo')
     parser.add_argument('--max_kl', type=float, default=0.02)
-    parser.add_argument('--policy_entcoeff', help='entropy coefficiency of policy', type=float, default=1e-3)
+    parser.add_argument('--policy_entcoeff', help='entropy coefficiency of policy', type=float, default=1e-1)
     parser.add_argument('--adversary_entcoeff', help='entropy coefficiency of discriminator', type=float, default=1e-3)
     # Traing Configuration
     parser.add_argument('--save_per_iter', help='save model every xx iterations', type=int, default=100)
