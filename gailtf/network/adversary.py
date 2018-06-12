@@ -202,7 +202,7 @@ class TransitionClassifier(object):
 
     if reward < 0.01:
       # give negative reward
-      reward = 50 * reward - 0.5
+      reward = 10 * reward - 0.1
 
     # if np.allclose(reward, 0):
     #   reward = -1
