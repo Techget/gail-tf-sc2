@@ -378,7 +378,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
             timestep = env.reset()
             state_dict, ob = extract_observation(timestep[0])
             ac = 0 # in order to refresh last action
-            UP_TO_STEP += 5
+            UP_TO_STEP += 2 # 5
         t += 1
 
 def add_vtarg_and_adv(seg, gamma, lam):
