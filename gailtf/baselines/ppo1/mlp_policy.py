@@ -112,7 +112,7 @@ class MlpPolicy(object):
             axis=1)
         vf_last_out = tf.nn.tanh(U.dense(last_out, 1024, 'vf_last_out',
             weight_init=U.normc_initializer(1.0)))
-        vf_last_out_2 = tf.nn.tanh(U.dense(last_out, 128, 'vf_last_out_2',
+        vf_last_out_2 = tf.nn.tanh(U.dense(vf_last_out, 64, 'vf_last_out_2',
             weight_init=U.normc_initializer(1.0)))
         self.vpred = U.dense(vf_last_out_2, 1, "vffinal", weight_init=U.normc_initializer(1.0))[:,0]
 
@@ -121,9 +121,8 @@ class MlpPolicy(object):
             logstd = tf.get_variable(name="logstd", shape=[1, pdtype.param_shape()[0]//2], initializer=tf.zeros_initializer())
             pdparam = U.concatenate([mean, mean * 0.0 + logstd], axis=1)
         else:
-            pol_last_out = U.dense(last_out, (pdtype.param_shape()[0])*6, "polfinaldense", U.normc_initializer(0.01))
-            pol_last_out2 = U.dense(pol_last_out, (pdtype.param_shape()[0])*2, "polfinaldense2", U.normc_initializer(0.01))
-            pdparam = U.dense(pol_last_out2, pdtype.param_shape()[0], "polfinal", U.normc_initializer(0.01))
+            pol_last_out = U.dense(last_out, (pdtype.param_shape()[0])*5, "polfinaldense", U.normc_initializer(0.01))
+            pdparam = U.dense(pol_last_out, pdtype.param_shape()[0], "polfinal", U.normc_initializer(0.01))
 
         self.pd = pdtype.pdfromflat(pdparam)
 
