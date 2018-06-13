@@ -378,7 +378,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
             timestep = env.reset()
             state_dict, ob = extract_observation(timestep[0])
             ac = 0 # in order to refresh last action
-            UP_TO_STEP += 2 # 5
+            UP_TO_STEP = np.minimum(UP_TO_STEP + 2, 1000) # 5
         t += 1
 
 def add_vtarg_and_adv(seg, gamma, lam):
@@ -411,7 +411,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         load_model_path=None, task_name=None,
         timesteps_per_actorbatch=32,
         clip_param=1e-3, adam_epsilon=3e-4,
-        optim_epochs=1, optim_stepsize=4e-4, optim_batchsize=32,schedule='linear'
+        optim_epochs=1, optim_stepsize=5e-4, optim_batchsize=32,schedule='linear'
         ):
     nworkers = MPI.COMM_WORLD.Get_size()
     print("##### nworkers: ",nworkers)
