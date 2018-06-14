@@ -612,6 +612,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         # ------------------ Update D ------------------
         logger.log("Optimizing Discriminator...")
         logger.log(fmt_row(13, discriminator.loss_name))
+        global UP_TO_STEP
         ob_expert, ac_expert, prevac_expert = expert_dataset.get_next_batch(len(ob), UP_TO_STEP)
         batch_size = len(ob) // d_step
         d_losses = [] # list of tuples, each of which gives the loss for a minibatch
