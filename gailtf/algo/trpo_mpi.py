@@ -34,7 +34,7 @@ LAST_EXPERT_ACC = -1.0
 LAST_EXPERT_COEFF = 0.1
 # LAST_ACTION = 0
 
-UP_TO_STEP = 100 # have it learn to play in the very beginning
+UP_TO_STEP = 96 # have it learn to play in the very beginning
 
 # NOTICE remove action did last time from available action
 def extract_observation(time_step, last_action=None):
@@ -378,7 +378,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
             timestep = env.reset()
             state_dict, ob = extract_observation(timestep[0])
             ac = 0 # in order to refresh last action
-            UP_TO_STEP = np.minimum(UP_TO_STEP + 2, 1500) # 5
+            UP_TO_STEP = np.minimum(UP_TO_STEP + 1, 1500) # 5
         t += 1
 
 def add_vtarg_and_adv(seg, gamma, lam):
