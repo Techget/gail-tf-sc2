@@ -601,8 +601,9 @@ def learn(env, policy_func, discriminator, expert_dataset,
             newlosses = compute_losses(batch["ob"], batch["ac"], batch["prevac"],
                 batch["atarg"], batch["vtarg"], cur_lrmult)
             losses.append(newlosses)
-        meanlosses,_,_ = mpi_moments(losses, axis=0)
-
+        # meanlosses,_,_ = mpi_moments(losses, axis=0)
+        meanlosses = np.mean(losses, axis=0)
+        # logger.log(fmt_row(13, meanlosses))
         g_losses = meanlosses
         for (lossval, name) in zipsame(meanlosses, loss_names):
             logger.record_tabular("loss_"+name, lossval)
