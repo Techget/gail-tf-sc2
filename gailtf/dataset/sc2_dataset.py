@@ -53,7 +53,7 @@ class SC2Dataset(object):
         self.loaded_replay_pointer = 0
         self.win_player_id = None
 
-    def get_next_batch(self, batch_size, split=None):
+    def get_next_batch(self, batch_size, pre_num, split=None):
         # print("start sc2_dataset get_next_batch")
 
         while self.loaded_replay == None:
@@ -88,7 +88,7 @@ class SC2Dataset(object):
         obs = []
         acs = []
         prevacs = []
-        loaded_replay_state_length = len(self.loaded_replay['state'])
+        loaded_replay_state_length = np.minimum(len(self.loaded_replay['state']), pre_num)
         random.seed(datetime.now())
         for i in range(self.loaded_replay_pointer, loaded_replay_state_length):
             if len(obs) >= batch_size:

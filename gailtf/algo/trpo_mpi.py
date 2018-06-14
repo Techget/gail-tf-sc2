@@ -612,13 +612,13 @@ def learn(env, policy_func, discriminator, expert_dataset,
         # ------------------ Update D ------------------
         logger.log("Optimizing Discriminator...")
         logger.log(fmt_row(13, discriminator.loss_name))
-        ob_expert, ac_expert, prevac_expert = expert_dataset.get_next_batch(len(ob))
+        ob_expert, ac_expert, prevac_expert = expert_dataset.get_next_batch(len(ob), UP_TO_STEP)
         batch_size = len(ob) // d_step
         d_losses = [] # list of tuples, each of which gives the loss for a minibatch
         for ob_batch, ac_batch, prevac_batch in dataset.iterbatches((ob, ac, prevac), 
                include_final_partial_batch=False, batch_size=batch_size):
             # print("###### len(ob_batch): ", len(ob_batch))
-            ob_expert, ac_expert, prevac_expert = expert_dataset.get_next_batch(len(ob_batch))
+            ob_expert, ac_expert, prevac_expert = expert_dataset.get_next_batch(len(ob_batch), UP_TO_STEP)
             # update running mean/std for discriminator
             if hasattr(discriminator, "obs_rms"): discriminator.obs_rms.update(np.concatenate((ob_batch, ob_expert), 0))
             
