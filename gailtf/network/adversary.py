@@ -200,9 +200,9 @@ class TransitionClassifier(object):
     if acs in [0,1,2,3,4,274]:
       reward /= 2
 
-    if reward < 0.01:
-      # give negative reward
-      reward = 10 * reward - 0.1
+    # if reward < 0.01:
+    #   # give negative reward
+    #   reward = 10 * reward - 0.1
 
     # if np.allclose(reward, 0):
     #   reward = -1
