@@ -403,7 +403,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         gamma, lam, # advantage estimation
         entcoeff=0.001,
         cg_damping=1e-2,
-        vf_stepsize=3e-4, d_stepsize=1e-4,
+        vf_stepsize=3e-4, d_stepsize=1.5e-4,
         vf_iters =3,
         max_timesteps=0, max_episodes=0, max_iters=0, max_seconds=0,  # time constraint
         callback=None,
@@ -411,7 +411,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         load_model_path=None, task_name=None,
         timesteps_per_actorbatch=32,
         clip_param=1e-3, adam_epsilon=4e-4,
-        optim_epochs=1, optim_stepsize=3e-4, optim_batchsize=32,schedule='linear'
+        optim_epochs=1, optim_stepsize=4e-4, optim_batchsize=32,schedule='linear'
         ):
     nworkers = MPI.COMM_WORLD.Get_size()
     print("##### nworkers: ",nworkers)
@@ -550,6 +550,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         #     return allmean(compute_fvp(p, *fvpargs)) + cg_damping * p
         # # ------------------ Update G ------------------
         logger.log("Optimizing Policy...")
+        meanlosses = []
         for _ in range(g_step):
             with timed("sampling"):
                 seg = seg_gen.__next__()
@@ -594,15 +595,16 @@ def learn(env, policy_func, discriminator, expert_dataset,
                     g_adam.update(allmean(g), optim_stepsize * cur_lrmult)
                     losses.append(newlosses)
                 logger.log(fmt_row(13, np.mean(losses, axis=0)))
+                meanlosses.append(losses)
 
-        # logger.log("Evaluating losses...")
-        losses = []
-        for batch in d.iterate_once(optim_batchsize):
-            newlosses = compute_losses(batch["ob"], batch["ac"], batch["prevac"],
-                batch["atarg"], batch["vtarg"], cur_lrmult)
-            losses.append(newlosses)
-        # meanlosses,_,_ = mpi_moments(losses, axis=0)
-        meanlosses = np.mean(losses, axis=0)
+        # # logger.log("Evaluating losses...")
+        # losses = []
+        # for batch in d.iterate_once(optim_batchsize):
+        #     newlosses = compute_losses(batch["ob"], batch["ac"], batch["prevac"],
+        #         batch["atarg"], batch["vtarg"], cur_lrmult)
+        #     losses.append(newlosses)
+        # # meanlosses,_,_ = mpi_moments(losses, axis=0)
+        meanlosses = np.mean(meanlosses, axis=0)
         # logger.log(fmt_row(13, meanlosses))
         g_losses = meanlosses
         for (lossval, name) in zipsame(meanlosses, loss_names):
