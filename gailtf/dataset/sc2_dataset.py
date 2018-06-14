@@ -148,7 +148,7 @@ class SC2Dataset(object):
             self.loaded_replay = None
             self.loaded_replay_pointer = 0
             self.win_player_id = None
-            return self.get_next_batch(batch_size, split)
+            return self.get_next_batch(batch_size, pre_num, split)
 
         return obs, acs, prevacs
 
