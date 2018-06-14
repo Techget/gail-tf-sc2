@@ -595,7 +595,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
                     g_adam.update(allmean(g), optim_stepsize * cur_lrmult)
                     losses.append(newlosses)
                 logger.log(fmt_row(13, np.mean(losses, axis=0)))
-                meanlosses.append(losses)
+                meanlosses = losses
 
         # # logger.log("Evaluating losses...")
         # losses = []
