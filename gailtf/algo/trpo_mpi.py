@@ -135,7 +135,7 @@ def process_coordinates_param_nn_output(coordinate):
     coordinate[1] = int(coordinate[1])
     # print(coordinate)
 
-    coordinate = np.clip(coordinate, 0, 64)
+    coordinate = np.clip(coordinate, 0, 63)
 
     return coordinate
 
@@ -410,8 +410,8 @@ def learn(env, policy_func, discriminator, expert_dataset,
         save_per_iter=100, ckpt_dir=None, log_dir=None, 
         load_model_path=None, task_name=None,
         timesteps_per_actorbatch=32,
-        clip_param=1e-3, adam_epsilon=4e-4,
-        optim_epochs=1, optim_stepsize=4e-4, optim_batchsize=32,schedule='linear'
+        clip_param=5e-4, adam_epsilon=4e-4,
+        optim_epochs=1, optim_stepsize=3.5e-4, optim_batchsize=32,schedule='linear'
         ):
     nworkers = MPI.COMM_WORLD.Get_size()
     print("##### nworkers: ",nworkers)
