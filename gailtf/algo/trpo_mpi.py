@@ -31,10 +31,10 @@ import math
 
 LAST_EXPERT_LOSS = 0.0
 LAST_EXPERT_ACC = -1.0
-LAST_EXPERT_COEFF = 0.1
+LAST_EXPERT_COEFF = 0.01
 # LAST_ACTION = 0
 
-UP_TO_STEP = 32 # have it learn to play in the very beginning
+UP_TO_STEP = 16 # have it learn to play in the very beginning
 
 # NOTICE remove action did last time from available action
 def extract_observation(time_step, last_action=None):
@@ -410,7 +410,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         save_per_iter=100, ckpt_dir=None, log_dir=None, 
         load_model_path=None, task_name=None,
         timesteps_per_actorbatch=16,
-        clip_param=5e-4, adam_epsilon=4e-4,
+        clip_param=1e-3, adam_epsilon=4e-4,
         optim_epochs=1, optim_stepsize=4e-4, optim_batchsize=16,schedule='linear'
         ):
     nworkers = MPI.COMM_WORLD.Get_size()
@@ -641,7 +641,8 @@ def learn(env, policy_func, discriminator, expert_dataset,
             one_hot_prevac_expert = np.zeros((depth, 524))
             one_hot_prevac_expert[np.arange(depth), prevac_expert] = 1
 
-            *newlosses, g = discriminator.lossandgrad(ob_batch, one_hot_ac_batch, prevac_batch, ob_expert, one_hot_ac_expert, one_hot_prevac_expert)
+            *newlosses, g = discriminator.lossandgrad(ob_batch, 
+                one_hot_ac_batch, prevac_batch, ob_expert, one_hot_ac_expert, one_hot_prevac_expert)
             global LAST_EXPERT_ACC,LAST_EXPERT_LOSS
             LAST_EXPERT_ACC = newlosses[5]
             LAST_EXPERT_LOSS = newlosses[1]
