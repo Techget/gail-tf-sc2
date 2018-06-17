@@ -31,7 +31,7 @@ def argsparser():
     parser.add_argument('--ret_threshold', help='the return threshold for the expert trajectories', type=int, default=0)
     parser.add_argument('--traj_limitation', type=int, default=np.inf)
     # Optimization Configuration
-    parser.add_argument('--g_step', help='number of steps to train policy in each epoch', type=int, default=3)
+    parser.add_argument('--g_step', help='number of steps to train policy in each epoch', type=int, default=4)
     parser.add_argument('--d_step', help='number of steps to train discriminator in each epoch', type=int, default=1)
     # Network Configuration (Using MLP Policy)
     parser.add_argument('--policy_hidden_size', type=int, default=100)
@@ -39,7 +39,7 @@ def argsparser():
     # Algorithms Configuration
     parser.add_argument('--algo', type=str, choices=['bc', 'trpo', 'ppo'], default='trpo')
     parser.add_argument('--max_kl', type=float, default=0.02)
-    parser.add_argument('--policy_entcoeff', help='entropy coefficiency of policy', type=float, default=1e-3)
+    parser.add_argument('--policy_entcoeff', help='entropy coefficiency of policy', type=float, default=1e-2)
     parser.add_argument('--adversary_entcoeff', help='entropy coefficiency of discriminator', type=float, default=1e-3)
     # Traing Configuration
     parser.add_argument('--save_per_iter', help='save model every xx iterations', type=int, default=100)
@@ -129,7 +129,7 @@ def main(args):
             trpo_mpi.learn(env, policy_fn, discriminator, dataset,
                 pretrained=args.pretrained, pretrained_weight=pretrained_weight,
                 g_step=args.g_step, d_step=args.d_step,
-                timesteps_per_batch=32, 
+                timesteps_per_batch=16, 
                 max_kl=args.max_kl, cg_iters=10, cg_damping=0.1,
                 max_timesteps=args.num_timesteps, 
                 entcoeff=args.policy_entcoeff, gamma=0.99, lam=0.94, 

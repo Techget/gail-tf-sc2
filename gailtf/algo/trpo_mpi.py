@@ -34,7 +34,7 @@ LAST_EXPERT_ACC = -1.0
 LAST_EXPERT_COEFF = 0.01
 # LAST_ACTION = 0
 
-UP_TO_STEP = 32 # have it learn to play in the very beginning
+UP_TO_STEP = 16 # have it learn to play in the very beginning
 
 # NOTICE remove action did last time from available action
 def extract_observation(time_step, last_action=None):
@@ -409,9 +409,9 @@ def learn(env, policy_func, discriminator, expert_dataset,
         callback=None,
         save_per_iter=100, ckpt_dir=None, log_dir=None, 
         load_model_path=None, task_name=None,
-        timesteps_per_actorbatch=32,
+        timesteps_per_actorbatch=16,
         clip_param=1e-5, adam_epsilon=4e-4,
-        optim_epochs=1, optim_stepsize=4e-4, optim_batchsize=32,schedule='linear'
+        optim_epochs=1, optim_stepsize=4e-4, optim_batchsize=16,schedule='linear'
         ):
     nworkers = MPI.COMM_WORLD.Get_size()
     print("##### nworkers: ",nworkers)
