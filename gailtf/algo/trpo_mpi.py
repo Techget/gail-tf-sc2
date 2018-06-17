@@ -593,9 +593,11 @@ def learn(env, policy_func, discriminator, expert_dataset,
                     *newlosses, g = lossandgrad(batch["ob"], 
                         batch["ac"], batch['prevac'], batch["atarg"], batch["vtarg"], cur_lrmult)
                     g_adam.update(g, optim_stepsize * cur_lrmult) # allmean(g)
-                    meanlosses = np.mean(np.array(compute_losses(batch["ob"], batch["ac"], batch["prevac"],
-                        batch["atarg"], batch["vtarg"], cur_lrmult)), axis=0)
-                    losses.append(meanlosses)
+
+                    *newlosses = compute_losses(batch["ob"], batch["ac"], batch["prevac"],
+                        batch["atarg"], batch["vtarg"], cur_lrmult)
+                    meanlosses = np.mean(np.array(newlosses), axis=0)
+                    losses.append(newlosses)
                 logger.log(fmt_row(13, np.mean(losses, axis=0)))
                 # meanlosses = losses
 
