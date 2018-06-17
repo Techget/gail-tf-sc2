@@ -596,7 +596,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
 
                     x_newlosses = compute_losses(batch["ob"], batch["ac"], batch["prevac"],
                         batch["atarg"], batch["vtarg"], cur_lrmult)
-                    meanlosses = np.mean(np.array(x_newlosses), axis=0)
+                    meanlosses = [x_newlosses]
                     losses.append(x_newlosses)
                 logger.log(fmt_row(13, np.mean(losses, axis=0)))
                 # meanlosses = losses
@@ -608,7 +608,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         #         batch["atarg"], batch["vtarg"], cur_lrmult)
         #     losses.append(newlosses)
         # # # meanlosses,_,_ = mpi_moments(losses, axis=0) # it will be useful for multithreading
-        # meanlosses = np.mean(losses, axis=0)
+        meanlosses = np.mean(losses, axis=0)
         # logger.log(fmt_row(13, meanlosses))
         g_losses = meanlosses
         for (lossval, name) in zipsame(meanlosses, loss_names):
