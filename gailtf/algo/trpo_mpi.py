@@ -34,7 +34,7 @@ LAST_EXPERT_ACC = -1.0
 LAST_EXPERT_COEFF = 0.01
 # LAST_ACTION = 0
 
-UP_TO_STEP = 16 # have it learn to play in the very beginning
+UP_TO_STEP = 32 # have it learn to play in the very beginning
 
 # NOTICE remove action did last time from available action
 def extract_observation(time_step, last_action=None):
@@ -409,9 +409,9 @@ def learn(env, policy_func, discriminator, expert_dataset,
         callback=None,
         save_per_iter=100, ckpt_dir=None, log_dir=None, 
         load_model_path=None, task_name=None,
-        timesteps_per_actorbatch=16,
+        timesteps_per_actorbatch=32,
         clip_param=1e-3, adam_epsilon=4e-4,
-        optim_epochs=1, optim_stepsize=4e-4, optim_batchsize=16,schedule='linear'
+        optim_epochs=1, optim_stepsize=4e-4, optim_batchsize=32,schedule='linear'
         ):
     nworkers = MPI.COMM_WORLD.Get_size()
     print("##### nworkers: ",nworkers)
@@ -593,9 +593,11 @@ def learn(env, policy_func, discriminator, expert_dataset,
                     *newlosses, g = lossandgrad(batch["ob"], 
                         batch["ac"], batch['prevac'], batch["atarg"], batch["vtarg"], cur_lrmult)
                     g_adam.update(g, optim_stepsize * cur_lrmult) # allmean(g)
-                    losses.append(newlosses)
+                    meanlosses = np.mean(np.array(compute_losses(batch["ob"], batch["ac"], batch["prevac"],
+                        batch["atarg"], batch["vtarg"], cur_lrmult)), axis=0)
+                    losses.append(meanlosses)
                 logger.log(fmt_row(13, np.mean(losses, axis=0)))
-                meanlosses = losses
+                # meanlosses = losses
 
         # # logger.log("Evaluating losses...")
         # losses = []
@@ -603,8 +605,8 @@ def learn(env, policy_func, discriminator, expert_dataset,
         #     newlosses = compute_losses(batch["ob"], batch["ac"], batch["prevac"],
         #         batch["atarg"], batch["vtarg"], cur_lrmult)
         #     losses.append(newlosses)
-        # # meanlosses,_,_ = mpi_moments(losses, axis=0)
-        meanlosses = np.mean(meanlosses, axis=0)
+        # # # meanlosses,_,_ = mpi_moments(losses, axis=0) # it will be useful for multithreading
+        # meanlosses = np.mean(losses, axis=0)
         # logger.log(fmt_row(13, meanlosses))
         g_losses = meanlosses
         for (lossval, name) in zipsame(meanlosses, loss_names):
