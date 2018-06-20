@@ -54,7 +54,7 @@ class TransitionClassifier(object):
     # Build Reward for policy
     # make it larger, the network is large, it may vanish if reward is small
     # take generator_loss into consideration, since logits = 0.4 and logits equal to 0.1 are considered same otherwise
-    self.reward_op = 2 * (-tf.log(1-tf.nn.sigmoid(generator_logits)+1e-8)+2*generator_loss)
+    self.reward_op = 100*(-tf.log(1-tf.nn.sigmoid(generator_logits)+1e-8)+generator_loss)
     var_list = self.get_trainable_variables()
     self.lossandgrad = U.function([self.generator_obs_ph, self.generator_acs_ph, self.generator_last_action_ph, self.expert_obs_ph, self.expert_acs_ph, self.expert_last_action_ph], 
                          self.losses + [U.flatgrad(self.total_loss, var_list)])
@@ -205,10 +205,12 @@ class TransitionClassifier(object):
     #   reward = np.log(1-g_acc+1e-5) # give negative reward 
     # else:
     reward = sess.run(self.reward_op, feed_dict)
+    if acs in [0,1,2,3,4,274]:
+      reward /= 2
 
-    if reward < 0.01:
-      # give negative reward
-      reward = 100 * reward - 0.5
+    # if reward < 0.01:
+    #   # give negative reward
+    #   reward = 100 * reward - 0.5
 
     # if reward == 0:
     #   print('reward should not equal to 0!!!!!')

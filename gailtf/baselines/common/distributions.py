@@ -3,6 +3,9 @@ import numpy as np
 import gailtf.baselines.common.tf_util as U
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import nn
+from datetime import datetime
+import random
+
 
 class Pd(object):
     """

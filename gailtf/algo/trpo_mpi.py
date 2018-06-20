@@ -31,7 +31,10 @@ import math
 
 LAST_EXPERT_LOSS = 0.0
 LAST_EXPERT_ACC = -1.0
-# LAST_ACTION = 0
+LAST_ACTION = 0.01
+
+UP_TO_STEP = 16 # have it learn to play in the very beginning
+ITER_SOFAR_GLOBAL = 0
 
 # NOTICE remove action did last time from available action
 def extract_observation(time_step, last_action=None):
@@ -130,7 +133,7 @@ def process_coordinates_param_nn_output(coordinate):
     coordinate[1] = int(coordinate[1])
     # print(coordinate)
 
-    coordinate = np.clip(coordinate, 0, 64)
+    coordinate = np.clip(coordinate, 0, 63)
 
     return coordinate
 
@@ -235,13 +238,15 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
 
         rew = discriminator.get_reward(ob, ac, prevac)
         # print("in traj_segment_generator rew: ", rew)
-        global LAST_EXPERT_ACC,LAST_EXPERT_LOSS
+        global LAST_EXPERT_ACC,LAST_EXPERT_LOSS, ITER_SOFAR_GLOBAL
         if LAST_EXPERT_LOSS > 0:
             rew[0][0] += LAST_EXPERT_LOSS
             LAST_EXPERT_LOSS -= 0.01 # decay
         if LAST_EXPERT_ACC < 1.0 and LAST_EXPERT_ACC != -1.0:
             rew[0][0] += 1 - LAST_EXPERT_ACC
             LAST_EXPERT_ACC += 0.01 # decay
+        if ITER_SOFAR_GLOBAL < 5:
+            rew /= 5 # do not trust reward in the beginning
 
         # print("in traj_segment_generator rew: ", rew, LAST_EXPERT_LOSS, LAST_EXPERT_ACC)
         # rew += np.log(1 - LAST_EXPERT_ACC + 1e-8)
@@ -358,12 +363,12 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
         cur_ep_true_ret += true_rew
         cur_ep_len += 1
         # print('######new, cur_ep_len, rew, true_rew:', new, cur_ep_len, rew, true_rew)
-
-        if new:
+        global UP_TO_STEP
+        if new or cur_ep_len >= UP_TO_STEP:
             ep_rets.append(cur_ep_ret)
             ep_true_rets.append(cur_ep_true_ret)
             ep_lens.append(cur_ep_len)
-            if cur_ep_true_ret != -1:
+            if cur_ep_true_ret >= 1:
                 with open("win.txt", "a+") as f:
                     f.write('win!!!!!!! {}'.format(cur_ep_true_ret))
             cur_ep_ret = 0
@@ -372,6 +377,7 @@ def traj_segment_generator(pi, env, discriminator, horizon, expert_dataset, stoc
             timestep = env.reset()
             state_dict, ob = extract_observation(timestep[0])
             ac = 0 # in order to refresh last action
+            UP_TO_STEP = np.minimum(UP_TO_STEP + 1, 1500)
         t += 1
 
 def add_vtarg_and_adv(seg, gamma, lam):
@@ -527,7 +533,8 @@ def learn(env, policy_func, discriminator, expert_dataset,
         if schedule == 'constant':
             cur_lrmult = 1.0
         elif schedule == 'linear':
-            cur_lrmult =  max(1.0 - float(timesteps_so_far) / max_timesteps, 0)
+            cur_lrmult =  max(1.0 - float(timesteps_so_far) / (max_timesteps+1e7), 0.1)
+            # cur_lrmult =  max(1.0 - float(timesteps_so_far) / max_timesteps, 0)
         else:
             raise NotImplementedError
 
@@ -541,6 +548,7 @@ def learn(env, policy_func, discriminator, expert_dataset,
         #     return allmean(compute_fvp(p, *fvpargs)) + cg_damping * p
         # # ------------------ Update G ------------------
         logger.log("Optimizing Policy...")
+        meanlosses = []
         for _ in range(g_step):
             with timed("sampling"):
                 seg = seg_gen.__next__()
@@ -579,17 +587,30 @@ def learn(env, policy_func, discriminator, expert_dataset,
                 for batch in d.iterate_once(optim_batchsize):
                     *newlosses, g = lossandgrad(batch["ob"], 
                         batch["ac"], batch['prevac'], batch["atarg"], batch["vtarg"], cur_lrmult)
-                    g_adam.update(allmean(g), optim_stepsize * cur_lrmult)
-                    losses.append(newlosses)
+                    g_adam.update(g, optim_stepsize * cur_lrmult) # allmean(g)
+                    x_newlosses = compute_losses(batch["ob"], batch["ac"], batch["prevac"],
+                        batch["atarg"], batch["vtarg"], cur_lrmult)
+                    meanlosses = [x_newlosses]
+                    losses.append(x_newlosses)
                 logger.log(fmt_row(13, np.mean(losses, axis=0)))
 
         # logger.log("Evaluating losses...")
-        losses = []
-        for batch in d.iterate_once(optim_batchsize):
-            newlosses = compute_losses(batch["ob"], batch["ac"], batch["prevac"],
-                batch["atarg"], batch["vtarg"], cur_lrmult)
-            losses.append(newlosses)
-        meanlosses,_,_ = mpi_moments(losses, axis=0)
+        # losses = []
+        # for batch in d.iterate_once(optim_batchsize):
+        #     newlosses = compute_losses(batch["ob"], batch["ac"], batch["prevac"],
+        #         batch["atarg"], batch["vtarg"], cur_lrmult)
+        #     losses.append(newlosses)
+        # meanlosses,_,_ = mpi_moments(losses, axis=0)
+
+        # # logger.log("Evaluating losses...")
+        # losses = []
+        # for batch in d.iterate_once(optim_batchsize):
+        #     newlosses = compute_losses(batch["ob"], batch["ac"], batch["prevac"],
+        #         batch["atarg"], batch["vtarg"], cur_lrmult)
+        #     losses.append(newlosses)
+        # # # meanlosses,_,_ = mpi_moments(losses, axis=0) # it will be useful for multithreading
+        meanlosses = np.mean(losses, axis=0)
+        # logger.log(fmt_row(13, meanlosses))
 
         g_losses = meanlosses
         for (lossval, name) in zipsame(meanlosses, loss_names):
@@ -599,13 +620,13 @@ def learn(env, policy_func, discriminator, expert_dataset,
         # ------------------ Update D ------------------
         logger.log("Optimizing Discriminator...")
         logger.log(fmt_row(13, discriminator.loss_name))
-        ob_expert, ac_expert, prevac_expert = expert_dataset.get_next_batch(len(ob))
+        global UP_TO_STEP
+        ob_expert, ac_expert, prevac_expert = expert_dataset.get_next_batch(len(ob), UP_TO_STEP)
         batch_size = len(ob) // d_step
         d_losses = [] # list of tuples, each of which gives the loss for a minibatch
         for ob_batch, ac_batch, prevac_batch in dataset.iterbatches((ob, ac, prevac), 
                include_final_partial_batch=False, batch_size=batch_size):
-            # print("###### len(ob_batch): ", len(ob_batch))
-            ob_expert, ac_expert, prevac_expert = expert_dataset.get_next_batch(len(ob_batch))
+            ob_expert, ac_expert, prevac_expert = expert_dataset.get_next_batch(len(ob_batch), UP_TO_STEP)
             # update running mean/std for discriminator
             if hasattr(discriminator, "obs_rms"): discriminator.obs_rms.update(np.concatenate((ob_batch, ob_expert), 0))
             
@@ -629,9 +650,8 @@ def learn(env, policy_func, discriminator, expert_dataset,
             global LAST_EXPERT_ACC,LAST_EXPERT_LOSS
             LAST_EXPERT_ACC = newlosses[5]
             LAST_EXPERT_LOSS = newlosses[1]
-            # print('LAST_EXPERT_LOSS, LAST_EXPERT_ACC:', LAST_EXPERT_LOSS, LAST_EXPERT_ACC)
 
-            d_adam.update(allmean(g), d_stepsize)
+            d_adam.update(g, d_stepsize) # allmean(g)
             d_losses.append(newlosses)
         logger.log(fmt_row(13, np.mean(d_losses, axis=0)))
 
@@ -661,6 +681,9 @@ def learn(env, policy_func, discriminator, expert_dataset,
             d_loss_stats.add_all_summary(writer, np.mean(d_losses, axis=0), iters_so_far)
             ep_stats.add_all_summary(writer, [np.mean(true_rewbuffer), np.mean(rewbuffer),
                            np.mean(lenbuffer)], iters_so_far)
+
+        global ITER_SOFAR_GLOBAL 
+        ITER_SOFAR_GLOBAL = iters_so_far
 
         # log ac picked
         with open('ac.txt','a+') as f:
