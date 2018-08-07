@@ -24,6 +24,12 @@ Tensorflow implementation of Generative Adversarial Imitation Learning, and appl
 ## Run the code
 Actions in PySC2 is composed of action id and extra parameters, eg to move a minion, RL agents need to provide corresponding action id and coordinates on map. I use GAIL to learn to choose reasonable action id, and use a separate supervised learning neural network to obtain correct parameters.
 
+The trained parameter network should be put under `param_pre_model`
+
+In `master` branch, run `python3 main.py` to start training, the model will be saved every 100 episode
+
+To evaluate, `git checkout UsePPOParameterSharingEvaluate` to evaluate the model, the trained model should be put in `/checkpoint`
+
 ## Reference
 - Jonathan Ho and Stefano Ermon. Generative adversarial imitation learning, [[arxiv](https://arxiv.org/abs/1606.03476)]
 - @openai/imitation
