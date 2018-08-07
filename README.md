@@ -34,7 +34,7 @@ To evaluate, `git checkout UsePPOParameterSharingEvaluate` to evaluate the model
 The result is not quite ideal, the agents only learns to construct building and have a few minions patrol around.
 
 ## Reference
-- To inspect this project in detail, proceed to the [[report](https://docs.google.com/document/d/16ceZp-Zdx4vxGpHDNZZ_dTbt1vbKYh0znUyDm5QpEfc/edit?usp=sharing)]
+- ** To inspect this project in detail, proceed to the *[[report](https://docs.google.com/document/d/16ceZp-Zdx4vxGpHDNZZ_dTbt1vbKYh0znUyDm5QpEfc/edit?usp=sharing)]* **
 - Jonathan Ho and Stefano Ermon. Generative adversarial imitation learning, [[arxiv](https://arxiv.org/abs/1606.03476)]
 - @openai/imitation
 - @openai/baselines
