@@ -31,6 +31,7 @@ In `master` branch, run `python3 main.py` to start training, the model will be s
 To evaluate, `git checkout UsePPOParameterSharingEvaluate` to evaluate the model, the trained model should be put in `/checkpoint`
 
 ## Reference
+- To inspect this project in detail, proceed to the [[report](https://docs.google.com/document/d/16ceZp-Zdx4vxGpHDNZZ_dTbt1vbKYh0znUyDm5QpEfc/edit?usp=sharing)]
 - Jonathan Ho and Stefano Ermon. Generative adversarial imitation learning, [[arxiv](https://arxiv.org/abs/1606.03476)]
 - @openai/imitation
 - @openai/baselines
