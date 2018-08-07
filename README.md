@@ -26,7 +26,7 @@ Actions in PySC2 is composed of action id and extra parameters, eg to move a min
 
 To get an idea of how I parse the .SC2Replay files, refer to [[parse recording file](https://github.com/Techget/parse-pysc2-replay-files)]
 
-The trained parameter network should be put under `param_pre_model`. The pre-trained model is trained by running the codes in [[parameter model](https://github.com/Techget/pysc2-gail-research-project)], this pretrained model is used to supply the parameters for each 
+The trained parameter network should be put under `param_pre_model`. The pre-trained model is trained by running the codes in [[parameter model](https://github.com/Techget/pysc2-pretrained-parameter-model)], this pretrained model is used to supply the parameters for each 
 
 In `master` branch, run `python3 main.py` to start training, the model will be saved every 100 episode
 
