@@ -17,9 +17,9 @@ Tensorflow implementation of Generative Adversarial Imitation Learning, and appl
   
 ## Requirements
 - python==3.5.2
-- mujoco-py==0.5.7
 - tensorflow==1.1.0
 - gym==0.9.3
+- pysc2
 
 ## Run the code
 Actions in PySC2 is composed of action id and extra parameters, eg to move a minion, RL agents need to provide corresponding action id and coordinates on map. I use GAIL to learn to choose reasonable action id, and use a separate supervised learning neural network to obtain correct parameters.
